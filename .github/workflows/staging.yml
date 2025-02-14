@@ -1,0 +1,55 @@
+name: Staging Deployment
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy-to-staging:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4  # Updated to the latest version
+
+      - name: Install SSH Key
+        uses: webfactory/ssh-agent@v0.8.0  # Updated to the latest version
+        with:
+          ssh-private-key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+
+      - name: Upload Environment Variables
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }} << 'EOF'
+            echo "${{ secrets.STAGING_FRONTEND_ENV }}" | sudo tee /var/www/open-scroll/.env.production > /dev/null || { echo "Failed to create .env.production file"; exit 1; }
+          EOF
+
+      - name: Copy Files to VPS
+        run: |
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='.next' \
+            . ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }}:/var/www/open-scroll/
+
+      - name: Run Deployment Script on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }} << 'EOF'
+            # Source profile files to get environment variables and PATH
+            source ~/.bashrc
+            source ~/.profile
+
+            # Ensure NVM is loaded
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+            # Navigate to the project directory
+            cd /var/www/open-scroll
+
+            # Make the start script executable
+            chmod +x start.sh
+
+            # Now run the start script
+            ./start.sh
+          EOF
