@@ -31,7 +31,7 @@ jobs:
             --exclude='.github' \
             --exclude='node_modules' \
             --exclude='.next' \
-            . ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }}:/var/www/open-scroll/
+            . ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }}:${{ secrets.PROJECT_PATH }}
 
       - name: Run Deployment Script on VPS
         run: |
@@ -45,7 +45,7 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
             # Navigate to the project directory
-            cd /var/www/open-scroll
+            cd ${{ secrets.PROJECT_PATH }}
 
             # Make the start script executable
             chmod +x start.sh
