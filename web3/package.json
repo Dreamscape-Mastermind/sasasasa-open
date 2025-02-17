@@ -1,0 +1,29 @@
+{
+  "name": "sasasasa-oc",
+  "version": "0.0.1",
+  "description": "community first experiences with seamless ownership.",
+  "main": "index.ts",
+  "author": "dreamscape_mastermind",
+  "license": "MIT",
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.2.0",
+    "@unlock-protocol/unlock-js": "^0.51.1"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "^0.95.0",
+    "@graphprotocol/graph-ts": "^0.37.0",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.8",
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
+    "@types/chai": "^4.3.20",
+    "@types/node": "^22.13.4",
+    "chai": "^4.5.0",
+    "ethers": "^6.13.5",
+    "hardhat": "^2.22.18",
+    "ts-node": "^10.9.2",
+    "typechain": "^8.3.2",
+    "typescript": "^5.7.3"
+  }
+}

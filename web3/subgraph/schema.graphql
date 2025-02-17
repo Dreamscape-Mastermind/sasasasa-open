@@ -1,0 +1,19 @@
+type Ticket @entity {
+  id: ID!
+  tokenId: BigInt!
+  owner: Bytes!
+  eventId: BigInt!
+  price: BigInt!
+  validUntil: BigInt!
+  seatNumber: String!
+  isUsed: Boolean!
+  createdAt: BigInt!
+}
+
+type Event @entity {
+  id: ID!
+  name: String!
+  date: BigInt!
+  venue: String!
+  tickets: [Ticket!]! @derivedFrom(field: "eventId")
+} 
