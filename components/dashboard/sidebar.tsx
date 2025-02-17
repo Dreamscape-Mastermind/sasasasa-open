@@ -104,9 +104,8 @@ export function Sidebar() {
               router.push(`/dashboard/events/${event.id}/analytics`);
             }
           }}
-          className="mb-4 w-full"
         >
-          <SelectTrigger>
+          <SelectTrigger className="mb-4 w-full">
             <SelectValue placeholder="Select an event" />
           </SelectTrigger>
           <SelectContent>

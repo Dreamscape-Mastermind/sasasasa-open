@@ -51,12 +51,12 @@ export default function EventsPage() {
       </div>
 
       <div className="flex gap-4">
-        <div className="flex-1">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search events..."
-            className="w-full"
+            className="w-full pl-9"
             type="search"
-            icon={<Search className="h-4 w-4" />}
           />
         </div>
         <Button variant="outline">Filters</Button>
