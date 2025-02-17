@@ -35,7 +35,7 @@ jobs:
 
       - name: Run Deployment Script on VPS
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }} << 'ENDSSH'
             # Source profile files to get environment variables and PATH
             source ~/.bashrc
             source ~/.profile
@@ -44,12 +44,21 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
+            # Explicitly set PROJECT_PATH
+            export PROJECT_PATH="${{ secrets.PROJECT_PATH }}"
+
+            # Verify PROJECT_PATH is set
+            if [ -z "$PROJECT_PATH" ]; then
+                echo "ERROR: PROJECT_PATH is not set"
+                exit 1
+            fi
+
             # Navigate to the project directory
-            cd ${{ secrets.PROJECT_PATH }}
+            cd $PROJECT_PATH
 
             # Make the start script executable
             chmod +x start.sh
 
             # Now run the start script
             ./start.sh
-          EOF
+ENDSSH
