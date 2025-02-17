@@ -61,4 +61,4 @@ jobs:
 
             # Now run the start script
             ./start.sh
-ENDSSH
+          EOF
