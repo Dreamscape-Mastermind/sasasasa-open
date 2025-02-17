@@ -21,7 +21,7 @@ jobs:
       - name: Upload Environment Variables
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }} << 'EOF'
-            echo "${{ secrets.STAGING_FRONTEND_ENV }}" | sudo tee /var/www/open-scroll/.env.production > /dev/null || { echo "Failed to create .env.production file"; exit 1; }
+            echo "${{ secrets.STAGING_FRONTEND_ENV }}" | sudo tee ${{ secrets.PROJECT_PATH }}/.env.production > /dev/null || { echo "Failed to create .env.production file"; exit 1; }
           EOF
 
       - name: Copy Files to VPS
