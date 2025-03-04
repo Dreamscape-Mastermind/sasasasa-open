@@ -26,13 +26,30 @@ import {
   Users,
 } from 'lucide-react';
 import { useEvent } from '@/contexts/event-context';
+import { Ticket, TicketResponse } from '@/utils/dataStructures';
 
-export default function AnalyticsPage({ params }: { params: { id: string } }) {
+export default function AnalyticsPage({ params }: { params: Promise<{ id: string }> }) {
   const { currentEvent, tickets, loading, error, setCurrentEventId } = useEvent();
+  
 
   useEffect(() => {
-    setCurrentEventId(params.id);
-  }, [params.id, setCurrentEventId]);
+    const loadParams = async () => {
+      const { id } = await params;
+      setCurrentEventId(id);
+    }
+    loadParams();
+
+  }, []);
+
+  useEffect(() => {
+    const loadParams = async () => {
+      const { id } = await params;
+      if (id !== currentEvent?.id) {
+        setCurrentEventId(id);
+      }
+    }
+    loadParams();
+  }, [params])
 
   if (loading) {
     return <div>Loading...</div>;
@@ -46,17 +63,23 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
     return <div>Event not found</div>;
   }
 
+  const ticketsArray: Ticket[] = Array.isArray(tickets) ? tickets : 
+    (tickets as TicketResponse)?.result?.results || [];
+
   const metrics = [
     {
       title: 'Total Revenue',
-      value: `$${tickets.reduce((acc, ticket) => acc + (ticket.price || 0), 0).toLocaleString()}`,
+      value: `$${ticketsArray.reduce((acc, ticket) => {
+        const price = typeof ticket.price === 'string' ? parseFloat(ticket.price) : ticket.price;
+        return acc + (price || 0);
+      }, 0).toLocaleString()}`,
       change: '+20.1%',
       trend: 'up',
       description: 'Compared to last month',
     },
     {
       title: 'Ticket Sales',
-      value: tickets.length.toString(),
+      value: ticketsArray.length.toString(),
       change: '+15.3%',
       trend: 'up',
       description: 'Compared to last month',
@@ -70,15 +93,19 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
     },
     {
       title: 'Attendees',
-      value: tickets.length.toString(),
+      value: ticketsArray.length.toString(),
       change: '+12.5%',
       trend: 'up',
       description: 'Compared to last month',
     },
   ];
 
-  const totalRevenue = tickets.reduce((acc, ticket) => acc + ticket.price, 0);
-  const totalSales = tickets.length;
+  const totalRevenue = ticketsArray.reduce((acc, ticket) => {
+    const price = typeof ticket.price === 'string' ? parseFloat(ticket.price) : ticket.price;
+    return acc + (price || 0);
+  }, 0);
+  
+  const totalSales = ticketsArray.length;
 
   const topEvents = [
     {

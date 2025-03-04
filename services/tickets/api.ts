@@ -1,56 +1,59 @@
 import { getToken } from "@/utils/utils";
+import { TicketResponse, SingleTicketResponse } from "@/utils/dataStructures";
 
 // Function to fetch events
-export async function fetchTickets(eventId: string) {
-  // Logic to fetch events from the database or an external API
-
+export async function fetchTickets(eventId: string): Promise<TicketResponse> {
   try {
-    // Retrieve the token from localStorage
     const token = getToken();
     if (!token?.access) {
       throw new Error('No token found');
     }
 
-    const tickets = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/events/${eventId}/ticket-types`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/events/${eventId}/ticket-types`, {
         method: "GET", 
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token?.access}`, // Add JWT token to the Authorization header
+          "Authorization": `Bearer ${token?.access}`,
         }
     });
-    if (!tickets.ok) {
-        throw new Error(`Response status: ${tickets.status}`);
+
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
     }
-    return tickets.json()
+    
+    return await response.json();
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error fetching tickets:", error);
+    throw error; // Re-throw to allow caller to handle the error
   }
 }
 
 // Function to create an event
-export async function createTickets(eventId, ticketData) {
+export async function createTickets(eventId: string, ticketData: any): Promise<SingleTicketResponse> {
   try {
-      // Retrieve the token from localStorage
-      const token = getToken();
-      if (!token?.access) {
-        throw new Error('No token found');
-      }
-
-      const newTicket = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/events/${eventId}/ticket-types`, {
-          method: "POST", 
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token?.access}`, // Add JWT token to the Authorization header
-          },
-          body: JSON.stringify({ ...ticketData }),
-      });
-      if (!newTicket.ok) {
-          throw new Error(`Response status: ${newTicket.status}`);
-        }
-      return newTicket.json()
-    } catch (error) {
-      console.error("Error:", error);
+    const token = getToken();
+    if (!token?.access) {
+      throw new Error('No token found');
     }
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/events/${eventId}/ticket-types`, {
+        method: "POST", 
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token?.access}`,
+        },
+        body: JSON.stringify(ticketData),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating ticket:", error);
+    throw error; // Re-throw to allow caller to handle the error
+  }
 }
 
 // Function to update an event

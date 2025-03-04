@@ -108,15 +108,34 @@ export interface AuthTokens {
   refresh: string;
 }
 
-// Define core interfaces based on the API response
-export interface ApiResponse {
+// Generic API response interface for reusability
+export interface ApiResponse<T> {
   status: string;
   message: string;
   result: {
     count: number;
-    results: SasasasaEvent[];
+    next: string | null;
+    previous: string | null;
+    results: T[];
   };
 }
+
+// Single item response (for create, update, get single item operations)
+export interface SingleItemResponse<T> {
+  status: string;
+  message: string;
+  result: T;
+}
+
+// Now we can use these generic interfaces for different data types
+export type TicketResponse = ApiResponse<Ticket>;
+export type EventResponse = ApiResponse<SasasasaEvent>;
+export type TeamMemberResponse = ApiResponse<TeamMember>;
+export type FlashSaleResponse = ApiResponse<FlashSale>;
+
+// For single item responses
+export type SingleTicketResponse = SingleItemResponse<Ticket>;
+export type SingleEventResponse = SingleItemResponse<SasasasaEvent>;
 
 // Define the referral code interface
 export interface ReferralCode {

@@ -1,24 +1,12 @@
 'use client';
 
+import { SasasasaEvent, Ticket } from '@/utils/dataStructures';
 import { createContext, useContext, useCallback, useState, useEffect, ReactNode } from 'react';
-
-// Types
-interface Event {
-  id: string;
-  name: string;
-  // Add other event properties as needed
-}
-
-interface Ticket {
-  id: string;
-  eventId: string;
-  price: number;
-  [key: string]: any;
-  // Add other ticket properties as needed
-}
+import { fetchEvent } from 'services/events/api';
+import { fetchTickets } from 'services/tickets/api';
 
 interface EventContextType {
-  currentEvent: Event | null;
+  currentEvent: SasasasaEvent | null;
   tickets: Ticket[];
   setCurrentEventId: (eventId: string) => void;
   loading: boolean;
@@ -29,11 +17,11 @@ interface EventContextType {
 const EventContext = createContext<EventContextType | undefined>(undefined);
 
 // Cache for storing event data
-const eventCache = new Map<string, { event: Event; tickets: Ticket[]; timestamp: number }>();
+const eventCache = new Map<string, { event: SasasasaEvent; tickets: Ticket[]; timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 export function EventProvider({ children }: { children: ReactNode }) {
-  const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
+  const [currentEvent, setCurrentEvent] = useState<SasasasaEvent | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -51,28 +39,22 @@ export function EventProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     try {
-      // Replace these with your actual API calls
-      const eventResponse = await fetch(`/api/events/${eventId}`);
-      const ticketsResponse = await fetch(`/api/events/${eventId}/tickets`);
-
-      if (!eventResponse.ok || !ticketsResponse.ok) {
-        throw new Error('Failed to fetch event data');
-      }
-
-      const eventData = await eventResponse.json();
-      const ticketsData = await ticketsResponse.json();
+      // Use the API functions from services instead of direct fetch calls
+      const eventData = await fetchEvent(eventId);
+      const ticketsData = await fetchTickets(eventId);
 
       // Update cache
       eventCache.set(eventId, {
         event: eventData,
-        tickets: ticketsData,
+        tickets: ticketsData.result.results,
         timestamp: Date.now(),
       });
 
       setCurrentEvent(eventData);
-      setTickets(ticketsData);
+      setTickets(ticketsData.result.results);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('An error occurred'));
+      console.error("Error fetching event data:", err);
     } finally {
       setLoading(false);
     }
