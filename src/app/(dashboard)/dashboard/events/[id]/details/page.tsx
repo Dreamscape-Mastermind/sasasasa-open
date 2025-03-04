@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -8,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { useQuery } from '@tanstack/react-query';
 import {
   Calendar,
   Clock,
@@ -17,28 +17,57 @@ import {
   Ticket,
   Users,
 } from 'lucide-react';
-import { useParams } from 'next/navigation';
-import { fetchEventById } from 'services/events/api';
-import { SasasasaEvent } from '@/utils/dataStructures';
+import { useEvent } from '@/contexts/event-context';
+import { Ticket as TicketType } from '@/utils/dataStructures';
+import moment from 'moment-timezone';
 
-export default function EventDetailsPage() {
-  const params = useParams();
+export default function EventDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { currentEvent, loading, error, setCurrentEventId } = useEvent();
 
-  const { data: event, isLoading } = useQuery<SasasasaEvent>({
-    queryKey: ['event', params.id],
-    queryFn: () => fetchEventById(params.id as string),
-  });
+  useEffect(() => {
+    const loadParams = async () => {
+      const { id } = await params;
+      setCurrentEventId(id);
+    }
+    loadParams();
+  }, []);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (!event) return <div>Event not found</div>;
+  useEffect(() => {
+    const loadParams = async () => {
+      const { id } = await params;
+      if (id !== currentEvent?.id) {
+        setCurrentEventId(id);
+      }
+    }
+    loadParams();
+  }, [params, currentEvent]);
 
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  if (!currentEvent) return <div>Event not found</div>;
+
+  // Format dates using moment-timezone with proper timezone handling
+  const timezone = currentEvent.timezone || 'UTC';
+  const startDate = currentEvent.start_date 
+    ? moment.tz(currentEvent.start_date, timezone).format('MMM D, YYYY') 
+    : 'TBA';
+  const startTime = currentEvent.start_date 
+    ? moment.tz(currentEvent.start_date, timezone).format('h:mm A') 
+    : 'TBA';
+
+  // Calculate tickets sold correctly based on the data structure
+  const ticketsSold = currentEvent.other_tickets?.reduce((total, ticket) => 
+    total + (Number(ticket.quantity) - Number(ticket.remaining_tickets)), 0
+  ) || 0;
+
+  console.log(currentEvent);
   return (
     <div className="space-y-6 animate-in pb-8">
       <div className="relative h-[300px] -mx-6 -mt-6">
         <div className="absolute inset-0">
           <img
-            src={event.cover_image || 'https://placehold.co/1200x400/'}
-            alt={event.title}
+            src={currentEvent.cover_image || 'https://placehold.co/1200x400/'}
+            alt={currentEvent.title}
             className="object-cover w-full h-full"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background to-background/20" />
@@ -46,15 +75,15 @@ export default function EventDetailsPage() {
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <div className="flex justify-between items-end">
             <div>
-              <h1 className="text-3xl font-bold">{event.title}</h1>
+              <h1 className="text-3xl font-bold">{currentEvent.title}</h1>
               <div className="flex gap-4 text-sm mt-2">
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
-                  {new Date(event.start_date).toLocaleDateString()}
+                  {startDate}
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
-                  {new Date(event.start_date).toLocaleTimeString()}
+                  {startTime}
                 </div>
               </div>
             </div>
@@ -72,7 +101,7 @@ export default function EventDetailsPage() {
               <CardTitle>About</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="whitespace-pre-line">{event.description}</p>
+              <p className="whitespace-pre-line">{currentEvent.description}</p>
             </CardContent>
           </Card>
 
@@ -81,7 +110,7 @@ export default function EventDetailsPage() {
               <CardTitle>Location</CardTitle>
               <CardDescription className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
-                {event.venue}
+                {currentEvent.venue}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -97,7 +126,7 @@ export default function EventDetailsPage() {
               <CardDescription>Select your ticket type</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {event.other_tickets?.map((ticket) => (
+              {currentEvent.other_tickets?.map((ticket: TicketType) => (
                 <div
                   key={ticket.id}
                   className="flex items-center justify-between p-4 border rounded-lg"
@@ -130,18 +159,14 @@ export default function EventDetailsPage() {
                   <Users className="h-4 w-4" />
                   Capacity
                 </div>
-                <span className="font-semibold">{event.capacity}</span>
+                <span className="font-semibold">{currentEvent.capacity}</span>
               </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <Ticket className="h-4 w-4" />
                   Tickets Sold
                 </div>
-                <span className="font-semibold">
-                  {event.other_tickets?.reduce((total, ticket) => 
-                    total + (ticket.quantity - ticket.remaining_tickets), 0
-                  ) || 0}
-                </span>
+                <span className="font-semibold">{ticketsSold}</span>
               </div>
             </CardContent>
           </Card>

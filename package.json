@@ -59,6 +59,7 @@
     "framer-motion": "^11.11.10",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.453.0",
+    "moment-timezone": "^0.5.47",
     "next": "^15.0.1",
     "next-themes": "^0.3.0",
     "nodemailer": "^6.9.15",

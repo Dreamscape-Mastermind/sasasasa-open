@@ -1,4 +1,4 @@
-import { AuthTokens, StorageKey } from "@/utils/dataStructures";
+import { AuthTokens, EventResponse, SingleEventResponse, StorageKey } from "@/utils/dataStructures";
 import { getToken } from "@/utils/utils";
 
 // Function to fetch events
@@ -99,7 +99,7 @@ export async function fetchEvent(eventId: string) {
         console.log({response});
         throw new Error(`Error fetching event: ${response.status}`);
     }
-    return response.json();
+    return await response.json() as SingleEventResponse;
 }
 
 
@@ -119,7 +119,7 @@ export async function fetchEventById(eventId: string) {
     if (!response.ok) {
         throw new Error(`Error fetching event: ${response.status}`);
     }
-    return response.json(); 
+    return await response.json() as SingleEventResponse;
 }
 
 export async function publishEvent(eventId: string) {
@@ -132,7 +132,7 @@ export async function publishEvent(eventId: string) {
   const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/events/${eventId}`, {
     method: "POST",  
     headers: {
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${token?.access}`,
       }
   });
   if (!response.ok) {

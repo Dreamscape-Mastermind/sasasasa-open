@@ -1,6 +1,6 @@
 'use client';
 
-import { SasasasaEvent, Ticket } from '@/utils/dataStructures';
+import { EventResponse, SasasasaEvent, SingleEventResponse, Ticket, TicketResponse } from '@/utils/dataStructures';
 import { createContext, useContext, useCallback, useState, useEffect, ReactNode } from 'react';
 import { fetchEvent } from 'services/events/api';
 import { fetchTickets } from 'services/tickets/api';
@@ -17,7 +17,7 @@ interface EventContextType {
 const EventContext = createContext<EventContextType | undefined>(undefined);
 
 // Cache for storing event data
-const eventCache = new Map<string, { event: SasasasaEvent; tickets: Ticket[]; timestamp: number }>();
+const eventCache = new Map<string, { event: SingleEventResponse["result"]; tickets: Ticket[]; timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 export function EventProvider({ children }: { children: ReactNode }) {
@@ -40,17 +40,18 @@ export function EventProvider({ children }: { children: ReactNode }) {
 
     try {
       // Use the API functions from services instead of direct fetch calls
-      const eventData = await fetchEvent(eventId);
-      const ticketsData = await fetchTickets(eventId);
+      const eventData: SingleEventResponse = await fetchEvent(eventId);
+      const ticketsData: TicketResponse = await fetchTickets(eventId);
 
+      const sasasasaEvent: SasasasaEvent = eventData.result;
       // Update cache
       eventCache.set(eventId, {
-        event: eventData,
+        event: sasasasaEvent,
         tickets: ticketsData.result.results,
         timestamp: Date.now(),
       });
 
-      setCurrentEvent(eventData);
+      setCurrentEvent(sasasasaEvent);
       setTickets(ticketsData.result.results);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('An error occurred'));
