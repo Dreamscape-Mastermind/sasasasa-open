@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
 import {
   Calendar,
   Clock,
@@ -17,51 +18,26 @@ import {
   Users,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
-
-const event = {
-  id: 1,
-  title: 'Tech Conference 2025',
-  date: 'March 15, 2025',
-  time: '9:00 AM - 6:00 PM',
-  location: 'Moscone Center',
-  address: '747 Howard St, San Francisco, CA 94103',
-  description: `Join us for the biggest tech conference of the year. Network with industry leaders, attend workshops, and learn about the latest technologies.
-
-The conference will feature:
-- Keynote speakers from leading tech companies
-- Interactive workshops and hands-on sessions
-- Networking opportunities
-- Product demonstrations
-- Career fair`,
-  image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=400&fit=crop',
-  tickets: [
-    {
-      type: 'Early Bird',
-      price: 299,
-      available: 50,
-    },
-    {
-      type: 'Regular',
-      price: 399,
-      available: 200,
-    },
-    {
-      type: 'VIP',
-      price: 699,
-      available: 20,
-    },
-  ],
-};
+import { fetchEventById } from 'services/events/api';
+import { SasasasaEvent } from '@/utils/dataStructures';
 
 export default function EventDetailsPage() {
   const params = useParams();
+
+  const { data: event, isLoading } = useQuery<SasasasaEvent>({
+    queryKey: ['event', params.id],
+    queryFn: () => fetchEventById(params.id as string),
+  });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (!event) return <div>Event not found</div>;
 
   return (
     <div className="space-y-6 animate-in pb-8">
       <div className="relative h-[300px] -mx-6 -mt-6">
         <div className="absolute inset-0">
           <img
-            src={event.image}
+            src={event.cover_image || 'https://placehold.co/1200x400/'}
             alt={event.title}
             className="object-cover w-full h-full"
           />
@@ -74,11 +50,11 @@ export default function EventDetailsPage() {
               <div className="flex gap-4 text-sm mt-2">
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
-                  {event.date}
+                  {new Date(event.start_date).toLocaleDateString()}
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
-                  {event.time}
+                  {new Date(event.start_date).toLocaleTimeString()}
                 </div>
               </div>
             </div>
@@ -105,11 +81,10 @@ export default function EventDetailsPage() {
               <CardTitle>Location</CardTitle>
               <CardDescription className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
-                {event.location}
+                {event.venue}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">{event.address}</p>
               <div className="mt-4 aspect-video bg-muted rounded-lg" />
             </CardContent>
           </Card>
@@ -122,16 +97,16 @@ export default function EventDetailsPage() {
               <CardDescription>Select your ticket type</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {event.tickets.map((ticket) => (
+              {event.other_tickets?.map((ticket) => (
                 <div
-                  key={ticket.type}
+                  key={ticket.id}
                   className="flex items-center justify-between p-4 border rounded-lg"
                 >
                   <div>
-                    <h4 className="font-semibold">{ticket.type}</h4>
+                    <h4 className="font-semibold">{ticket.name}</h4>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Ticket className="h-4 w-4" />
-                      {ticket.available} available
+                      {ticket.remaining_tickets} available
                     </div>
                   </div>
                   <div className="text-right">
@@ -153,16 +128,20 @@ export default function EventDetailsPage() {
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  Attendees
+                  Capacity
                 </div>
-                <span className="font-semibold">245/500</span>
+                <span className="font-semibold">{event.capacity}</span>
               </div>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <Ticket className="h-4 w-4" />
                   Tickets Sold
                 </div>
-                <span className="font-semibold">270</span>
+                <span className="font-semibold">
+                  {event.other_tickets?.reduce((total, ticket) => 
+                    total + (ticket.quantity - ticket.remaining_tickets), 0
+                  ) || 0}
+                </span>
               </div>
             </CardContent>
           </Card>

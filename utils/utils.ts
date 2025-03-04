@@ -1,4 +1,4 @@
-import { FlashSale } from "./dataStructures";
+import { AuthTokens, FlashSale, StorageKey } from "./dataStructures";
 
 export const isFlashSaleValid = (flashSale: FlashSale | null): boolean => {
   if (!flashSale || flashSale.status !== 'ACTIVE') return false;
@@ -9,3 +9,14 @@ export const isFlashSaleValid = (flashSale: FlashSale | null): boolean => {
   
   return now >= startDate && now <= endDate;
 };
+
+export const getToken = (): AuthTokens | null => {
+  const storedUser = localStorage.getItem(StorageKey.USER);
+  const tokens = localStorage.getItem(StorageKey.TOKENS);
+  
+  if (storedUser && tokens) {
+    const parsedTokens: AuthTokens = JSON.parse(tokens);
+    return parsedTokens;
+  }
+  return null;
+}

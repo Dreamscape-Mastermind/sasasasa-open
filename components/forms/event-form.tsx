@@ -48,6 +48,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 import toast from "react-hot-toast"
+import { useAuth } from "@/contexts/AuthContext"
 // import toast, { Toaster } from 'react-hot-toast';
 
 const formSchema = z.object({
@@ -58,37 +59,30 @@ const formSchema = z.object({
     message: "Description must be at least 10 characters.",
   }),
   start_date: z.date(),
-  start_time: z.string().min(1, { message: "Start time is required" }),
   end_date: z.date(),
-  end_time: z.string().min(1, { message: "End time is required" }),
   timezone: z.any(),
   venue: z.string().min(2, {
     message: "Venue must be at least 2 characters"
   }),
-  capacity: z.number().min(1, {
+  capacity: z.coerce.number().min(1, {
     message: "Capacity is required.",
   }),
   cover_image: z.any().optional(),
-  facebook_url: z.string(),
-  website_url: z.string(),
-  linkedin_url: z.string(),
-  instagram_url: z.string(),
-  twitter_url: z.string(),
-}).refine((data) => {
-  const startDateTime = combineDateTime(data.start_date, data.start_time);
-  const endDateTime = combineDateTime(data.end_date, data.end_time);
-  return endDateTime > startDateTime;
-}, {
-  message: "End date and time must be after start date and time",
-  path: ["end_time"],
-});
-
-function combineDateTime(date: Date, time: string): Date {
-  const [hours, minutes] = time.split(':').map(Number);
-  const datetime = new Date(date);
-  datetime.setHours(hours, minutes);
-  return datetime;
-}
+  facebook_url: z.string().url().optional().or(z.literal("")),
+  website_url: z.string().url().optional().or(z.literal("")),
+  linkedin_url: z.string().url().optional().or(z.literal("")),
+  instagram_url: z.string().url().optional().or(z.literal("")),
+  twitter_url: z.string().url().optional().or(z.literal("")),
+}).refine(
+  (data) => {
+    // Simple date comparison since DatePicker already includes time
+    return data.end_date > data.start_date;
+  },
+  {
+    message: "End date and time must be after start date and time",
+    path: ["end_date"],
+  }
+);
 
 interface TimePickerProps {
   name: string;
@@ -193,14 +187,15 @@ export default function EventForm() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   
-  const form = useForm<z.infer<typeof formSchema>>({
+  const formData = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
-      start_time: "",
-      end_time: "",
+      start_date: "",
+      end_date: "",
       venue: "",
       cover_image: "",
       capacity: 0,
@@ -216,16 +211,14 @@ export default function EventForm() {
   // Populate the form with event data if available
   useEffect(() => {
     if (eventData && eventData.result) {
-      form.setValue("title", eventData.result.title);
-      form.setValue("description", eventData.result.description);
-      form.setValue("start_date", new Date(eventData.result.start_date));
-      form.setValue("start_time", format(new Date(eventData.result.start_date), "HH:mm"));
-      form.setValue("end_date", new Date(eventData.result.end_date));
-      form.setValue("end_time", format(new Date(eventData.result.end_date), "HH:mm"));
-      form.setValue("venue", eventData.result.venue);
-      form.setValue("capacity", eventData.result.capacity);
-      form.setValue("cover_image", eventData.result.cover_image ? eventData.result.cover_image : "");
-      form.setValue("timezone", eventData.result.timezone);
+      formData.setValue("title", eventData.result.title);
+      formData.setValue("description", eventData.result.description);
+      formData.setValue("start_date", new Date(eventData.result.start_date));
+      formData.setValue("end_date", new Date(eventData.result.end_date));
+      formData.setValue("venue", eventData.result.venue);
+      formData.setValue("capacity", parseInt(eventData.result.capacity, 10));
+      formData.setValue("cover_image", eventData.result.cover_image ? eventData.result.cover_image : "");
+      formData.setValue("timezone", eventData.result.timezone);
       // Populate other fields as necessary
       setIsEditing(true); // Set editing mode to true if event data is loaded
       setImagePreview(eventData.result.cover_image);
@@ -237,7 +230,13 @@ export default function EventForm() {
       toast.error(errorMessage); // Show error toast
       setIsLoading(false); // Set loading to false on error
     }
-  }, [eventData, eventError, form]);// Run effect when eventData changes
+
+    if(isAuthenticated && !isAuthLoading) {
+      setIsLoading(false);
+    }
+
+
+  }, [eventData, eventError, formData, isAuthenticated, isAuthLoading]);// Run effect when eventData changes
 
   // const searchVenues = (query: string) => {
   //   if (!query || query.length <= 2) {
@@ -267,7 +266,7 @@ export default function EventForm() {
   //   createEvent.mutate(data);
   //   console.log(data);
   // }
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     // Handle form submission logic
     
     const processedData = {
@@ -293,7 +292,7 @@ export default function EventForm() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
-        form.setValue('cover_image', file);
+        formData.setValue('cover_image', file);
       };
       reader.readAsDataURL(file);
     }
@@ -308,15 +307,15 @@ export default function EventForm() {
             <p className="ml-2">Loading event details...</p>
           </div>
         ) : (
-      <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" encType="multipart/form-data">
+      <Form {...formData}>
+      <form onSubmit={formData.handleSubmit(onSubmit)} className="space-y-8" encType="multipart/form-data">
             <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
               {/* Image Upload Section */}
               <div className="space-y-4">
                 <div className="rounded-none border-2 border-dashed border-gray-200 dark:border-gray-700 p-4">
                   
                   <FormField
-                    control={form.control}
+                    control={formData.control}
                     name="cover_image"
                     render={({ field: { value, onChange, ...field } }) => (
                       <FormItem>
@@ -375,7 +374,7 @@ export default function EventForm() {
                 <CardContent>
                   
                       <FormField
-                        control={form.control}
+                        control={formData.control}
                         name="title"
                         render={({ field }) => (
                           <FormItem>
@@ -389,7 +388,7 @@ export default function EventForm() {
                       />
 
                       <FormField
-                        control={form.control}
+                        control={formData.control}
                         name="description"
                         render={({ field }) => (
                           <FormItem>
@@ -410,7 +409,7 @@ export default function EventForm() {
                         <div className="flex flex-col md:flex-row md:gap-8">
                           <div className="flex items-center gap-3 flex-1">
                             <FormField
-                              control={form.control}
+                              control={formData.control}
                               name="start_date"
                               render={({ field }) => (
                                 <FormItem className="flex flex-col flex-1">
@@ -433,7 +432,7 @@ export default function EventForm() {
 
                           <div className="flex items-center gap-3 flex-1">
                             <FormField
-                              control={form.control}
+                              control={formData.control}
                               name="end_date"
                               render={({ field }) => (
                                 <FormItem className="flex flex-col flex-1">
@@ -456,7 +455,7 @@ export default function EventForm() {
                         </div>
                         <div className="flex items-center gap-3 mt-4">
                           <FormField
-                            control={form.control}
+                            control={formData.control}
                             name="timezone"
                             render={({ field }) => (
                               <FormItem className="flex flex-col flex-1">
@@ -529,7 +528,7 @@ export default function EventForm() {
                       /> */}
 
                       <FormField
-                        control={form.control}
+                        control={formData.control}
                         name="venue"
                         render={({ field }) => (
                           <FormItem>
@@ -543,7 +542,7 @@ export default function EventForm() {
                       />
 
                       <FormField
-                        control={form.control}
+                        control={formData.control}
                         name="capacity"
                         render={({ field }) => (
                           <FormItem>
@@ -553,7 +552,9 @@ export default function EventForm() {
                                 type="number"
                                 placeholder="Enter maximum capacity"
                                 {...field}
-                                className="bg-gray-50 dark:bg-zinc-900 border-gray-300 dark:border-gray-700 rounded-full "
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                                value={field.value?.toString()}
+                                className="bg-gray-50 dark:bg-zinc-900 border-gray-300 dark:border-gray-700 rounded-full"
                               />
                             </FormControl>
                             <FormMessage className="text-red-500" />
@@ -566,7 +567,7 @@ export default function EventForm() {
                         <AccordionTrigger>Social media links?</AccordionTrigger>
                         <AccordionContent>
                           <FormField
-                          control={form.control}
+                          control={formData.control}
                           name="website_url"
                           render={({ field }) => (
                             <FormItem>
@@ -587,7 +588,7 @@ export default function EventForm() {
                         />
 
                         <FormField
-                          control={form.control}
+                          control={formData.control}
                           name="facebook_url"
                           render={({ field }) => (
                             <FormItem>
@@ -608,7 +609,7 @@ export default function EventForm() {
                         />
 
                         <FormField
-                          control={form.control}
+                          control={formData.control}
                           name="instagram_url"
                           render={({ field }) => (
                             <FormItem>
@@ -629,7 +630,7 @@ export default function EventForm() {
                         />
 
                         <FormField
-                          control={form.control}
+                          control={formData.control}
                           name="twitter_url"
                           render={({ field }) => (
                             <FormItem>
@@ -650,7 +651,7 @@ export default function EventForm() {
                         />
 
                         <FormField
-                          control={form.control}
+                          control={formData.control}
                           name="linkedin_url"
                           render={({ field }) => (
                             <FormItem>

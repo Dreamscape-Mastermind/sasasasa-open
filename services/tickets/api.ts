@@ -1,21 +1,26 @@
+import { getToken } from "@/utils/utils";
+
 // Function to fetch events
 export async function fetchTickets(eventId: string) {
   // Logic to fetch events from the database or an external API
 
   try {
     // Retrieve the token from localStorage
-    const token = localStorage.getItem('token');
+    const token = getToken();
+    if (!token?.access) {
+      throw new Error('No token found');
+    }
 
-    const tickets = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/events/${eventId}/ticket-types`, {
+    const tickets = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/events/${eventId}/ticket-types`, {
         method: "GET", 
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // Add JWT token to the Authorization header
+          "Authorization": `Bearer ${token?.access}`, // Add JWT token to the Authorization header
         }
     });
     if (!tickets.ok) {
         throw new Error(`Response status: ${tickets.status}`);
-      }
+    }
     return tickets.json()
   } catch (error) {
     console.error("Error:", error);
@@ -26,13 +31,16 @@ export async function fetchTickets(eventId: string) {
 export async function createTickets(eventId, ticketData) {
   try {
       // Retrieve the token from localStorage
-      const token = localStorage.getItem('token');
+      const token = getToken();
+      if (!token?.access) {
+        throw new Error('No token found');
+      }
 
-      const newTicket = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/events/${eventId}/ticket-types`, {
+      const newTicket = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/events/${eventId}/ticket-types`, {
           method: "POST", 
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`, // Add JWT token to the Authorization header
+            "Authorization": `Bearer ${token?.access}`, // Add JWT token to the Authorization header
           },
           body: JSON.stringify({ ...ticketData }),
       });
@@ -48,13 +56,16 @@ export async function createTickets(eventId, ticketData) {
 // Function to update an event
 export async function updateTicket(eventId: string , ticketId: string , ticketData: any) {
   try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
+      if (!token?.access) {
+        throw new Error('No token found');
+      }
       
-      const updatedTicket = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/events/${eventId}/ticket-types/${ticketId}`, {
+      const updatedTicket = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/events/${eventId}/ticket-types/${ticketId}`, {
           method: "PATCH",
           headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
+              "Authorization": `Bearer ${token?.access}`,
           },
           body: JSON.stringify({ ...ticketData }),
       });
@@ -72,13 +83,16 @@ export async function updateTicket(eventId: string , ticketId: string , ticketDa
 // Function to update an event
 export async function deleteTicket(eventId: string , ticketId: string) {
   try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
+      if (!token?.access) {
+        throw new Error('No token found');
+      }
       
-      const deletedTicket = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/events/${eventId}/ticket-types/${ticketId}`, {
+      const deletedTicket = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/events/${eventId}/ticket-types/${ticketId}`, {
           method: "DELETE",
           headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
+              "Authorization": `Bearer ${token?.access}`,
           }
       });
       

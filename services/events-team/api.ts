@@ -1,12 +1,17 @@
+import { getToken } from "@/utils/utils";
+
 export async function inviteTeamMember(eventId: string, memberData: any) {
   try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
+      if (!token?.access) {
+        throw new Error('No token found');
+      }
       
-      const invitedMember = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/events/${eventId}/invite`, {
+      const invitedMember = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/events/${eventId}/invite`, {
           method: "POST",
           headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
+              "Authorization": `Bearer ${token?.access}`,
           },
           body: JSON.stringify({ ...memberData }),
       });
@@ -22,11 +27,14 @@ export async function inviteTeamMember(eventId: string, memberData: any) {
 }
 
 export async function fetchEventTeamMembers(eventId: string) {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/events/${eventId}/teams`, {
+  const token = getToken();
+  if (!token?.access) {
+    throw new Error('No token found');
+  }
+  const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/events/${eventId}/teams`, {
     method: "GET",  
     headers: {
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${token?.access}`,
       }
   });
   if (!response.ok) {

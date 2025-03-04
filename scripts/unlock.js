@@ -24,30 +24,31 @@ async function main() {
   // In v6, we use getAddress() instead of address
   console.log(`Unlock Contract deployed to: ${await unlockContract.getAddress()}`);
 
-  // create a lock with proper values matching the ABI
-  const lockArgs = {
-    _expirationDuration: 60 * 60 * 24 * 7, // 7 days
-    _tokenAddress: ethers.ZeroAddress, // ETH by using zero address
-    _keyPrice: ethers.parseEther("0.1"), // 0.1 ETH
-    _maxNumberOfKeys: 100,
-    _lockName: "A Demo Event Ticket Type i.e Lock",
-    _salt: ethers.hexlify(ethers.randomBytes(12)) // Generate random bytes12 salt
-  };
+  // Version must match the PublicLock version we're using
+  const version = 14; // Using PublicLockV14
 
-  console.log("Creating lock with args:", lockArgs);
-
-  // Create lock using the deployed Unlock contract with all required parameters
-  const createLockTx = await unlockContract.createLock(
-    lockArgs._expirationDuration,
-    lockArgs._tokenAddress,
-    lockArgs._keyPrice,
-    lockArgs._maxNumberOfKeys,
-    lockArgs._lockName,
-    lockArgs._salt // Add the bytes12 parameter
+  // Create interface for encoding the initialization parameters
+  const lockInterface = new ethers.Interface(unlockPackage.PublicLockV14.abi);
+  
+  // Encode the initialization parameters
+  const calldata = lockInterface.encodeFunctionData(
+    'initialize(address,uint256,address,uint256,uint256,string)',
+    [
+      await (await ethers.getSigners())[0].getAddress(), // lock manager address
+      60 * 60 * 24 * 7, // expirationDuration: 7 days in seconds
+      ethers.ZeroAddress, // tokenAddress: using native token (ETH)
+      ethers.parseEther("0.1"), // keyPrice: 0.1 ETH
+      100, // maxNumberOfKeys
+      "My Demo Membership Contract" // name
+    ]
   );
 
-  const receipt = await createLockTx.wait();
+  console.log("Creating upgradeable lock...");
   
+  // Create the lock using the recommended method
+  const tx = await unlockContract.createUpgradeableLockAtVersion(calldata, version);
+  const receipt = await tx.wait();
+
   // Get the NewLock event from the transaction receipt
   const newLockEvent = receipt.logs.find(log => {
     try {
@@ -66,7 +67,7 @@ async function main() {
     // Get the lock contract instance
     const lock = new ethers.Contract(
       lockAddress,
-      unlockPackage.PublicLockV15.abi,
+      unlockPackage.PublicLockV14.abi, // Updated to V14
       (await ethers.getSigners())[0]
     );
 

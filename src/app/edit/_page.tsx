@@ -1,4 +1,4 @@
-import CreateEvent from "../create/_page"
+import CreateEvent from "../(dashboard)/dashboard/events/new/page"
 
 
 export default function EditEvent() {
