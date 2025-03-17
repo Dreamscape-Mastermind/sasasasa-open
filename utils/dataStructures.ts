@@ -112,4 +112,87 @@ export interface SasasasaEvent {
   share_url?: string;
   timezone?: string;
   available_tickets?: AvailableTicket[];
+  other_tickets?: Ticket[];
 }
+
+// Use an enum for storage keys to prevent typos and enable IDE autocomplete
+export enum StorageKey {
+  USER = 'SS_USER_DATA',
+  TOKENS = 'SS_AUTH_TOKENS',
+}
+// Type the token structure
+export interface AuthTokens {
+  access: string;
+  refresh: string;
+}
+
+// Generic API response interface for reusability
+export interface ApiResponse<T> {
+  status: string;
+  message: string;
+  result: {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: T[];
+  };
+}
+
+// Single item response (for create, update, get single item operations)
+export interface SingleItemResponse<T> {
+  status: string;
+  message: string;
+  result: T;
+}
+
+// Now we can use these generic interfaces for different data types
+export type TicketResponse = ApiResponse<Ticket>;
+export type EventResponse = ApiResponse<SasasasaEvent>;
+export type TeamMemberResponse = ApiResponse<TeamMember>;
+export type FlashSaleResponse = ApiResponse<FlashSale>;
+
+// For single item responses
+export type SingleTicketResponse = SingleItemResponse<Ticket>;
+export type SingleEventResponse = SingleItemResponse<SasasasaEvent>;
+
+// Define the referral code interface
+export interface ReferralCode {
+  id: string;
+  code: string;
+  discount: number;
+  usageLimit: number;
+  usedCount: number;
+  expiryDate: string;
+  status: 'active' | 'expired' | 'depleted';
+}
+
+// Sample referral codes (to be replaced with API data later)
+export const sampleReferralCodes: ReferralCode[] = [
+  {
+    id: '1',
+    code: 'EARLY20',
+    discount: 20,
+    usageLimit: 100,
+    usedCount: 45,
+    expiryDate: '2024-12-31T23:59:59Z',
+    status: 'active'
+  },
+  {
+    id: '2',
+    code: 'FRIEND15',
+    discount: 15,
+    usageLimit: 50,
+    usedCount: 50,
+    expiryDate: '2024-12-31T23:59:59Z',
+    status: 'depleted'
+  },
+  {
+    id: '3',
+    code: 'VIP25',
+    discount: 25,
+    usageLimit: 75,
+    usedCount: 30,
+    expiryDate: '2024-11-30T23:59:59Z',
+    status: 'expired'
+  }
+];

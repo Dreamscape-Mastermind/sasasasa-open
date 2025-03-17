@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -24,65 +25,102 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
+import { useEvent } from '@/contexts/event-context';
+import { Ticket, TicketResponse } from '@/utils/dataStructures';
 
-const metrics = [
-  {
-    title: 'Total Revenue',
-    value: '$45,231',
-    change: '+20.1%',
-    trend: 'up',
-    description: 'Compared to last month',
-  },
-  {
-    title: 'Ticket Sales',
-    value: '1,234',
-    change: '+15.3%',
-    trend: 'up',
-    description: 'Compared to last month',
-  },
-  {
-    title: 'Active Events',
-    value: '12',
-    change: '+2',
-    trend: 'up',
-    description: 'New events this month',
-  },
-  {
-    title: 'Attendees',
-    value: '3,123',
-    change: '+12.5%',
-    trend: 'up',
-    description: 'Compared to last month',
-  },
-];
+export default function AnalyticsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { currentEvent, tickets, loading, error, setCurrentEventId } = useEvent();
+  
 
-const topEvents = [
-  {
-    name: 'Tech Conference 2025',
-    sales: 450,
-    revenue: 89999,
-    conversion: 68,
-  },
-  {
-    name: 'Music Festival',
-    sales: 380,
-    revenue: 75640,
-    conversion: 64,
-  },
-  {
-    name: 'Food & Wine Expo',
-    sales: 290,
-    revenue: 43200,
-    conversion: 59,
-  },
-];
+  useEffect(() => {
+    const loadParams = async () => {
+      const { id } = await params;
+      setCurrentEventId(id);
+    }
+    loadParams();
 
-export default function AnalyticsPage() {
+  }, []);
+
+  useEffect(() => {
+    const loadParams = async () => {
+      const { id } = await params;
+      if (id !== currentEvent?.id) {
+        setCurrentEventId(id);
+      }
+    }
+    loadParams();
+  }, [params])
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
+  if (!currentEvent) {
+    return <div>Event not found</div>;
+  }
+
+  const ticketsArray: Ticket[] = Array.isArray(tickets) ? tickets : 
+    (tickets as TicketResponse)?.result?.results || [];
+
+  const metrics = [
+    {
+      title: 'Total Revenue',
+      value: `$${ticketsArray.reduce((acc, ticket) => {
+        const price = typeof ticket.price === 'string' ? parseFloat(ticket.price) : ticket.price;
+        return acc + (price || 0);
+      }, 0).toLocaleString()}`,
+      change: '+20.1%',
+      trend: 'up',
+      description: 'Compared to last month',
+    },
+    {
+      title: 'Ticket Sales',
+      value: ticketsArray.length.toString(),
+      change: '+15.3%',
+      trend: 'up',
+      description: 'Compared to last month',
+    },
+    {
+      title: 'Active Events',
+      value: '1',
+      change: '0',
+      trend: 'up',
+      description: 'Current event',
+    },
+    {
+      title: 'Attendees',
+      value: ticketsArray.length.toString(),
+      change: '+12.5%',
+      trend: 'up',
+      description: 'Compared to last month',
+    },
+  ];
+
+  const totalRevenue = ticketsArray.reduce((acc, ticket) => {
+    const price = typeof ticket.price === 'string' ? parseFloat(ticket.price) : ticket.price;
+    return acc + (price || 0);
+  }, 0);
+  
+  const totalSales = ticketsArray.length;
+
+  const topEvents = [
+    {
+      name: currentEvent.name,
+      sales: totalSales,
+      revenue: totalRevenue,
+      conversion: Math.round((totalSales / (totalSales + 10)) * 100), // Example conversion calculation
+    },
+  ];
+
   return (
     <div className="space-y-6 animate-in">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Analytics</h1>
+          <h1 className="text-3xl font-bold">{currentEvent.name} Analytics</h1>
           <p className="text-muted-foreground">
             Track your event performance and metrics
           </p>

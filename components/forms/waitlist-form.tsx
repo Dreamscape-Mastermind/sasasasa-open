@@ -79,7 +79,7 @@ export function WaitlistForm() {
 
       if (response.ok) {
         setSuccess('Please check your email for the verification code.')
-        router.push(`/verify-otp?email=${encodeURIComponent(values.email)}`)
+        router.push(`/verify-otp?email=${encodeURIComponent(values.email)}&type=waitlist`)
       } else {
         setError(data.error || 'Something went wrong, please try again.')
       }

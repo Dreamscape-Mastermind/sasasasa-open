@@ -67,14 +67,14 @@ const SettingsContent = () => (
 )
 
 export default function Dashboard() {
-  const { user, logout, isAuthenticated } = useAuth()
+  const { user, logout, isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/')
+    if (!isAuthenticated && !isLoading) {
+      router.push('/login')
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, isLoading, router])
 
   if (!user) return null
 

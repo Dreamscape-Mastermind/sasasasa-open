@@ -17,18 +17,28 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePathname, useRouter } from "next/navigation";
-
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchEvents } from "services/events/api";
 
-const events = [
-  { id: 1, name: "Event 1" },
-  { id: 2, name: "Event 2" },
-  { id: 3, name: "Event 3" },
-];
+// Borrow the interfaces from dashboard page
+interface ApiResponse {
+  status: string;
+  message: string;
+  result: {
+    count: number;
+    results: Event[];
+  };
+}
+
+interface Event {
+  id: string;
+  title: string;
+  status: "PUBLISHED" | "DRAFT";
+}
 
 const eventMenus = [
   {
@@ -94,29 +104,43 @@ const userMenus = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [selectedEvent, setSelectedEvent] = useState(events[0]);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+
+  // Fetch events data
+  const { data: eventsData, isLoading } = useQuery<ApiResponse>({
+    queryKey: ["events"],
+    queryFn: fetchEvents,
+  });
+
+  // Get the currently selected event
+  const selectedEvent = useMemo(() => {
+    if (!eventsData?.result.results || !selectedEventId) {
+      // Default to first event if none selected
+      return eventsData?.result.results[0];
+    }
+    return eventsData.result.results.find(event => event.id === selectedEventId);
+  }, [eventsData, selectedEventId]);
 
   return (
     <div className="space-y-4 py-4 flex flex-col h-full bg-card">
       {/* Event Dropdown */}
       <div className="px-3 py-2">
         <Select
-          value={selectedEvent.id.toString()}
+          value={selectedEventId || eventsData?.result.results[0]?.id}
           onValueChange={(value) => {
-            const event = events.find((event) => event.id === parseInt(value));
-            if (event) {
-              setSelectedEvent(event);
-              router.push(`/dashboard/events/${event.id}/analytics`);
-            }
+            setSelectedEventId(value);
+            router.push(`/dashboard/events/${value}/analytics`);
           }}
         >
           <SelectTrigger className="mb-4 w-full">
-            <SelectValue placeholder="Select an event" />
+            <SelectValue placeholder="Select an event">
+              {selectedEvent?.title || "Select an event"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {events.map((event) => (
-              <SelectItem key={event.id} value={event.id.toString()}>
-                {event.name}
+            {eventsData?.result.results.map((event) => (
+              <SelectItem key={event.id} value={event.id}>
+                {event.title}
               </SelectItem>
             ))}
           </SelectContent>
@@ -133,7 +157,7 @@ export function Sidebar() {
                 key={menu.href}
                 href={menu.href.replace(
                   "{eventId}",
-                  selectedEvent.id.toString()
+                  selectedEventId || eventsData?.result.results[0]?.id || ""
                 )}
               >
                 <Button
@@ -141,7 +165,7 @@ export function Sidebar() {
                     pathname.includes(
                       menu.href.replace(
                         "{eventId}",
-                        selectedEvent.id.toString()
+                        selectedEventId || eventsData?.result.results[0]?.id || ""
                       )
                     )
                       ? "secondary"
@@ -152,7 +176,7 @@ export function Sidebar() {
                     pathname.includes(
                       menu.href.replace(
                         "{eventId}",
-                        selectedEvent.id.toString()
+                        selectedEventId || eventsData?.result.results[0]?.id || ""
                       )
                     ) && "bg-primary text-primary-foreground font-medium"
                   )}

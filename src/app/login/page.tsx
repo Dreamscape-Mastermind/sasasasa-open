@@ -44,7 +44,7 @@ export default function Login() {
       const data = await response.json()
 
       if (response.ok) {
-        router.push(`/verify-otp?email=${encodeURIComponent(values.email)}`)
+        router.push(`/verify-otp?email=${encodeURIComponent(values.email)}&type=login`)
       } else {
         setError(data.error || 'Failed to send verification code')
       }
