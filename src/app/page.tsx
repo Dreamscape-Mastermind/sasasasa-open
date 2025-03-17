@@ -112,15 +112,15 @@ export default async function Home() {
                 gatherings to grand celebrations, make every moment
                 unforgettable.
               </p>
-              <div className="flex gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/dashboard">
-                  <Button size="lg" className="gap-2">
+                  <Button size="lg" className="gap-2 w-full sm:w-auto">
                     Get Started
                     <Calendar className="h-4 w-4" />
                   </Button>
                 </Link>
                 <Link href="/e">
-                  <Button size="lg" variant="outline" className="gap-2">
+                  <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto">
                     Browse Events
                     <Ticket className="h-4 w-4" />
                   </Button>
@@ -193,7 +193,7 @@ export default async function Home() {
         {/* Features Section */}
         <div className="container mx-auto px-4 py-24 bg-muted/50">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold mb-4">Why Choose EventFlow?</h2>
+            <h2 className="text-3xl font-bold mb-4">Why Choose Sasasasa?</h2>
             <p className="text-muted-foreground">
               Everything you need to create and manage successful events, all in
               one place.
@@ -234,10 +234,10 @@ export default async function Home() {
         </div>
 
         {/* Promoted Events */}
-        <div className="container mx-auto px-4 py-16">
-          <div className="space-y-8">
-            <h2 className="text-3xl font-bold">Special Offers</h2>
-            <div className="grid lg:grid-cols-2 gap-6">
+        <div className="container mx-auto px-4 py-8 sm:py-16">
+          <div className="space-y-6 sm:space-y-8">
+            <h2 className="text-2xl sm:text-3xl font-bold">Special Offers</h2>
+            <div className="grid gap-4 sm:gap-6">
               {featuredEvents
                 .filter((event) => event.discount > 0)
                 .map((event) => (
@@ -247,9 +247,9 @@ export default async function Home() {
                     className="group"
                   >
                     <div className="relative overflow-hidden rounded-lg bg-card">
-                      <div className="flex">
-                        <div className="w-1/3">
-                          <div className="aspect-square relative">
+                      <div className="flex flex-col sm:flex-row">
+                        <div className="w-full sm:w-1/3">
+                          <div className="aspect-video sm:aspect-square relative">
                             <img
                               src={event.image}
                               alt={event.title}
@@ -257,37 +257,35 @@ export default async function Home() {
                             />
                           </div>
                         </div>
-                        <div className="w-2/3 p-6 flex flex-col justify-between">
+                        <div className="w-full sm:w-2/3 p-4 sm:p-6 flex flex-col justify-between">
                           <div>
-                            <div className="flex justify-between items-start">
-                              <h3 className="font-semibold text-xl">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0">
+                              <h3 className="font-semibold text-lg sm:text-xl line-clamp-2">
                                 {event.title}
                               </h3>
-                              <div className="bg-primary text-white px-3 py-1 rounded-full text-sm font-medium">
+                              <div className="bg-primary text-white px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap self-start">
                                 {event.discount}% OFF
                               </div>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-                              <Calendar className="h-4 w-4" />
-                              {event.date}
+                              <Calendar className="h-4 w-4 flex-shrink-0" />
+                              <span className="truncate">{event.date}</span>
                             </div>
-                            <p className="mt-4 text-muted-foreground">
+                            <p className="mt-2 sm:mt-4 text-sm sm:text-base text-muted-foreground line-clamp-2">
                               Don't miss this special offer for an amazing event
                               experience!
                             </p>
                           </div>
-                          <div className="flex items-center justify-between mt-4">
-                            <div className="text-sm text-muted-foreground">
+                          <div className="flex items-center justify-between mt-3 sm:mt-4">
+                            <div className="text-sm text-muted-foreground truncate max-w-[40%]">
                               {event.location}
                             </div>
-                            <div>
-                              <span className="font-semibold text-lg">
-                                $
-                                {event.price -
-                                  (event.price * event.discount) / 100}
+                            <div className="text-right">
+                              <span className="font-semibold text-base sm:text-lg">
+                                ${(event.price - (event.price * event.discount) / 100).toFixed(2)}
                               </span>
-                              <span className="text-sm text-muted-foreground line-through ml-2">
-                                ${event.price}
+                              <span className="text-xs sm:text-sm text-muted-foreground line-through ml-2">
+                                ${event.price.toFixed(2)}
                               </span>
                             </div>
                           </div>
@@ -307,7 +305,7 @@ export default async function Home() {
               Ready to Create Your Event?
             </h2>
             <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join thousands of event organizers who trust EventFlow to create
+              Join thousands of event organizers who trust Sasasasa to create
               memorable experiences for their attendees.
             </p>
             <Link href="/dashboard">

@@ -81,18 +81,25 @@ export default function RootLayout({
         ))}
       </head>
       <body
-        className={`${sen.variable} ${anton.variable} antialiased "bg-white pl-[calc(100vw-100%)] text-black dark:bg-gray-950 dark:text-white`}
+        className={`${sen.variable} ${anton.variable} antialiased bg-white text-black dark:bg-gray-950 dark:text-white`}
       >
         <AuthProvider>
           <ThemeProviders>
             <Providers>
-              <SectionContainer>
-                <Header />
-                <main className="mb-auto">{children}</main>
-                <Footer />
-                <Sidebar />
-                <Toaster />
-              </SectionContainer>
+              {!children?.toString().includes('DashboardLayout') ? (
+                <SectionContainer>
+                  <Header />
+                  <main className="mb-auto">{children}</main>
+                  <Footer />
+                  <Sidebar />
+                  <Toaster />
+                </SectionContainer>
+              ) : (
+                <>
+                  {children}
+                  <Toaster />
+                </>
+              )}
             </Providers>
           </ThemeProviders>
         </AuthProvider>

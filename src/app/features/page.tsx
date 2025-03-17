@@ -214,7 +214,7 @@ export default function FeaturesPage() {
             Ready to Start Creating Events?
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands of event organizers who trust EventFlow to create
+            Join the diverse community of event organizers who trust Sasasasa to create
             memorable experiences for their attendees.
           </p>
           <div className="flex gap-4 justify-center">

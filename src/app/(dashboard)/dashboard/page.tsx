@@ -31,6 +31,11 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "services/events/api";
 import { ApiResponse, sampleReferralCodes, SasasasaEvent } from "@/utils/dataStructures";
+import { useAuth } from "@/contexts/AuthContext";
+import { redirect } from "next/navigation";
+import { cn } from "@/lib/utils";
+
+const shimmerClass = "animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent";
 
 const eventCategories = [
   {
@@ -99,9 +104,9 @@ const socialLinks = [
 export default function DashboardPage() {
   // Keep track of selected event
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-
+  const { isAuthenticated, isLoading: isLoadingAuth } = useAuth();
   // Fetch events data
-  const { data: eventsData, isLoading } = useQuery<ApiResponse>({
+  const { data: eventsData, isLoading } = useQuery<ApiResponse<SasasasaEvent>>({
     queryKey: ["events"],
     queryFn: fetchEvents,
   });
@@ -142,7 +147,44 @@ export default function DashboardPage() {
     enabled: !!selectedEventId,
   });
 
-  if (isLoading) return <div>Loading...</div>;
+
+  if (isLoading || isLoadingAuth) {
+    return (
+      <div className="space-y-8 animate-in">
+        {/* Event Selector Skeleton */}
+        <div className="flex justify-between items-center">
+          <div className="relative w-96">
+            <div className="h-10 bg-muted/10 rounded-md" />
+          </div>
+          <div className="h-10 w-32 bg-muted/10 rounded-md" />
+        </div>
+
+        {/* Ticket Sales Overview Skeleton */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className={cn("col-span-2 h-[350px] rounded-xl bg-muted/10", shimmerClass)} />
+          <div className={cn("h-[350px] rounded-xl bg-muted/10", shimmerClass)} />
+        </div>
+
+        {/* Event Categories Skeleton */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {Array(4).fill(0).map((_, i) => (
+            <div key={i} className={cn("h-[120px] rounded-xl bg-muted/10", shimmerClass)} />
+          ))}
+        </div>
+
+        {/* Recent Attendees and Referral Skeleton */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {Array(2).fill(0).map((_, i) => (
+            <div key={i} className={cn("h-[400px] rounded-xl bg-muted/10", shimmerClass)} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+  
+  if(!isAuthenticated) {
+    redirect("/login");
+  }
 
   return (
     <div className="space-y-8 animate-in">

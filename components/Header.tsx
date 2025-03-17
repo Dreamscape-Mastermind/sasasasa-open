@@ -67,7 +67,7 @@ const Header = () => {
   };
 
   let headerClass =
-    "flex items-center w-full bg-white dark:bg-gray-950 justify-between py-10";
+    "flex items-center w-full dark:bg-gray-950 justify-between py-10";
   if (siteMetadata.stickyNav) {
     headerClass += " sticky top-0 z-50";
   }
@@ -120,7 +120,10 @@ const Header = () => {
           </span>
         </Button> */}
         <Link href="/dashboard">
-          <Button className="flex items-center space-x-2">
+          <Button size="icon" variant="ghost" className="sm:hidden">
+            <DashboardIcon className="h-5 w-5" />
+          </Button>
+          <Button className="hidden sm:flex items-center space-x-2">
             <DashboardIcon className="h-5 w-5" />
             <span>Go to Dashboard</span>
           </Button>
