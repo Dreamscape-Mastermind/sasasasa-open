@@ -28,6 +28,24 @@ export interface Ticket {
   is_active: boolean;
   flash_sale: FlashSale | null;
   created_at: string;
+  event_id: string;
+  metadata?: Record<string, any>
+  eventName?: string
+  date?: string
+  time?: string
+  venue?: string
+  section?: string
+  row?: string
+  seat?: string
+  isBlockchainVerified?: boolean
+  transferLimit?: number
+  transfersUsed?: number
+  tokenId?: string
+  images?: string[]
+  user_id?: string
+  ticket_type?: string
+  status?: string
+  purchase_date?: string
 }
 
 export interface Event {

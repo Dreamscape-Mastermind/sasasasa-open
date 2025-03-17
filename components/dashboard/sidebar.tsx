@@ -84,6 +84,11 @@ const userMenus = [
     icon: Settings,
     href: "/dashboard/settings",
   },
+  {
+    label: "My Purchases",
+    icon: Ticket,
+    href: "/dashboard/purchases",
+  },
 ];
 
 export function Sidebar() {
@@ -120,8 +125,8 @@ export function Sidebar() {
 
       {/* Event Menus Section */}
       <div className="px-3">
-        <div className="bg-purple-400 p-4 rounded-lg ">
-          <h3 className="font-bold text-lg text-white">Event Management</h3>
+        <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
+          <h3 className="font-bold text-lg text-foreground">Event Management</h3>
           <div className="space-y-1">
             {eventMenus.map((menu) => (
               <Link
@@ -149,11 +154,11 @@ export function Sidebar() {
                         "{eventId}",
                         selectedEvent.id.toString()
                       )
-                    ) && "bg-blue-500 text-white font-bold"
+                    ) && "bg-primary text-primary-foreground font-medium"
                   )}
                 >
-                  <menu.icon className="h-4 w-4 text-white" />
-                  <span className="text-white">{menu.label}</span>
+                  <menu.icon className="h-4 w-4" />
+                  <span>{menu.label}</span>
                 </Button>
               </Link>
             ))}
@@ -163,8 +168,8 @@ export function Sidebar() {
 
       {/* User Menus Section */}
       <div className="px-3">
-        <div className="p-4 rounded-lg bg-gray-800">
-          <h3 className="font-bold text-lg text-white">User Settings</h3>
+        <div className="p-4 rounded-lg bg-muted/50 border border-border">
+          <h3 className="font-bold text-lg text-foreground">User Settings</h3>
           <ScrollArea className="flex-1">
             <div className="p-3 space-y-1">
               {userMenus.map((menu) => (
@@ -174,11 +179,11 @@ export function Sidebar() {
                     className={cn(
                       "w-full justify-start gap-2",
                       pathname === menu.href &&
-                        "bg-blue-500 text-white font-bold"
+                        "bg-primary text-primary-foreground font-medium"
                     )}
                   >
-                    <menu.icon className="h-4 w-4 text-white" />
-                    <span className="text-white">{menu.label}</span>
+                    <menu.icon className="h-4 w-4" />
+                    <span>{menu.label}</span>
                   </Button>
                 </Link>
               ))}
