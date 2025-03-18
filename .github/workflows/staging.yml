@@ -47,9 +47,16 @@ jobs:
             # Explicitly set PROJECT_PATH
             export PROJECT_PATH="${{ secrets.PROJECT_PATH }}"
 
+            export NEXT_PUBLIC_REOWN_PROJECT_ID="${{ secrets.NEXT_PUBLIC_REOWN_PROJECT_ID }}"
+
             # Verify PROJECT_PATH is set
             if [ -z "$PROJECT_PATH" ]; then
                 echo "ERROR: PROJECT_PATH is not set"
+                exit 1
+            fi
+
+            if [ -z "$NEXT_PUBLIC_REOWN_PROJECT_ID" ]; then
+                echo "ERROR: NEXT_PUBLIC_REOWN_PROJECT_ID is not set"
                 exit 1
             fi
 

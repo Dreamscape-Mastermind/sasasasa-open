@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../co
 import { Input } from '../../../components/ui/input'
 import { Button } from '../../../components/ui/button'
 import Image from 'next/image'
+import { AppKit } from 'contexts/AppKit'
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -69,11 +70,14 @@ export default function Login() {
           />
           <h2 className="mt-6 text-3xl font-bold">Welcome Back</h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-200">
-            Enter your email to receive a verification code
+            Sign in to get started
           </p>
+          <div className='mt-4 flex justify-center'>
+            <AppKit/>
+          </div>
         </div>
 
-        <Form {...form}>
+        {/* <Form {...form}>
           {error && (
             <p className="text-red-500 text-sm text-center">{error}</p>
           )}
@@ -104,7 +108,7 @@ export default function Login() {
               {loading ? 'Sending Code...' : 'Continue with Email'}
             </Button>
           </form>
-        </Form>
+        </Form> */}
       </div>
     </div>
   )
