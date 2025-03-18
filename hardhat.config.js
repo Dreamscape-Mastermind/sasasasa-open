@@ -4,7 +4,16 @@ require('dotenv').config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.28",
+  solidity: {
+    version: "0.8.28",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      },
+      evmVersion: "paris"
+    }
+  },
   networks: {
     localhost: {
       url: "http://127.0.0.1:8545",
@@ -27,6 +36,8 @@ module.exports = {
       },
       url: "https://scroll-sepolia-rpc.publicnode.com", // Replace with the correct Scroll zkEVM RPC URL
       accounts: [process.env.ACCOUNT_PRIVATE_KEY], // Use your private key from the .env file
+      gasLimit: 5000000,
+      timeout: 120000 // 2 minutes
     },
   },
 };

@@ -66,6 +66,7 @@
     "next": "^15.0.1",
     "next-themes": "^0.3.0",
     "nodemailer": "^6.9.15",
+    "pinata": "^2.1.0",
     "react": "^18.3.1",
     "react-confetti": "^6.1.0",
     "react-datepicker": "^7.5.0",
