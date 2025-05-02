@@ -2,17 +2,24 @@ import "./globals.css";
 
 import { Anton, Sen } from "next/font/google";
 
-import { AuthProvider } from "@/contexts/AuthContext";
 import Footer from "@/components/Footer";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Header from "@/components/Header";
 import { Metadata } from "next";
 import Providers from "@/components/providers/query-provider";
-import SectionContainer from "@/components/SectionContainer";
 import { Sidebar } from "@/components/Sidebar";
-import { ThemeProviders } from "@/components/providers/theme-providers";
-import { Toaster } from "react-hot-toast";
-import siteMetadata from "@/data/siteMetadata";
+import siteMetadata from "@/config/siteMetadata";
+
+// import localFont from "next/font/local";
+
+// const geist = localFont({
+//   src: "../assets/fonts/GeistMonoVF.woff",
+//   variable: "--font-geist-mono",
+// });
+// const geist = localFont({
+//   src: "../assets/fonts/GeistVF.woff",
+//   variable: "--font-geist",
+// });
 
 const sen = Sen({
   subsets: ["latin"],
@@ -65,7 +72,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const basePath = process.env.BASE_PATH || "";
   return (
     <html lang={siteMetadata.language} suppressHydrationWarning>
       <head>
@@ -83,19 +89,12 @@ export default function RootLayout({
       <body
         className={`${sen.variable} ${anton.variable} antialiased "bg-white pl-[calc(100vw-100%)] text-black dark:bg-gray-950 dark:text-white`}
       >
-        <AuthProvider>
-          <ThemeProviders>
-            <Providers>
-              <SectionContainer>
-                <Header />
-                <main className="mb-auto">{children}</main>
-                <Footer />
-                <Sidebar />
-                <Toaster />
-              </SectionContainer>
-            </Providers>
-          </ThemeProviders>
-        </AuthProvider>
+        <Providers>
+          <Header />
+          <main className="min-h-screen">{children}</main>
+          <Footer />
+          <Sidebar />
+        </Providers>
       </body>
       <GoogleAnalytics gaId={siteMetadata.googleAnalyticsId} />
     </html>

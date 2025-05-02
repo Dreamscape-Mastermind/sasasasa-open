@@ -1,0 +1,74 @@
+@startuml Sasasasa Checkout Flow - Sequence Diagram
+
+!define MUTED_RED #E57373
+!define MUTED_BLUE #90CAF9
+!define MUTED_GREEN #A5D6A7
+!define MUTED_ORANGE #FFCC80
+!define MUTED_PURPLE #CE93D8
+!define MUTED_GRAY #BDBDBD
+
+skinparam backgroundColor white
+skinparam ArrowColor MUTED_GRAY
+skinparam SequenceLifeLineBorderColor MUTED_GRAY
+skinparam SequenceGroupBorderColor MUTED_GRAY
+skinparam SequenceGroupBackgroundColor MUTED_BLUE
+skinparam ParticipantBackgroundColor MUTED_BLUE
+skinparam ParticipantBorderColor #7986CB
+skinparam NoteBackgroundColor MUTED_ORANGE
+skinparam NoteBorderColor #FFB74D
+skinparam ActorBackgroundColor MUTED_PURPLE
+skinparam ActorBorderColor #BA68C8
+
+actor User
+participant "EventDetails" as ED
+participant "Tickets" as T
+participant "Checkout" as C
+participant "Payment Provider" as PP
+participant "PaymentVerifyAPI" as PV
+participant "CheckoutCallback" as CC
+
+User -> ED: View event
+activate ED
+ED -> T: Display tickets
+activate T
+User -> T: Select tickets
+T -> T: Update quantities
+User -> T: Click Checkout
+T -> C: Open checkout (isOpen=true)
+activate C
+User -> C: Fill customer details
+User -> C: Submit form
+C -> C: Validate form & tickets
+C -> C: Set step='processing'
+
+alt Free tickets
+    C -> PV: Verify free ticket transaction
+    activate PV
+    PV --> C: Return verification result
+    deactivate PV
+    C -> C: Set step='success'
+else Paid tickets
+    C -> PP: Redirect to payment provider
+    deactivate C
+    PP -> CC: Redirect after payment
+    activate CC
+    CC -> PV: Verify payment
+    activate PV
+    PV --> CC: Return verification result
+    deactivate PV
+    
+    alt Payment successful
+        CC -> CC: Display success dialog
+    else Payment failed
+        CC -> CC: Display error dialog
+    end
+    
+    User -> CC: Close dialog
+    CC -> ED: Return to event page
+    deactivate CC
+end
+
+deactivate T
+deactivate ED
+
+@enduml 
