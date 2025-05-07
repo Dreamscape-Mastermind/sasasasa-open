@@ -6,7 +6,6 @@ import {
   RefreshTokenRequest,
   RolesResponse,
   TokenResponse,
-  UpdateProfileRequest,
   UserResponse,
   VerifyOtpRequest,
 } from "@/types";
@@ -94,10 +93,15 @@ export const userApi = {
   },
 
   // Updates the user's profile information
-  updateProfile: async (data: UpdateProfileRequest) => {
+  updateProfile: async (data: FormData) => {
     const response = await axios.patch<UserResponse>(
       "/api/v1/accounts/profile",
-      data
+      data,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data.result;
   },

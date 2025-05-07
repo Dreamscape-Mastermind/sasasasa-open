@@ -64,7 +64,7 @@ export async function generateMetadata(
 }
 
 // Use dynamic import for client component
-const EventDetails = dynamic(() => import("@/components/EventDetails"), {
+const EventDetails = dynamic(() => import("@/components/events/EventDetails"), {
   loading: () => <Spinner />,
 });
 

@@ -1,20 +1,33 @@
 "use client";
 
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
+import { DashboardIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import Link from "./Link";
 import MobileNav from "./MobileNav";
-import { ShoppingCart } from "lucide-react";
+import { NotificationPopover } from "./notifications/NotificationPopover";
+import { ProfileDropdown } from "./profile/ProfileDropdown";
 import ThemeSwitch from "./ThemeSwitch";
 import headerNavLinks from "@/lib/headerNavLinks";
 import siteMetadata from "@/config/siteMetadata";
+import { useAuth } from "@/components/providers/auth-provider";
+import { useLogger } from "@/lib/hooks/useLogger";
 import { useSidebar } from "@/components/providers/SidebarContext";
 
 const Header = () => {
-  const headerClass =
-    "fixed top-0 left-0 right-0 flex items-center w-full bg-background justify-between py-6 px-4 md:px-8 z-50 border-b";
+  let headerClass =
+    "flex items-center w-full bg-white dark:bg-gray-950 justify-between py-10";
+  if (siteMetadata.stickyNav) {
+    headerClass += " sticky top-0 z-50";
+  }
 
   const { openSidebar } = useSidebar();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const logger = useLogger({ context: "Header" });
+
+  const handleDashboardClick = () => {
+    logger.info("Dashboard link clicked", { userId: user?.id });
+  };
 
   return (
     <>
@@ -51,11 +64,24 @@ const Header = () => {
                 </Link>
               ))}
           </nav>
+
+          {!isLoading && isAuthenticated && (
+            <>
+              <Link href="/dashboard" onClick={handleDashboardClick}>
+                <Button className="flex items-center space-x-2">
+                  <DashboardIcon className="h-5 w-5" />
+                  <span>Go to Dashboard</span>
+                </Button>
+              </Link>
+              <NotificationPopover />
+            </>
+          )}
+
+          <ProfileDropdown />
           <ThemeSwitch />
           <MobileNav />
         </div>
       </header>
-      <div className="h-[96px]" />
     </>
   );
 };

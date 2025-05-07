@@ -1,5 +1,6 @@
 const routePermissions: Record<string, string[]> = {
   // Dashboard routes
+  "/dashboard": ["ADMIN", "EVENT_ORGANIZER", "EVENT_TEAM", "CUSTOMER"],
   "/dashboard/analytics": ["ADMIN", "EVENT_ORGANIZER"],
   "/dashboard/events/new": ["ADMIN", "EVENT_ORGANIZER"],
   "/dashboard/team": ["ADMIN", "EVENT_ORGANIZER"],
@@ -78,3 +79,17 @@ const routePermissions: Record<string, string[]> = {
   "/tickets/[ticketId]": ["CUSTOMER", "ADMIN", "EVENT_ORGANIZER", "EVENT_TEAM"],
   "/tickets/[ticketId]/refund": ["CUSTOMER", "ADMIN", "EVENT_ORGANIZER"],
 };
+
+const publicRoutes = [
+  "/",
+  "/about",
+  "/login",
+  "/register",
+  "/checkout",
+  "/checkout/callback",
+  "/terms",
+  "/privacy",
+  "/e/[slug]",
+];
+
+export { routePermissions, publicRoutes };

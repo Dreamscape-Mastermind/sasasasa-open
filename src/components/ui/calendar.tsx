@@ -1,13 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { DayPicker } from "react-day-picker";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, getDefaultClassNames } from "react-day-picker";
-
-import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
+import { buttonVariants } from "@/components/ui/button";
 // import 'react-day-picker/dist/style.css';
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
@@ -36,7 +33,8 @@ function Calendar({
         nav_button_next: "absolute right-1",
         table: "w-full border-collapse space-y-1",
         head_row: "flex w-full mt-2",
-        head_cell: "text-muted-foreground w-12 text-sm font-medium text-center",
+        head_cell:
+          "text-muted-foreground w-12 text-sm font-medium text-center",
         row: "flex w-full mt-2",
         cell: cn(
           "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md",
@@ -60,16 +58,14 @@ function Calendar({
         day_hidden: "invisible",
         ...classNames,
       }}
-      components={
-        {
-          // PreviousMonthButton: ({ ...props }) => (
-          //   <ChevronLeft className="h-4 w-4" />
-          // ),
-          // NextMonthButton: ({ ...props }) => (
-          //   <ChevronRight className="h-4 w-4" />
-          // ),
-        }
-      }
+      components={{
+        // PreviousMonthButton: ({ ...props }) => (
+        //   <ChevronLeft className="h-4 w-4" />
+        // ),
+        // NextMonthButton: ({ ...props }) => (
+        //   <ChevronRight className="h-4 w-4" />
+        // ),
+      }}
       {...props}
     />
   );

@@ -18,7 +18,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isFlashSaleValid } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 import { useForm } from "react-hook-form";
+import { useLogger } from "@/lib/hooks/useLogger";
 import { usePurchaseTickets } from "@/lib/hooks/useTickets";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -32,6 +34,7 @@ interface CheckoutProps {
   onClose: () => void;
   total: number;
   tickets: TicketType[];
+  slug: string;
 }
 
 type FormData = {
@@ -73,8 +76,15 @@ const hasValidFlashSale = (tickets: TicketType[]): boolean => {
   );
 };
 
-export function Checkout({ isOpen, onClose, total, tickets }: CheckoutProps) {
+export function Checkout({
+  isOpen,
+  onClose,
+  total,
+  tickets,
+  slug,
+}: CheckoutProps) {
   const router = useRouter();
+  const logger = useLogger({ context: "Checkout" });
   const [step, setStep] = useState<CheckoutStep>("details");
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -117,6 +127,12 @@ export function Checkout({ isOpen, onClose, total, tickets }: CheckoutProps) {
   const onSubmit = async (data: FormData) => {
     // Add ticket limit validation
     if (totalTickets > 10) {
+      logger.warn("Ticket limit exceeded", { totalTickets });
+      trackEvent({
+        event: "checkout_error",
+        error_type: "ticket_limit_exceeded",
+        total_tickets: totalTickets,
+      });
       setError("Maximum 10 tickets allowed per order");
       setStep("error");
       return;
@@ -124,8 +140,10 @@ export function Checkout({ isOpen, onClose, total, tickets }: CheckoutProps) {
 
     // Early validation and logging
     if (!data || !data.email) {
-      await logEvent("CHECKOUT_VALIDATION_ERROR", {
-        error: "Missing required form data",
+      logger.error("Missing required form data", { formData: data });
+      trackEvent({
+        event: "checkout_error",
+        error_type: "missing_form_data",
         formData: data,
       });
       setError("Missing required form data");
@@ -135,10 +153,14 @@ export function Checkout({ isOpen, onClose, total, tickets }: CheckoutProps) {
 
     // Validate tickets data
     if (!filteredTickets || filteredTickets.length === 0) {
-      await logEvent("CHECKOUT_VALIDATION_ERROR", {
-        error: "No valid tickets in cart",
+      logger.error("No valid tickets in cart", {
         tickets: filteredTickets,
         rawTickets: tickets,
+      });
+      trackEvent({
+        event: "checkout_error",
+        error_type: "no_valid_tickets",
+        tickets: filteredTickets,
       });
       setError("No valid tickets selected");
       setStep("error");
@@ -146,6 +168,11 @@ export function Checkout({ isOpen, onClose, total, tickets }: CheckoutProps) {
     }
 
     setStep("processing");
+    logger.info("Starting checkout process", {
+      email: data.email,
+      total,
+      ticketCount: filteredTickets.reduce((sum, t) => sum + t.quantity, 0),
+    });
 
     // Prepare the ticket purchase payload
     const ticketItems: TicketPurchaseItem[] = filteredTickets.map((ticket) => ({
@@ -164,9 +191,9 @@ export function Checkout({ isOpen, onClose, total, tickets }: CheckoutProps) {
 
     try {
       // Log checkout attempt with device info
-      await logEvent("CHECKOUT_ATTEMPT", {
+      logger.info("Checkout attempt", {
         email: data.email,
-        total: total,
+        total,
         ticketCount: filteredTickets.reduce((sum, t) => sum + t.quantity, 0),
         flashSales: filteredTickets
           .filter(
@@ -175,7 +202,6 @@ export function Checkout({ isOpen, onClose, total, tickets }: CheckoutProps) {
               isFlashSaleValid(t.flash_sale as TicketTypeWithFlashSale | null)
           )
           .map((t) => ({
-            ...t,
             ticketId: t.id,
             flashSaleId: t.flash_sale?.id,
             discountType: t.flash_sale?.discount_type,
@@ -188,6 +214,17 @@ export function Checkout({ isOpen, onClose, total, tickets }: CheckoutProps) {
         },
       });
 
+      trackEvent({
+        event: "checkout_attempt",
+        total_amount: total,
+        ticket_count: filteredTickets.reduce((sum, t) => sum + t.quantity, 0),
+        has_flash_sale: filteredTickets.some(
+          (t) =>
+            t.flash_sale &&
+            isFlashSaleValid(t.flash_sale as TicketTypeWithFlashSale | null)
+        ),
+      });
+
       // Use the hook to purchase tickets
       const result = await purchaseTickets(payload);
 
@@ -198,15 +235,19 @@ export function Checkout({ isOpen, onClose, total, tickets }: CheckoutProps) {
           const reference = result.result.payment_details.reference;
 
           try {
-            // Use the verify payment hook instead of fetch
-            const verificationResult = await verifyPayment(reference);
+            logger.info("Verifying free ticket transaction", { reference });
+            trackEvent({
+              event: "free_ticket_verification_start",
+              reference,
+            });
+
+            const verificationResult = await verifyPayment({ reference });
 
             if (verificationResult.result.status === "COMPLETED") {
-              // Log successful free ticket checkout
-              await logEvent("CHECKOUT_SUCCESS_FREE", {
-                email: data.email,
-                total: total,
-                reference: reference,
+              logger.info("Free ticket transaction successful", { reference });
+              trackEvent({
+                event: "free_ticket_success",
+                reference,
               });
 
               setStep("success");
@@ -218,6 +259,18 @@ export function Checkout({ isOpen, onClose, total, tickets }: CheckoutProps) {
               );
             }
           } catch (verifyError) {
+            logger.error("Free ticket verification failed", {
+              error: verifyError,
+              reference,
+            });
+            trackEvent({
+              event: "free_ticket_verification_failed",
+              error:
+                verifyError instanceof Error
+                  ? verifyError.message
+                  : "Unknown error",
+              reference,
+            });
             throw new Error(
               verifyError instanceof Error
                 ? verifyError.message
@@ -230,12 +283,23 @@ export function Checkout({ isOpen, onClose, total, tickets }: CheckoutProps) {
         if (result.result?.payment_details?.authorization_url) {
           const { authorization_url } = result.result.payment_details;
 
-          // Log successful paid ticket checkout before redirect
-          await logEvent("CHECKOUT_SUCCESS_PAID", {
+          logger.info("Paid ticket checkout successful", {
             email: data.email,
-            total: total,
+            total,
             paymentUrl: authorization_url,
           });
+
+          trackEvent({
+            event: "paid_ticket_checkout_success",
+            total_amount: total,
+            ticket_count: filteredTickets.reduce(
+              (sum, t) => sum + t.quantity,
+              0
+            ),
+          });
+
+          // Save paid event slug to cache
+          localStorage.setItem("paidEventSlug", slug);
 
           window.location.href = authorization_url;
           return;
@@ -248,9 +312,7 @@ export function Checkout({ isOpen, onClose, total, tickets }: CheckoutProps) {
         );
       }
     } catch (err) {
-      // Enhanced error logging
-      await logEvent("CHECKOUT_ERROR", {
-        email: data.email,
+      logger.error("Checkout failed", {
         error:
           err instanceof Error
             ? {
@@ -259,10 +321,17 @@ export function Checkout({ isOpen, onClose, total, tickets }: CheckoutProps) {
                 name: err.name,
               }
             : "Unknown error",
-        payload: payload,
-        total: total,
+        payload,
+        total,
         userAgent: window.navigator.userAgent,
         url: window.location.href,
+      });
+
+      trackEvent({
+        event: "checkout_error",
+        error_type: err instanceof Error ? err.name : "Unknown",
+        error_message: err instanceof Error ? err.message : "Unknown error",
+        total_amount: total,
       });
 
       setStep("error");

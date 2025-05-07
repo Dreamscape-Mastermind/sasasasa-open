@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Checkout } from "./Checkout";
 import { isFlashSaleValid } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { trackEvent } from "@/lib/analytics";
+import { useLogger } from "@/lib/hooks/useLogger";
 
 // Define a custom interface for ticket with flash sale that extends TicketType
 interface TicketWithFlashSale extends Omit<TicketType, "flash_sale"> {
@@ -26,9 +28,11 @@ interface TicketWithFlashSale extends Omit<TicketType, "flash_sale"> {
 interface TicketsProps {
   tickets: TicketWithFlashSale[];
   formatDate: (dateString: string) => Promise<string>;
+  slug: string;
 }
 
-export function Tickets({ tickets, formatDate }: TicketsProps) {
+export function Tickets({ tickets, formatDate, slug }: TicketsProps) {
+  const logger = useLogger({ context: "Tickets" });
   const [quantities, setQuantities] = useState<{ [key: string]: number }>(
     () => {
       return tickets.reduce(
@@ -69,9 +73,29 @@ export function Tickets({ tickets, formatDate }: TicketsProps) {
   }, [tickets, formatDate]);
 
   const updateQuantity = (ticketName: string, change: number) => {
+    const ticket = tickets.find((t) => t.name === ticketName);
+    const newQuantity = Math.max(0, quantities[ticketName] + change);
+
+    trackEvent({
+      event: "ticket_quantity_update",
+      ticket_name: ticketName,
+      ticket_id: ticket?.id,
+      old_quantity: quantities[ticketName],
+      new_quantity: newQuantity,
+      change: change,
+    });
+
+    logger.info("Ticket quantity updated", {
+      ticket_name: ticketName,
+      ticket_id: ticket?.id,
+      old_quantity: quantities[ticketName],
+      new_quantity: newQuantity,
+      change: change,
+    });
+
     setQuantities((prev) => ({
       ...prev,
-      [ticketName]: Math.max(0, prev[ticketName] + change),
+      [ticketName]: newQuantity,
     }));
   };
 
@@ -156,6 +180,33 @@ export function Tickets({ tickets, formatDate }: TicketsProps) {
   // Add this new function to check for valid tickets
   const hasValidTickets = (): boolean => {
     return Object.values(quantities).some((quantity) => quantity > 0);
+  };
+
+  const handleCheckoutClick = () => {
+    const selectedTickets = ticketsWithQuantity.filter((t) => t.quantity > 0);
+
+    trackEvent({
+      event: "checkout_initiated",
+      total_amount: calculateTotal(),
+      ticket_count: selectedTickets.length,
+      tickets: selectedTickets.map((t) => ({
+        name: t.name,
+        quantity: t.quantity,
+        price: t.price,
+      })),
+    });
+
+    logger.info("Checkout initiated", {
+      total_amount: calculateTotal(),
+      ticket_count: selectedTickets.length,
+      tickets: selectedTickets.map((t) => ({
+        name: t.name,
+        quantity: t.quantity,
+        price: t.price,
+      })),
+    });
+
+    setShowCheckout(true);
   };
 
   return (
@@ -337,7 +388,7 @@ export function Tickets({ tickets, formatDate }: TicketsProps) {
         <Button
           className="w-full rounded-[4rem]"
           size="lg"
-          onClick={() => setShowCheckout(true)}
+          onClick={handleCheckoutClick}
           disabled={!hasValidTickets()}
         >
           Checkout{" "}
@@ -348,12 +399,26 @@ export function Tickets({ tickets, formatDate }: TicketsProps) {
       {showCheckout && (
         <Checkout
           isOpen={showCheckout}
-          onClose={() => setShowCheckout(false)}
+          onClose={() => {
+            trackEvent({
+              event: "checkout_closed",
+              total_amount: calculateTotal(),
+              ticket_count: ticketsWithQuantity.filter((t) => t.quantity > 0)
+                .length,
+            });
+            logger.info("Checkout closed", {
+              total_amount: calculateTotal(),
+              ticket_count: ticketsWithQuantity.filter((t) => t.quantity > 0)
+                .length,
+            });
+            setShowCheckout(false);
+          }}
           total={calculateTotal()}
           tickets={ticketsWithQuantity.map((ticket) => ({
             ...ticket,
             price: parseFloat(ticket.price), // Convert string price back to number
           }))}
+          slug={slug}
         />
       )}
     </div>

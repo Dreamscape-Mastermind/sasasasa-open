@@ -1,71 +1,25 @@
-"use client";
-
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { LoginForm } from "@/components/auth/LoginForm";
+import { Metadata } from "next";
 
-const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-});
+export const metadata: Metadata = {
+  title: "Login | Sasasasa",
+  description:
+    "Login to your Sasasasa account to access your events, tickets, and more.",
+  keywords: ["login", "authentication", "sasasasa", "events", "tickets"],
+  robots: {
+    index: false,
+    follow: true,
+  },
+  openGraph: {
+    title: "Login | Sasasasa",
+    description:
+      "Login to your Sasasasa account to access your events, tickets, and more.",
+    type: "website",
+  },
+};
 
-export default function Login() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-    },
-  });
-
-  async function onSubmit(values: z.infer<typeof loginSchema>) {
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/accounts/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            identifier: values.email,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        router.push(`/verify-otp?email=${encodeURIComponent(values.email)}`);
-      } else {
-        setError(data.error || "Failed to send verification code");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      setError("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
+export default function Page() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8">
@@ -83,35 +37,7 @@ export default function Login() {
           </p>
         </div>
 
-        <Form {...form}>
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="mt-8 space-y-6"
-          >
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="Enter your email"
-                      className="rounded-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Sending Code..." : "Continue with Email"}
-            </Button>
-          </form>
-        </Form>
+        <LoginForm />
       </div>
     </div>
   );

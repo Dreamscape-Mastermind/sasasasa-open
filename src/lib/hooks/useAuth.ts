@@ -10,7 +10,7 @@ import { userApi } from "../api/userApiService";
  */
 export const useLogin = () => {
   return useMutation({
-    mutationFn: userApi.login,
+    mutationFn: (data: { identifier: string }) => userApi.login(data),
     onSuccess: () => {
       toast.success("Login initiated. Please check your email for OTP.");
     },
@@ -28,10 +28,10 @@ export const useVerifyOTP = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: userApi.verifyOTP,
+    mutationFn: (data: { identifier: string; otp: string }) =>
+      userApi.verifyOTP(data),
     onSuccess: (data) => {
       queryClient.setQueryData(["user"], data.user);
-      toast.success("Successfully logged in!");
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || "Failed to verify OTP");
@@ -66,7 +66,6 @@ export const useLogout = () => {
     mutationFn: userApi.logout,
     onSuccess: () => {
       queryClient.clear();
-      toast.success("Successfully logged out");
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || "Failed to logout");
@@ -106,7 +105,7 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: userApi.updateProfile,
+    mutationFn: (data: FormData) => userApi.updateProfile(data),
     onSuccess: (data) => {
       queryClient.setQueryData(["user"], data);
       toast.success("Profile updated successfully");

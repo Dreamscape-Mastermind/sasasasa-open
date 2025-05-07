@@ -10,7 +10,8 @@ import {
 import { Suspense, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { sendGAEvent } from "@next/third-parties/google";
+import { trackEvent } from "@/lib/analytics";
+import { useLogger } from "@/lib/hooks/useLogger";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { useVerifyPayment } from "@/lib/hooks/usePayments";
@@ -29,19 +30,20 @@ function CheckoutCallback() {
     null
   );
   const [loading, setLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(true);
   const verifyPaymentMutation = useVerifyPayment();
+  const logger = useLogger({ context: "CheckoutCallback" });
 
   useEffect(() => {
     const reference = searchParams?.get("reference");
-    const trxref = searchParams?.get("trxref");
 
-    sendGAEvent({
+    trackEvent({
       event: "checkout_callback_view",
       timestamp: new Date().toISOString(),
     });
 
     const verifyPayment = async () => {
-      if (!reference || !trxref) {
+      if (!reference) {
         setTransaction({
           status: "FAILED",
           message: "Invalid payment reference",
@@ -55,31 +57,50 @@ function CheckoutCallback() {
       try {
         const result = await verifyPaymentMutation.mutateAsync({
           reference,
-          trxref,
         });
 
-        console.log("result ", result);
-
-        // if (result.status === "COMPLETED") {
-        //   setTransaction(result);
-        //   // Send successful payment event
-        //   sendGAEvent({
-        //     event: "purchase",
-        //     value: result.amount,
-        //     transaction_id: result.reference,
-        //     status: "completed",
-        //   });
-        // } else {
-        //   setTransaction(result);
-        //   // Send failed payment event
-        //   sendGAEvent({
-        //     event: "purchase_failed",
-        //     value: result.amount,
-        //     transaction_id: result.reference,
-        //     status: result.status,
-        //     error_message: result.message,
-        //   });
-        // }
+        if (result.result.status === "COMPLETED") {
+          setTransaction({
+            status: result.result.status,
+            message:
+              result.result.last_error_message ||
+              "Payment completed successfully",
+            reference: result.result.reference,
+            amount: result.result.amount,
+          });
+          // Send successful payment event
+          trackEvent({
+            event: "purchase",
+            value: result.result.amount,
+            transaction_id: result.result.reference,
+            status: "completed",
+          });
+          logger.info("Purchase complete", {
+            id: result.result.reference,
+            amount: result.result.amount,
+          });
+        } else {
+          setTransaction({
+            status: result.result.status,
+            message: result.result.last_error_message || "Payment failed",
+            reference: result.result.reference,
+            amount: result.result.amount,
+          });
+          // Send failed payment event
+          trackEvent({
+            event: "purchase_failed",
+            value: result.result.amount,
+            transaction_id: result.result.reference,
+            status: result.result.status,
+            error_message: result.result.last_error_message,
+          });
+          logger.error("Purchase failed", {
+            id: result.result.reference,
+            amount: result.result.amount,
+            status: result.result.status,
+            error: result.result.last_error_message,
+          });
+        }
       } catch (error) {
         console.error("Payment verification failed:", error);
         setTransaction({
@@ -90,11 +111,16 @@ function CheckoutCallback() {
           amount: 0,
         });
         // Send error event
-        sendGAEvent({
+        trackEvent({
           event: "purchase_error",
           error_message:
             error instanceof Error ? error.message : "Failed to verify payment",
           transaction_id: reference || "",
+        });
+        logger.error("Payment verification failed", {
+          error:
+            error instanceof Error ? error.message : "Failed to verify payment",
+          reference: reference || "",
         });
       } finally {
         setLoading(false);
@@ -102,10 +128,14 @@ function CheckoutCallback() {
     };
 
     verifyPayment();
-  }, [searchParams, router, verifyPaymentMutation]);
+  }, [searchParams, router]);
 
   const handleClose = () => {
+    setIsOpen(false);
     const status = transaction?.status === "COMPLETED" ? "success" : "failed";
+    router.push(
+      `/e/${localStorage.getItem("paidEventSlug")}/?payment=${status}`
+    );
   };
 
   const formatDate = (dateString?: string) => {
@@ -135,7 +165,7 @@ function CheckoutCallback() {
 
   if (loading) {
     return (
-      <Dialog open={true} onOpenChange={handleClose}>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-[500px] bg-background border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground">
@@ -152,7 +182,7 @@ function CheckoutCallback() {
   }
 
   return (
-    <Dialog open={true} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px] bg-background border-border">
         <DialogHeader>
           <DialogTitle className="text-foreground">

@@ -11,21 +11,13 @@ import {
 } from "@/components/ui/carousel";
 import { type CarouselApi } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import {
-  ChevronRight,
-  Search,
-  CalendarIcon,
-  MapPinIcon,
-  TicketIcon,
-} from "lucide-react";
+import { Search, TicketIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Card from "@/components/Card";
 import poster from "../../../public/images/poster.jpeg";
 import poster1 from "../../../public/images/poster_1.jpeg";
 import poster2 from "../../../public/images/poster_2.jpeg";
-import { Events } from "@/components/Events";
+import { Events } from "@/components/events/Events";
 import { useEvents } from "../../../services/events/queries";
-import { useCreateEvent } from "../../../services/events/mutation";
 
 const featuredEvents = [
   {

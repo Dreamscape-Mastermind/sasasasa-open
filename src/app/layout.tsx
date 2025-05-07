@@ -2,11 +2,13 @@ import "./globals.css";
 
 import { Anton, Sen } from "next/font/google";
 
+import { AuthProvider } from "@/components/providers/auth-provider";
 import Footer from "@/components/Footer";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Header from "@/components/Header";
 import { Metadata } from "next";
 import Providers from "@/components/providers/query-provider";
+import SectionContainer from "@/components/SectionContainer";
 import { Sidebar } from "@/components/Sidebar";
 import siteMetadata from "@/config/siteMetadata";
 
@@ -90,10 +92,14 @@ export default function RootLayout({
         className={`${sen.variable} ${anton.variable} antialiased "bg-white pl-[calc(100vw-100%)] text-black dark:bg-gray-950 dark:text-white`}
       >
         <Providers>
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-          <Sidebar />
+          <AuthProvider>
+            <SectionContainer>
+              <Header />
+              <main className="min-h-screen">{children}</main>
+              <Footer />
+              <Sidebar />
+            </SectionContainer>
+          </AuthProvider>
         </Providers>
       </body>
       <GoogleAnalytics gaId={siteMetadata.googleAnalyticsId} />

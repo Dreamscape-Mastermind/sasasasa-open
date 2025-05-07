@@ -289,4 +289,21 @@ export const eventApi = {
     );
     return response.data.result;
   },
+
+  // Fetches a paginated list of user's events
+  getMyEvents: async (page = 1, params?: EventFilterParams) => {
+    const searchParams = new URLSearchParams({ page: page.toString() });
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    const queryString = searchParams.toString();
+    const response = await axios.get<EventListResponse>(
+      `/api/v1/events/my_events${queryString ? `?${queryString}` : ""}`
+    );
+    return response.data.result;
+  },
 };

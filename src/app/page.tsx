@@ -2,9 +2,9 @@ import Spinner from "@/components/ui/spiner";
 import dynamic from "next/dynamic";
 
 // Lazy load below-the-fold components
-const Hero = dynamic(() => import("@/components/Hero"), {
-  loading: () => <Spinner />,
-});
+// const Hero = dynamic(() => import("@/components/Hero"), {
+//   loading: () => <Spinner />,
+// });
 
 const FeaturedEvents = dynamic(
   () => import("@/components/home/FeaturedEvents"),
@@ -26,7 +26,7 @@ export default async function Home() {
       {/* Promoted Events */}
       <AllEvents />
 
-      <Hero />
+      {/* <Hero /> */}
     </main>
   );
 }

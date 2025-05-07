@@ -5,8 +5,11 @@ import FeaturedCarousel from "@/components/FeaturedCarousel";
 import FeaturedEventBanner from "@/components/FeaturedEventBanner";
 import Spinner from "../ui/spiner";
 import { useEvents } from "@/lib/hooks/useEvents";
+import { useLogger } from "@/lib/hooks/useLogger";
 
 export default function FeaturedEvents() {
+  const logger = useLogger({ context: "FeaturedEvents" });
+
   const {
     data: featuredEvents,
     isLoading,
@@ -15,10 +18,17 @@ export default function FeaturedEvents() {
     featured: true,
   });
 
-  if (isLoading) return <Spinner />;
-  if (error) return <Error />;
+  if (isLoading) {
+    logger.info("Loading featured events...");
+    return <Spinner />;
+  }
 
-  console.log(featuredEvents);
+  if (error) {
+    logger.error("Error fetching featured events", error);
+    return <Error />;
+  }
+
+  logger.info("Fetched featured events", featuredEvents);
 
   const featuredEvent = featuredEvents?.results?.[0];
 

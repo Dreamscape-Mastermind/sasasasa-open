@@ -1,4 +1,4 @@
-import { ApiResponse, SocialMediaUrls } from "./common";
+import { ApiResponse } from "./common";
 
 export interface UserProfile {
   first_name?: string;
@@ -24,11 +24,20 @@ export interface UserPreferences {
 export interface User {
   id: string;
   email: string;
-  phone?: string;
+  phone: string | null;
+  first_name: string | null;
+  last_name: string | null;
   is_verified: boolean;
-  profile: UserProfile;
-  social_media: SocialMediaUrls;
-  user_preferences: UserPreferences;
+  avatar: string | null;
+  bio: string | null;
+  preferences: any | null;
+  notification_settings: any | null;
+  instagram_handle: string | null;
+  twitter_handle: string | null;
+  linkedin_handle: string | null;
+  tiktok_handle: string | null;
+  youtube_handle: string | null;
+  website: string | null;
 }
 
 export interface Role {
@@ -92,9 +101,18 @@ export interface DeleteAccountRequest {
 }
 
 export interface UpdateProfileRequest {
-  profile?: Partial<UserProfile>;
-  social_media?: Partial<SocialMediaUrls>;
-  user_preferences?: Partial<UserPreferences>;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
+  avatar?: string;
+  bio?: string;
+  instagram_handle?: string;
+  twitter_handle?: string;
+  linkedin_handle?: string;
+  tiktok_handle?: string;
+  youtube_handle?: string;
+  website?: string;
 }
 
 export interface ErrorResponse {

@@ -193,3 +193,11 @@ export const usePerformer = (eventId: string, performerId: string) => {
     enabled: !!eventId && !!performerId,
   });
 };
+
+/** Fetches paginated list of user's events */
+export const useMyEvents = (page = 1, params?: Record<string, any>) => {
+  return useQuery({
+    queryKey: ["events", "my", page, params],
+    queryFn: () => eventApi.getMyEvents(page, params),
+  });
+};
