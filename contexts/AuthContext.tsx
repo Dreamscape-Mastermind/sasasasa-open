@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!tokens?.refresh) return
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/accounts/refresh-token`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/accounts/refresh-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

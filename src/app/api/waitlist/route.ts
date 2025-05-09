@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
   // console.log(record)
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/accounts/login`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/accounts/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),

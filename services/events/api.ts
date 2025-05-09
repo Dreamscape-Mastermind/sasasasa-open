@@ -1,3 +1,12 @@
+
+export const getAccessToken = () => {
+    const tokens = localStorage.getItem('SS_AUTH_TOKENS')
+    if (tokens) {
+      const parsedTokens = JSON.parse(tokens)
+      return parsedTokens.access
+    }
+    return null
+  }
 // Function to fetch events
 export async function fetchEvents() {
     // Logic to fetch events from the database or an external API
@@ -9,7 +18,7 @@ export async function fetchEvents() {
 export async function createEvent(eventData) {
     try {
         // Retrieve the token from localStorage
-        const token = localStorage.getItem('token');
+        const token = getAccessToken();
 
         const newEvent = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/events`, {
             method: "POST", 
@@ -44,7 +53,7 @@ export async function createEvent(eventData) {
 // Function to update an event
 export async function updateEvent(eventId: string, eventData: any) {
     try {
-        const token = localStorage.getItem('token');
+        const token = getAccessToken();
         
         const updatedEvent = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/events/${eventId}`, {
             method: "PATCH",
@@ -78,7 +87,7 @@ export async function updateEvent(eventId: string, eventData: any) {
 }
 
 export async function fetchEvent(eventId: string) {
-    const token = localStorage.getItem('token');
+    const token = getAccessToken();
     const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/events/${eventId}`, {
       method: "GET",  
       headers: {
@@ -92,8 +101,23 @@ export async function fetchEvent(eventId: string) {
     return response.json();
 }
 
+export async function fetchMyEvents() {
+    const token = getAccessToken();
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/events/my_events`, {
+      method: "GET",  
+      headers: {
+            "Authorization": `Bearer ${token}`,
+        }
+    });
+    if (!response.ok) {
+        console.log({response});
+        throw new Error(`Error fetching event: ${response.status}`);
+    }
+    return response.json();
+}
+
 export async function publishEvent(eventId: string) {
-  const token = localStorage.getItem('token');
+  const token = getAccessToken();
   const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/events/${eventId}`, {
     method: "POST",  
     headers: {

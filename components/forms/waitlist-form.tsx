@@ -63,7 +63,7 @@ export function WaitlistForm() {
 
     try {
       // First, initiate the OTP login
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/accounts/login`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/accounts/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

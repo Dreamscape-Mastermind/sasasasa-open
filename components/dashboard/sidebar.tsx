@@ -32,40 +32,50 @@ const events = [
 
 const eventMenus = [
   {
-    label: "Analytics",
-    icon: BarChart2,
-    href: "/dashboard/events/{eventId}/analytics",
+    label: "Events",
+    icon: Calendar,
+    href: "/dashboard/events",
   },
   {
-    label: "Event Details",
-    icon: Layout,
-    href: "/dashboard/events/{eventId}/details",
+    label: "Products",
+    icon: Calendar,
+    href: "/dashboard/products",
   },
+  // {
+  //   label: "Analytics",
+  //   icon: BarChart2,
+  //   href: "/dashboard/events/{eventId}/analytics",
+  // },
+  // {
+  //   label: "Event Details",
+  //   icon: Layout,
+  //   href: "/dashboard/events/{eventId}/details",
+  // },
   {
     label: "Tickets",
     icon: Ticket,
     href: "/dashboard/events/{eventId}/tickets",
   },
-  {
-    label: "Attendees",
-    icon: Users,
-    href: "/dashboard/events/{eventId}/attendees",
-  },
-  {
-    label: "Payments",
-    icon: CreditCard,
-    href: "/dashboard/events/{eventId}/payments",
-  },
-  {
-    label: "Promotions",
-    icon: Calendar,
-    href: "/dashboard/events/{eventId}/promotions",
-  },
-  {
-    label: "Reports",
-    icon: BarChart2,
-    href: "/dashboard/events/{eventId}/reports",
-  },
+  // {
+  //   label: "Attendees",
+  //   icon: Users,
+  //   href: "/dashboard/events/{eventId}/attendees",
+  // },
+  // {
+  //   label: "Payments",
+  //   icon: CreditCard,
+  //   href: "/dashboard/events/{eventId}/payments",
+  // },
+  // {
+  //   label: "Promotions",
+  //   icon: Calendar,
+  //   href: "/dashboard/events/{eventId}/promotions",
+  // },
+  // {
+  //   label: "Reports",
+  //   icon: BarChart2,
+  //   href: "/dashboard/events/{eventId}/reports",
+  // },
 ];
 
 const userMenus = [
@@ -120,7 +130,7 @@ export function Sidebar() {
 
       {/* Event Menus Section */}
       <div className="px-3">
-        <div className="bg-purple-400 p-4 rounded-lg ">
+        <div className="bg-gray-800 p-4 rounded-lg ">
           <h3 className="font-bold text-lg text-white">Event Management</h3>
           <div className="space-y-1">
             {eventMenus.map((menu) => (

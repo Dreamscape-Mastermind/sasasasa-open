@@ -92,7 +92,7 @@ function VerifyOTPContent() {
     setError('')
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/accounts/resend-otp`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/accounts/resend-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ function VerifyOTPContent() {
     setSuccess('')
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/accounts/verify-otp`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/accounts/verify-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

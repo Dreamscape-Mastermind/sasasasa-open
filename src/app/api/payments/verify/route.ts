@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Construct the URL with query parameters for Paystack
-    const url = new URL(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/payments/verify?reference=${reference}`)
+    const url = new URL(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/payments/verify?reference=${reference}`)
     console.log('url ', url)
     const response = await fetch(url.toString(), {
       method: 'POST',

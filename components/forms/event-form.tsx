@@ -58,9 +58,9 @@ const formSchema = z.object({
     message: "Description must be at least 10 characters.",
   }),
   start_date: z.date(),
-  start_time: z.string().min(1, { message: "Start time is required" }),
+  // start_time: z.string().min(1, { message: "Start time is required" }),
   end_date: z.date(),
-  end_time: z.string().min(1, { message: "End time is required" }),
+  // end_time: z.string().min(1, { message: "End time is required" }),
   timezone: z.any(),
   venue: z.string().min(2, {
     message: "Venue must be at least 2 characters"
@@ -75,8 +75,8 @@ const formSchema = z.object({
   instagram_url: z.string(),
   twitter_url: z.string(),
 }).refine((data) => {
-  const startDateTime = combineDateTime(data.start_date, data.start_time);
-  const endDateTime = combineDateTime(data.end_date, data.end_time);
+  const startDateTime = data.start_date; //combineDateTime(data.start_date, data.start_time);
+  const endDateTime = data.end_date; //combineDateTime(data.end_date, data.end_time);
   return endDateTime > startDateTime;
 }, {
   message: "End date and time must be after start date and time",
@@ -89,65 +89,6 @@ function combineDateTime(date: Date, time: string): Date {
   datetime.setHours(hours, minutes);
   return datetime;
 }
-
-interface TimePickerProps {
-  name: string;
-  control: Control<any>;
-}
-
-const TimePicker = ({ name, control }: TimePickerProps) => {
-  const times = Array.from({ length: 48 }, (_, i) => {
-    const hour = Math.floor(i / 2);
-    const minute = i % 2 === 0 ? '00' : '30';
-    return `${hour.toString().padStart(2, '0')}:${minute}`;
-  });
-
-  return (
-    <FormField
-      control={control}
-      name={name}
-      render={({ field, fieldState }) => (
-        <FormItem className="flex flex-col">
-          <Popover>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "w-[100px] pl-3 text-left font-normal bg-white border-gray-300 hover:bg-gray-100",
-                    !field.value && "text-gray-500",
-                    fieldState.error && "border-red-500"
-                  )}
-                >
-                  {field.value || "Time"}
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0" align="start">
-              <Command>
-                <CommandInput placeholder="Search time..." />
-                <CommandEmpty>No time found.</CommandEmpty>
-                <CommandGroup className="max-h-[200px] overflow-auto">
-                  {times.map((time) => (
-                    <CommandItem
-                      key={time}
-                      value={time}
-                      onSelect={(value: string) => field.onChange(value)}
-                    >
-                      {time}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </Command>
-            </PopoverContent>
-          </Popover>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  );
-};
 
 const labelStyle = "original";
 const timezones = {
@@ -192,15 +133,17 @@ export default function EventForm() {
   const [isSearching, setIsSearching] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
-      start_time: "",
-      end_time: "",
+      // start_time: "",
+      // end_time: "",
+      start_date: new Date(),
+      end_date: new Date(),
       venue: "",
       cover_image: "",
       capacity: 0,
@@ -219,9 +162,9 @@ export default function EventForm() {
       form.setValue("title", eventData.result.title);
       form.setValue("description", eventData.result.description);
       form.setValue("start_date", new Date(eventData.result.start_date));
-      form.setValue("start_time", format(new Date(eventData.result.start_date), "HH:mm"));
+      // form.setValue("start_time", format(new Date(eventData.result.start_date), "HH:mm"));
       form.setValue("end_date", new Date(eventData.result.end_date));
-      form.setValue("end_time", format(new Date(eventData.result.end_date), "HH:mm"));
+      // form.setValue("end_time", format(new Date(eventData.result.end_date), "HH:mm"));
       form.setValue("venue", eventData.result.venue);
       form.setValue("capacity", eventData.result.capacity);
       form.setValue("cover_image", eventData.result.cover_image ? eventData.result.cover_image : "");
@@ -239,53 +182,27 @@ export default function EventForm() {
     }
   }, [eventData, eventError, form]);// Run effect when eventData changes
 
-  // const searchVenues = (query: string) => {
-  //   if (!query || query.length <= 2) {
-  //     setVenueSearchResults([])
-  //     return
-  //   }
-  //   setIsSearching(true)
-  //   // Simulated venue search - replace with actual API call
-  //   setTimeout(() => {
-  //     setVenueSearchResults([
-  //       { place_id: '1', description: 'Convention Center' } as VenueSearchResult,
-  //       { place_id: '2', description: 'City Hall' },
-  //       { place_id: '3', description: 'Sports Arena' },
-  //     ])
-  //     setIsSearching(false)
-  //   }, 1000)
-  // }
 
-  // function onSubmit(values: z.infer<typeof formSchema>) {
-  //   const startDateTime = combineDateTime(values.start_date, values.start_time);
-  //   const endDateTime = combineDateTime(values.end_date, values.end_time);
-  //   const data = {
-  //     ...values,
-  //     start_date: startDateTime,
-  //     end_date: endDateTime
-  //   }
-  //   createEvent.mutate(data);
-  //   console.log(data);
-  // }
-  const onSubmit = async (data) => {
-    // Handle form submission logic
-    
-    const processedData = {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    try {
+      console.log('Form submitted with data:', data);
+      
+      const processedData = {
         ...data,
-        // cover_image: imagePreview,
-        // start_date: combineDateTime(data.start_date, data.start_time),
-        // end_date: combineDateTime(data.end_date, data.end_time),
-    };
+      };
 
-    console.log({processedData})
-
-    if (isEditing && eventId) {
-        // Call the update function here
+      if (isEditing && eventId) {
         await updateEvent.mutateAsync({ eventId, data: processedData });
-    } else {
+        toast.success('Event updated successfully');
+      } else {
         await createEvent.mutateAsync(processedData);
+        toast.success('Event created successfully');
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast.error('Failed to submit form');
     }
-};
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -472,62 +389,6 @@ export default function EventForm() {
                         </div>
                       </div>
 
-                      {/* <FormField
-                        control={form.control}
-                        name="venue"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel className="text-gray-700">Venue</FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className={cn(
-                                      "w-full justify-between bg-gray-50 border-gray-300 rounded-none",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {field.value.name ? field.value.name : "Search for a venue"}
-                                    <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-[400px] p-0">
-                                <Command>
-                                  <CommandInput
-                                    placeholder="Search for a venue..."
-                                    onValueChange={searchVenues}
-                                  />
-                                  <CommandEmpty>No venues found.</CommandEmpty>
-                                  <CommandGroup>
-                                    {isSearching && (
-                                      <div className="flex items-center justify-center p-4">
-                                        <Loader2 className="h-6 w-6 animate-spin" />
-                                      </div>
-                                    )}
-                                    {venueSearchResults.map((venue) => (
-                                      <CommandItem
-                                        key={venue.place_id}
-                                        value={venue.description}
-                                        onSelect={() => {
-                                          form.setValue("venue", { name: venue.description, place_id: venue.place_id })
-                                        }}
-                                      >
-                                        <MapPin className="mr-2 h-4 w-4" />
-                                        {venue.description}
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage className="text-red-500" />
-                          </FormItem>
-                        )}
-                      /> */}
-
                       <FormField
                         control={form.control}
                         name="venue"
@@ -553,6 +414,7 @@ export default function EventForm() {
                                 type="number"
                                 placeholder="Enter maximum capacity"
                                 {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
                                 className="bg-gray-50 dark:bg-zinc-900 border-gray-300 dark:border-gray-700 rounded-full "
                               />
                             </FormControl>
@@ -676,7 +538,16 @@ export default function EventForm() {
 
 
 
-                      <Button type="submit" variant="default" className="w-full text-white dark:bg-gray-700 dark:hover:bg-gray-600 mt-4">
+                      <Button 
+                        type="submit" 
+                        variant="default" 
+                        className="w-full text-white dark:bg-gray-700 dark:hover:bg-gray-600 mt-4"
+                        onClick={() => {
+                          console.log('Button clicked');
+                          console.log('Form state:', form.getValues());
+                          console.log('Form errors:', form.formState.errors);
+                        }}
+                      >
                         {isEditing ? 'Edit Event' : 'Create Event'}
                       </Button>
                    

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchEvents } from "./api";
+import { fetchEvents, fetchMyEvents } from "./api";
 import { fetchEvent } from "./api";
 
 export function useEvent(eventId: string | null) {
@@ -14,5 +14,12 @@ export function useEvents(){
   return useQuery({
     queryKey: ['events'],
     queryFn: fetchEvents,
+  })
+}
+
+export function useMyEvents(){
+  return useQuery({
+    queryKey: ['my-events'],
+    queryFn: fetchMyEvents,
   })
 }

@@ -1,6 +1,8 @@
+import { getAccessToken } from "services/events/api";
+
 export async function inviteTeamMember(eventId: string, memberData: any) {
   try {
-      const token = localStorage.getItem('token');
+      const token = getAccessToken();
       
       const invitedMember = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/events/${eventId}/invite`, {
           method: "POST",
@@ -22,7 +24,7 @@ export async function inviteTeamMember(eventId: string, memberData: any) {
 }
 
 export async function fetchEventTeamMembers(eventId: string) {
-  const token = localStorage.getItem('token');
+  const token = getAccessToken();
   const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/events/${eventId}/teams`, {
     method: "GET",  
     headers: {
