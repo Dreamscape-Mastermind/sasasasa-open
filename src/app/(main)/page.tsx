@@ -19,7 +19,7 @@ const AllEvents = dynamic(() => import("@/components/home/AllEvents"), {
 
 export default async function Home() {
   return (
-    <main className="container mx-auto px-4">
+    <div>
       {/* Features Section */}
       <FeaturedEvents />
 
@@ -27,6 +27,6 @@ export default async function Home() {
       <AllEvents />
 
       {/* <Hero /> */}
-    </main>
+    </div>
   );
 }

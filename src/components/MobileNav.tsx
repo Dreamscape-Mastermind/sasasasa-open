@@ -1,19 +1,33 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useEffect, useRef, useState } from "react";
+import { NAV_ITEMS, ROUTES } from "@/lib/constants";
 import {
   clearAllBodyScrollLocks,
   disableBodyScroll,
   enableBodyScroll,
 } from "body-scroll-lock";
+import { useRouter, useSearchParams } from "next/navigation";
 
+import { Button } from "@/components/ui/button";
 import Link from "./Link";
-import headerNavLinks from "@/lib/headerNavLinks";
+import { LogIn } from "lucide-react";
+import { getAvatarUrl } from "@/lib/utils";
+import { useAuth } from "@/context/auth-context";
+import { useLogger } from "@/lib/hooks/useLogger";
+import { useLogout } from "@/lib/hooks/useAuth";
 
 const MobileNav = () => {
   const [navShow, setNavShow] = useState(false);
   const navRef = useRef(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const logger = useLogger({ context: "MobileNav" });
+  const { mutate: logout } = useLogout();
+  const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
 
   const onToggleNav = () => {
     setNavShow((status) => {
@@ -29,6 +43,27 @@ const MobileNav = () => {
       }
       return !status;
     });
+  };
+
+  const handleSignOut = () => {
+    logout();
+    onToggleNav();
+  };
+
+  // Get initials from first and last name, fallback to email first letter
+  const getInitials = () => {
+    if (user?.first_name || user?.last_name) {
+      return `${user.first_name?.[0] || ""}${user.last_name?.[0] || ""}`;
+    }
+    return user?.email?.[0]?.toUpperCase() || "U";
+  };
+
+  // Get display name
+  const getDisplayName = () => {
+    if (user?.first_name || user?.last_name) {
+      return `${user.first_name || ""} ${user.last_name || ""}`.trim();
+    }
+    return user?.email?.split("@")[0] || "User";
   };
 
   useEffect(() => {
@@ -85,16 +120,81 @@ const MobileNav = () => {
                 ref={navRef}
                 className="mt-8 flex h-full basis-0 flex-col items-start overflow-y-auto pl-12 pt-2 text-left"
               >
-                {headerNavLinks.map((link) => (
+                {NAV_ITEMS.MAIN.map((link) => (
                   <Link
-                    key={link.title}
+                    key={link.href}
                     href={link.href}
                     className="mb-4 py-2 pr-4 text-2xl font-bold tracking-widest text-gray-900 outline outline-0 hover:text-primary-500 dark:text-gray-100 dark:hover:text-primary-400"
                     onClick={onToggleNav}
                   >
-                    {link.title}
+                    {link.label}
                   </Link>
                 ))}
+
+                {isAuthenticated ? (
+                  <>
+                    <div className="mt-8 flex items-center space-x-4">
+                      <Avatar className="h-12 w-12">
+                        {user?.avatar ? (
+                          <AvatarImage
+                            src={user.avatar}
+                            alt={getDisplayName()}
+                          />
+                        ) : (
+                          <AvatarImage
+                            src={getAvatarUrl(getDisplayName())}
+                            alt={getDisplayName()}
+                          />
+                        )}
+                        <AvatarFallback>{getInitials()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="text-lg font-semibold">
+                          {getDisplayName()}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {user?.email}
+                        </span>
+                      </div>
+                    </div>
+
+                    <Link
+                      href={ROUTES.DASHBOARD}
+                      className="mt-6 mb-4 py-2 pr-4 text-2xl font-bold tracking-widest text-gray-900 outline outline-0 hover:text-primary-500 dark:text-gray-100 dark:hover:text-primary-400"
+                      onClick={onToggleNav}
+                    >
+                      Dashboard
+                    </Link>
+
+                    <Link
+                      href={ROUTES.DASHBOARD_SETTINGS}
+                      className="mb-4 py-2 pr-4 text-2xl font-bold tracking-widest text-gray-900 outline outline-0 hover:text-primary-500 dark:text-gray-100 dark:hover:text-primary-400"
+                      onClick={onToggleNav}
+                    >
+                      Settings
+                    </Link>
+
+                    <button
+                      onClick={handleSignOut}
+                      className="mb-4 py-2 pr-4 text-2xl font-bold tracking-widest text-gray-900 outline outline-0 hover:text-primary-500 dark:text-gray-100 dark:hover:text-primary-400"
+                    >
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-md border-[#CC322D] px-6 py-2 text-lg font-medium text-[#CC322D] hover:bg-[#CC322D]/10"
+                    onClick={() =>
+                      router.push(
+                        `/login?redirect=${encodeURIComponent(redirectTo)}`
+                      )
+                    }
+                  >
+                    <LogIn className="h-5 w-5" />
+                    <span>Login</span>
+                  </Button>
+                )}
               </nav>
 
               <button

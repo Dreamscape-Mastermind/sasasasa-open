@@ -21,7 +21,7 @@ import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { trackEvent } from "@/lib/analytics";
-import { useAuth } from "@/components/providers/auth-provider";
+import { useAuth } from "@/context/auth-context";
 import { useLogger } from "@/lib/hooks/useLogger";
 import { useUpdateProfile } from "@/lib/hooks/useAuth";
 

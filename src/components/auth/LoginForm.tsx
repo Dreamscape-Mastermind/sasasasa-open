@@ -7,16 +7,15 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { useLogin, useUser } from "@/lib/hooks/useAuth";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
-import { trackEvent } from "@/lib/analytics";
+import { ROUTES } from "@/lib/constants";
+import { useAuth } from "@/context/auth-context";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useLogger } from "@/lib/hooks/useLogger";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -27,16 +26,14 @@ const loginSchema = z.object({
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const logger = useLogger({ context: "LoginForm" });
-  const { mutate: login, isPending } = useLogin();
-  const redirectTo = searchParams?.get("redirect") || "/dashboard";
-  const { data: user, isLoading } = useUser();
+  const { login, user, isLoading, isAuthenticated } = useAuth();
+  const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
 
   useEffect(() => {
-    if (!isLoading && user) {
+    if (!isLoading && isAuthenticated) {
       router.replace(redirectTo);
     }
-  }, [user, isLoading, router, redirectTo]);
+  }, [isAuthenticated, isLoading]);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -46,35 +43,7 @@ export function LoginForm() {
   });
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
-    logger.info("Login attempt", { email: values.email });
-    trackEvent({
-      event: "login_attempt",
-      email: values.email,
-    });
-
-    try {
-      await login({ identifier: values.email });
-      logger.info("Login initiated successfully", { email: values.email });
-      trackEvent({
-        event: "login_initiated",
-        email: values.email,
-      });
-      router.push(
-        `/verify-otp?email=${encodeURIComponent(
-          values.email
-        )}&redirect=${encodeURIComponent(redirectTo)}`
-      );
-    } catch (error) {
-      logger.error("Login failed", {
-        email: values.email,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-      trackEvent({
-        event: "login_failed",
-        email: values.email,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
+    await login(values.email);
   }
 
   return (
@@ -98,8 +67,8 @@ export function LoginForm() {
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? (
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Sending Code...

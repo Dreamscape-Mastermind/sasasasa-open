@@ -187,6 +187,18 @@ export interface EventFilterParams {
   featured_until?: string;
   search?: string;
   ordering?: string;
+  page?: number;
+  page_size?: number;
+  is_past?: boolean;
+  is_featured?: boolean;
+  location__city?: string;
+  location__country?: string;
+  start_date?: string;
+  end_date?: string;
+  price_min?: number;
+  price_max?: number;
+  capacity_min?: number;
+  capacity_max?: number;
 }
 
 export interface TeamMemberFilterParams {

@@ -46,6 +46,14 @@ export interface Role {
   permissions_list: string[];
 }
 
+export enum UserRole {
+  SUPER_ADMIN = "SUPER_ADMIN",
+  ADMIN = "ADMIN",
+  EVENT_ORGANIZER = "EVENT_ORGANIZER",
+  EVENT_TEAM = "EVENT_TEAM",
+  CUSTOMER = "CUSTOMER",
+}
+
 export interface AuthResponse {
   status: "success" | "error";
   message: string;

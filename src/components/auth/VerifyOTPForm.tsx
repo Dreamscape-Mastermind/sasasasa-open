@@ -7,16 +7,14 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { useResendOTP, useUser, useVerifyOTP } from "@/lib/hooks/useAuth";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import toast from "react-hot-toast";
-import { trackEvent } from "@/lib/analytics";
+import { ROUTES } from "@/lib/constants";
+import { useAuth } from "@/context/auth-context";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useLogger } from "@/lib/hooks/useLogger";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -30,18 +28,15 @@ const otpSchema = z.object({
 export function VerifyOTPForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const logger = useLogger({ context: "VerifyOTPForm" });
+  const { verifyOTP, resendOTP, user, isLoading, isAuthenticated } = useAuth();
   const email = searchParams?.get("email");
-  const redirectTo = searchParams?.get("redirect") || "/dashboard";
-  const { mutate: verifyOTP, isPending: isVerifying } = useVerifyOTP();
-  const { mutate: resendOTP, isPending: isResending } = useResendOTP();
-  const { data: user, isLoading } = useUser();
+  const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
 
   useEffect(() => {
-    if (!isLoading && user) {
+    if (!isLoading && isAuthenticated) {
       router.replace(redirectTo);
     }
-  }, [user, isLoading, router, redirectTo]);
+  }, [isAuthenticated, isLoading]);
 
   const form = useForm<z.infer<typeof otpSchema>>({
     resolver: zodResolver(otpSchema),
@@ -52,67 +47,13 @@ export function VerifyOTPForm() {
 
   async function onSubmit(values: z.infer<typeof otpSchema>) {
     if (!email) return;
-
-    logger.info("OTP verification attempt", { email });
-    trackEvent({
-      event: "otp_verification_attempt",
-      email,
-    });
-
-    try {
-      await verifyOTP({ identifier: email, otp: values.otp });
-      logger.info("OTP verified successfully", { email });
-      trackEvent({
-        event: "otp_verified",
-        email,
-      });
-      toast.success("Welcome back! We're glad to see you again.");
-      router.push(redirectTo);
-    } catch (error) {
-      logger.error("OTP verification failed", {
-        email,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-      trackEvent({
-        event: "otp_verification_failed",
-        email,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
+    await verifyOTP(email, values.otp);
   }
 
-  const handleResendOTP = () => {
-    if (!email || isResending) return;
-
-    logger.info("Resending OTP", { email });
-    trackEvent({
-      event: "otp_resend_attempt",
-      email,
-    });
-
-    resendOTP(
-      { identifier: email },
-      {
-        onSuccess: () => {
-          logger.info("OTP resent successfully", { email });
-          trackEvent({
-            event: "otp_resent",
-            email,
-          });
-        },
-        onError: (error) => {
-          logger.error("OTP resend failed", {
-            email,
-            error: error instanceof Error ? error.message : "Unknown error",
-          });
-          trackEvent({
-            event: "otp_resend_failed",
-            email,
-            error: error instanceof Error ? error.message : "Unknown error",
-          });
-        },
-      }
-    );
+  const handleResendOTP = async () => {
+    if (!email) return;
+    await resendOTP(email);
+    form.setValue("otp", "");
   };
 
   if (!email) return null;
@@ -147,9 +88,9 @@ export function VerifyOTPForm() {
           <Button
             type="submit"
             className="w-full h-12 text-base"
-            disabled={isVerifying}
+            disabled={isLoading}
           >
-            {isVerifying ? "Verifying..." : "Verify Email"}
+            {isLoading ? "Verifying..." : "Verify Email"}
           </Button>
 
           <Button
@@ -157,9 +98,9 @@ export function VerifyOTPForm() {
             variant="outline"
             className="w-full h-12 text-base"
             onClick={handleResendOTP}
-            disabled={isResending}
+            disabled={isLoading}
           >
-            {isResending ? "Sending..." : "Resend Code"}
+            {isLoading ? "Sending..." : "Resend Code"}
           </Button>
         </div>
       </form>

@@ -9,7 +9,14 @@ import {
   UserResponse,
   VerifyOtpRequest,
 } from "@/types";
+import {
+  clearAuthCookies,
+  clearUserRoles,
+  setAuthCookies,
+  setUserRoles,
+} from "../auth";
 
+import { AUTH_TOKEN_NAMES } from "../constants";
 import Cookies from "js-cookie";
 import axios from "./axios";
 
@@ -31,8 +38,7 @@ export const userApi = {
     );
     const { tokens, user } = response.data.result;
 
-    Cookies.set("accessToken", tokens.access);
-    Cookies.set("refreshToken", tokens.refresh);
+    await setAuthCookies(tokens.access, tokens.refresh);
 
     return { user, tokens };
   },
@@ -54,22 +60,22 @@ export const userApi = {
     );
     const { access, refresh } = response.data.result;
 
-    Cookies.set("accessToken", access);
-    Cookies.set("refreshToken", refresh);
+    await setAuthCookies(access, refresh);
 
     return { access, refresh };
   },
 
   // Logs out user by invalidating refresh token and clearing cookies
   logout: async () => {
-    const refreshToken = Cookies.get("refreshToken");
+    const refreshToken = Cookies.get(AUTH_TOKEN_NAMES.REFRESH_TOKEN);
     if (!refreshToken) return;
 
     const data: LogoutRequest = { refresh: refreshToken };
     await axios.post("/api/v1/accounts/logout", data);
 
-    Cookies.remove("accessToken");
-    Cookies.remove("refreshToken");
+    await clearAuthCookies();
+    await clearUserRoles();
+    return true;
   },
 
   // Fetches the currently authenticated user's details
@@ -78,12 +84,14 @@ export const userApi = {
     return response.data.result;
   },
 
-  // Gets list of roles assigned to current user
+  // Gets list of roles and permissions assigned to current user
   getUserRoles: async () => {
     const response = await axios.get<RolesResponse>(
       "/api/v1/accounts/me/roles"
     );
-    return response.data.result.roles;
+    const roles = response.data.result.roles;
+    await setUserRoles(roles);
+    return roles;
   },
 
   // Gets list of all system roles
@@ -115,8 +123,7 @@ export const userApi = {
 
     // Clear cookies on successful deletion
     if (response.data.status === "success") {
-      Cookies.remove("accessToken");
-      Cookies.remove("refreshToken");
+      await clearAuthCookies();
     }
 
     return response.data;

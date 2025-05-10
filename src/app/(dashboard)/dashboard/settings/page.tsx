@@ -11,7 +11,7 @@ import { GeneralSettings } from "@/components/settings/GeneralSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { PreferencesSettings } from "@/components/settings/PreferencesSettings";
 import { SocialSettings } from "@/components/settings/SocialSettings";
-import { useAuth } from "@/components/providers/auth-provider";
+import { useAuth } from "@/context/auth-context";
 import { useEffect } from "react";
 import { useLogger } from "@/lib/hooks/useLogger";
 

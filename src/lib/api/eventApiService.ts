@@ -22,7 +22,7 @@ import axios from "./axios";
 
 export const eventApi = {
   // Fetches a paginated list of events
-  getEvents: async (page = 1, params?: EventFilterParams) => {
+  getEvents: async (params?: EventFilterParams, page = 1) => {
     const searchParams = new URLSearchParams({ page: page.toString() });
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -305,5 +305,20 @@ export const eventApi = {
       `/api/v1/events/my_events${queryString ? `?${queryString}` : ""}`
     );
     return response.data.result;
+  },
+
+  getUpcomingEvents: async (): Promise<EventResponse> => {
+    const response = await axios.get("/events/upcoming/");
+    return response.data;
+  },
+
+  getPastEvents: async (): Promise<EventResponse> => {
+    const response = await axios.get("/events/past/");
+    return response.data;
+  },
+
+  archiveEvent: async (slug: string): Promise<Event> => {
+    const response = await axios.post(`/events/${slug}/archive/`);
+    return response.data;
   },
 };

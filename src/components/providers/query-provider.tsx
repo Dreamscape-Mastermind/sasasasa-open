@@ -3,6 +3,7 @@
 import { FormProvider, useForm } from "react-hook-form";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import { AuthProvider } from "@/context/auth-context";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { SidebarProvider } from "./SidebarContext";
 import { ThemeProviders } from "./theme-providers";
@@ -15,16 +16,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 1 * 60 * 1000, // 5 minutes
-            cacheTime: 30 * 60 * 1000, // 30 minutes
+            staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+            gcTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
             retry: 3, // retry 3 times
             retryDelay: (attemptIndex) =>
               Math.min(1000 * 2 ** attemptIndex, 30000), // 30 seconds
             refetchOnWindowFocus: true, // refetch on window focus
             refetchOnMount: true, // refetch on mount
             refetchOnReconnect: true, // refetch on reconnect
-            suspense: false, // disable suspense
-            keepPreviousData: true, // keep previous data
+            placeholderData: (previousData) => previousData, // keep previous data
           },
           mutations: {
             retry: 2,
@@ -39,12 +39,14 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProviders>
-        <FormProvider {...methods}>
-          <SidebarProvider>
-            {children}
-            <Toaster />
-          </SidebarProvider>
-        </FormProvider>
+        <AuthProvider>
+          <FormProvider {...methods}>
+            <SidebarProvider>
+              {children}
+              <Toaster />
+            </SidebarProvider>
+          </FormProvider>
+        </AuthProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </ThemeProviders>
     </QueryClientProvider>

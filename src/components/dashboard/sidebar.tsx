@@ -37,6 +37,14 @@ import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useMyEvents } from "@/lib/hooks/useEvents";
+import { NAV_ITEMS } from "@/lib/constants";
+import { LucideIcon } from "lucide-react";
+
+interface MenuItem {
+  label: string;
+  href: string;
+  icon?: LucideIcon;
+}
 
 const eventMenus = [
   {
@@ -218,7 +226,7 @@ export function Sidebar() {
           <div className="bg-purple-400 p-4 rounded-lg ">
             <h3 className="font-bold text-lg text-white">Event Management</h3>
             <div className="space-y-1">
-              {eventMenus.map((menu) => (
+              {NAV_ITEMS.DASHBOARD_EVENT_ORGANIZER.map((menu: MenuItem) => (
                 <Link
                   key={menu.href}
                   href={menu.href.replace(
@@ -248,7 +256,7 @@ export function Sidebar() {
                       ) && "bg-blue-500 text-white font-bold"
                     )}
                   >
-                    <menu.icon className="h-4 w-4 text-white" />
+                    {menu.icon && <menu.icon className="h-4 w-4 text-white" />}
                     <span className="text-white">{menu.label}</span>
                   </Button>
                 </Link>
@@ -264,17 +272,17 @@ export function Sidebar() {
           <h3 className="font-bold text-lg text-white">Blog Management</h3>
           <ScrollArea className="flex-1">
             <div className="p-3 space-y-1">
-              {blogMenus.map((menu) => (
+              {NAV_ITEMS.DASHBOARD_BLOG_ADMIN.map((menu: MenuItem) => (
                 <Link key={menu.href} href={menu.href}>
                   <Button
                     variant={pathname === menu.href ? "secondary" : "ghost"}
                     className={cn(
                       "w-full justify-start gap-2 hover:bg-blue-500 transition-opacity",
                       pathname === menu.href &&
-                        "bg-blue-500 text-white font-bold "
+                        "bg-blue-500 text-white font-bold"
                     )}
                   >
-                    <menu.icon className="h-4 w-4 text-white" />
+                    {menu.icon && <menu.icon className="h-4 w-4 text-white" />}
                     <span className="text-white">{menu.label}</span>
                   </Button>
                 </Link>
@@ -290,7 +298,7 @@ export function Sidebar() {
           <h3 className="font-bold text-lg text-white">User Settings</h3>
           <ScrollArea className="flex-1">
             <div className="p-3 space-y-1">
-              {userMenus.map((menu) => (
+              {NAV_ITEMS.DASHBOARD_ADMIN.map((menu: MenuItem) => (
                 <Link key={menu.href} href={menu.href}>
                   <Button
                     variant={pathname === menu.href ? "secondary" : "ghost"}
@@ -300,7 +308,7 @@ export function Sidebar() {
                         "bg-blue-500 text-white font-bold"
                     )}
                   >
-                    <menu.icon className="h-4 w-4 text-white" />
+                    {menu.icon && <menu.icon className="h-4 w-4 text-white" />}
                     <span className="text-white">{menu.label}</span>
                   </Button>
                 </Link>

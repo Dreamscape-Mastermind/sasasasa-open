@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { trackEvent } from "@/lib/analytics";
-import { useAuth } from "@/components/providers/auth-provider";
+import { useAuth } from "@/context/auth-context";
 import { useForm } from "react-hook-form";
 import { useLogger } from "@/lib/hooks/useLogger";
 import { useUpdateProfile } from "@/lib/hooks/useAuth";

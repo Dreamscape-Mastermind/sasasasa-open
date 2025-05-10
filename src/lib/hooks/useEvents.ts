@@ -1,25 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { Event } from "@/types";
-import { eventApi } from "../api/eventApiService";
+import {
+  type EventUpdateRequest,
+  EventFilterParams
+} from "@/types/event";
+import { eventApi } from "@/lib/api/eventApiService";
 import toast from "react-hot-toast";
 
 /** Fetches paginated list of events */
-export const useEvents = (page = 1, params?: Record<string, any>) => {
+export function useEvents(page: number, filters: EventFilterParams) {
   return useQuery({
-    queryKey: ["events", page, params],
-    queryFn: () => eventApi.getEvents(page, params),
+    queryKey: ["events", page, filters],
+    queryFn: () => eventApi.getEvents({ ...filters, page }),
   });
-};
+}
 
 /** Fetches details of a specific event by ID */
-export const useEvent = (eventId: string, params?: Record<string, any>) => {
+export function useEvent(slug: string) {
   return useQuery({
-    queryKey: ["event", eventId, params],
-    queryFn: () => eventApi.getEvent(eventId, params),
-    enabled: !!eventId,
+    queryKey: ["event", slug],
+    queryFn: () => eventApi.getEvent(slug),
   });
-};
+}
 
 /** Creates a new event */
 export const useCreateEvent = () => {
@@ -40,7 +42,8 @@ export const useCreateEvent = () => {
 export const useUpdateEvent = (eventId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<Event>) => eventApi.updateEvent(eventId, data),
+    mutationFn: (data: EventUpdateRequest) =>
+      eventApi.updateEvent(eventId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       queryClient.invalidateQueries({ queryKey: ["event", eventId] });
@@ -152,12 +155,12 @@ export const useAcceptTeamInvitation = (eventId: string) => {
 };
 
 /** Fetches list of featured events */
-export const useFeaturedEvents = () => {
+export function useFeaturedEvents() {
   return useQuery({
     queryKey: ["events", "featured"],
-    queryFn: eventApi.getFeaturedEvents,
+    queryFn: () => eventApi.getFeaturedEvents(),
   });
-};
+}
 
 /** Fetches paginated list of locations */
 export const useLocations = (page = 1) => {
@@ -201,3 +204,17 @@ export const useMyEvents = (page = 1, params?: Record<string, any>) => {
     queryFn: () => eventApi.getMyEvents(page, params),
   });
 };
+
+export function useUpcomingEvents() {
+  return useQuery({
+    queryKey: ["events", "upcoming"],
+    queryFn: () => eventApi.getUpcomingEvents(),
+  });
+}
+
+export function usePastEvents() {
+  return useQuery({
+    queryKey: ["events", "past"],
+    queryFn: () => eventApi.getPastEvents(),
+  });
+}
