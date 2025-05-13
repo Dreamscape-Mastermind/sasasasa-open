@@ -4,6 +4,7 @@ import "react-datepicker/dist/react-datepicker.css"; // Import the CSS for react
 
 import * as z from "zod";
 
+import { Loader2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -19,10 +20,6 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { Control, useForm } from "react-hook-form";
-import type {
-  CreateTicketTypeRequest,
-  UpdateTicketTypeRequest,
-} from "@/types/ticket";
 import {
   Form,
   FormControl,
@@ -45,18 +42,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 // import { TimePicker } from "@/components/ui/time-picker"
+import {
+  useCreateTicketType,
+  useDeleteTicketType,
+  useUpdateTicketType,
+} from "@/lib/hooks/useTickets";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import DatePicker from "react-datepicker";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
-import { Suspense } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
-import { useTicket } from "@/hooks/useTicket";
+import { useSearchParams } from "next/navigation";
+import { useTickets } from "@/lib/hooks/useTickets";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 function combineDateTime(date: Date, time: string): Date {
@@ -151,35 +151,13 @@ const ticketSchema = z
   );
 
 export default function TicketForm() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center min-h-[200px]">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      }
-    >
-      <TicketFormContent />
-    </Suspense>
-  );
-}
-
-function TicketFormContent() {
-  const { searchParams } = useSearchParamsContext();
-  const eventId = searchParams.get("eventId") || "";
-  const {
-    useTicketTypes,
-    useCreateTicketType,
-    useUpdateTicketType,
-    useDeleteTicketType,
-  } = useTicket();
-
-  const { data: tickets, isLoading: isLoadingTickets } =
-    useTicketTypes(eventId);
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get("eventId");
+  const { data: tickets, isLoading: isLoadingTickets } = useTickets(eventId);
   const createTicket = useCreateTicketType(eventId);
-  const updateTicket = useUpdateTicketType(eventId, "");
+  const updateTicket = useUpdateTicketType(eventId);
   const deleteTicket = useDeleteTicketType(eventId);
-
+  console.log({ "tickets data": useTickets(eventId).data });
   const formRef = useRef<HTMLDivElement>(null);
   const ticketForm = useForm<z.infer<typeof ticketSchema>>({
     resolver: zodResolver(ticketSchema),
@@ -193,26 +171,28 @@ function TicketFormContent() {
     },
   });
 
-  const [editingTicketId, setEditingTicketId] = useState<string | null>(null);
+  const [editingTicketId, setEditingTicketId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
   const onSubmitTicket = async (data: z.infer<typeof ticketSchema>) => {
     try {
-      const processedTicket: CreateTicketTypeRequest | UpdateTicketTypeRequest =
-        {
-          ...data,
-          sale_start_date: data.sale_start_date.toISOString(),
-          sale_end_date: data.sale_end_date.toISOString(),
-          is_active: true,
-        };
+      const processedTicket = {
+        ...data,
+        sale_start_date: data.sale_start_date,
+        sale_end_date: data.sale_end_date,
+        remaining_tickets: data.quantity,
+        is_active: true
+      };
 
       if (editingTicketId && eventId) {
-        await updateTicket.mutateAsync(processedTicket);
+        await updateTicket.mutateAsync({
+          eventId,
+          ticketId: editingTicketId,
+          data: processedTicket,
+        });
         setIsEditing(false); // Reset editing state after submission
       } else {
-        await createTicket.mutateAsync(
-          processedTicket as CreateTicketTypeRequest
-        );
+        await createTicket.mutateAsync(processedTicket);
       }
 
       ticketForm.reset(); // Reset form after successful creation or update
@@ -221,7 +201,7 @@ function TicketFormContent() {
     }
   };
 
-  const handleEditTicket = (ticket: any) => {
+  const handleEditTicket = (ticket) => {
     ticketForm.setValue("name", ticket.name);
     ticketForm.setValue("description", ticket.description);
     ticketForm.setValue("price", ticket.price);
@@ -245,9 +225,10 @@ function TicketFormContent() {
     setIsEditing(false); // Reset editing state
   };
 
-  const handleDeleteTicket = async (ticketId: string) => {
+  const handleDeleteTicket = async (ticketId) => {
     try {
-      if (eventId) await deleteTicket.mutateAsync(ticketId);
+      if (eventId) await deleteTicket.mutateAsync({ eventId, ticketId }); // Call the delete function
+      // Optionally, you can refresh the tickets or show a success message
     } catch (error) {
       console.error("Error deleting ticket:", error);
     }

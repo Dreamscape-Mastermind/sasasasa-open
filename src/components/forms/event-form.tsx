@@ -25,7 +25,6 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { Control, useForm } from "react-hook-form";
-import type { CreateEventRequest, UpdateEventRequest } from "@/types/event";
 import { Facebook, Instagram, Linkedin, Twitter } from "../social-icons/icons";
 import {
   Form,
@@ -42,6 +41,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { allTimezones, useTimezoneSelect } from "react-timezone-select";
+import { useCreateEvent, useUpdateEvent } from "@/lib/hooks/useEvents";
+import { useMyEvents } from '@/lib/hooks/useEvents';
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -49,12 +50,16 @@ import DatePicker from "react-datepicker";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { VenueSearchResult } from "@/lib/dataStructures";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { useEvent } from "@/hooks/useEvent";
-import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
+// import { useEvent } from "@/services/events/queries";
+import { useEvent } from '@/lib/hooks/useEvents';
+import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+
+// import toast, { Toaster } from 'react-hot-toast';
 
 const formSchema = z
   .object({
@@ -188,23 +193,17 @@ const CustomTimezoneSelect = ({ onChange, value }) => {
 };
 
 export default function EventForm() {
-  const { searchParams } = useSearchParamsContext();
+  const searchParams = useSearchParams();
   const eventId = searchParams.get("eventId");
 
   // State to track if we are editing an event
   const [isEditing, setIsEditing] = useState(false);
 
-  const {
-    useEvent: useEventQuery,
-    useCreateEvent,
-    useUpdateEvent,
-  } = useEvent();
-
   // Fetch event details if eventId is present
-  const { data: eventData, error: eventError } = useEventQuery(eventId || "");
+  const { data: eventData, error: eventError } = useEvent(eventId);
 
   const createEvent = useCreateEvent();
-  const updateEvent = useUpdateEvent(eventId || "");
+  const updateEvent = useUpdateEvent();
 
   useEffect(() => {
     if (createEvent.isSuccess) {
@@ -212,7 +211,12 @@ export default function EventForm() {
     }
   }, [createEvent.isSuccess]);
 
+  const [venueSearchResults, setVenueSearchResults] = useState<
+    VenueSearchResult[]
+  >([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -271,23 +275,51 @@ export default function EventForm() {
     }
   }, [eventData, eventError, form]); // Run effect when eventData changes
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    const processedData: CreateEventRequest | UpdateEventRequest = {
+  // const searchVenues = (query: string) => {
+  //   if (!query || query.length <= 2) {
+  //     setVenueSearchResults([])
+  //     return
+  //   }
+  //   setIsSearching(true)
+  //   // Simulated venue search - replace with actual API call
+  //   setTimeout(() => {
+  //     setVenueSearchResults([
+  //       { place_id: '1', description: 'Convention Center' } as VenueSearchResult,
+  //       { place_id: '2', description: 'City Hall' },
+  //       { place_id: '3', description: 'Sports Arena' },
+  //     ])
+  //     setIsSearching(false)
+  //   }, 1000)
+  // }
+
+  // function onSubmit(values: z.infer<typeof formSchema>) {
+  //   const startDateTime = combineDateTime(values.start_date, values.start_time);
+  //   const endDateTime = combineDateTime(values.end_date, values.end_time);
+  //   const data = {
+  //     ...values,
+  //     start_date: startDateTime,
+  //     end_date: endDateTime
+  //   }
+  //   createEvent.mutate(data);
+  //   console.log(data);
+  // }
+  const onSubmit = async (data) => {
+    // Handle form submission logic
+
+    const processedData = {
       ...data,
-      start_date: combineDateTime(
-        data.start_date,
-        data.start_time
-      ).toISOString(),
-      end_date: combineDateTime(data.end_date, data.end_time).toISOString(),
+      // cover_image: imagePreview,
+      // start_date: combineDateTime(data.start_date, data.start_time),
+      // end_date: combineDateTime(data.end_date, data.end_time),
     };
 
     console.log({ processedData });
 
     if (isEditing && eventId) {
       // Call the update function here
-      await updateEvent.mutateAsync(processedData);
+      await updateEvent.mutateAsync({ eventId, data: processedData });
     } else {
-      await createEvent.mutateAsync(processedData as CreateEventRequest);
+      await createEvent.mutateAsync(processedData);
     }
   };
 
@@ -487,18 +519,77 @@ export default function EventForm() {
                               <FormLabel className="text-gray-700 dark:text-gray-300">
                                 Timezone
                               </FormLabel>
+                              {/* <div className="max-w-full">  */}
                               <CustomTimezoneSelect
                                 value={field.value}
                                 onChange={(timezone) =>
                                   field.onChange(timezone.value)
                                 }
                               />
+                              {/* </div> */}
+                              {/* <CustomTimezoneSelect value={field.value} onChange={(timezone) => field.onChange(timezone.value)} /> */}
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
                     </div>
+
+                    {/* <FormField
+                        control={form.control}
+                        name="venue"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel className="text-gray-700">Venue</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className={cn(
+                                      "w-full justify-between bg-gray-50 border-gray-300 rounded-none",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {field.value.name ? field.value.name : "Search for a venue"}
+                                    <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[400px] p-0">
+                                <Command>
+                                  <CommandInput
+                                    placeholder="Search for a venue..."
+                                    onValueChange={searchVenues}
+                                  />
+                                  <CommandEmpty>No venues found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {isSearching && (
+                                      <div className="flex items-center justify-center p-4">
+                                        <Loader2 className="h-6 w-6 animate-spin" />
+                                      </div>
+                                    )}
+                                    {venueSearchResults.map((venue) => (
+                                      <CommandItem
+                                        key={venue.place_id}
+                                        value={venue.description}
+                                        onSelect={() => {
+                                          form.setValue("venue", { name: venue.description, place_id: venue.place_id })
+                                        }}
+                                      >
+                                        <MapPin className="mr-2 h-4 w-4" />
+                                        {venue.description}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage className="text-red-500" />
+                          </FormItem>
+                        )}
+                      /> */}
 
                     <FormField
                       control={form.control}
