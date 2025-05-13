@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/ShadCard";
+import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
@@ -25,16 +26,27 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TeamMemberRole } from "@/types/event";
-import { useEvent } from "@/hooks/useEvent";
-import { useForm } from "react-hook-form";
-import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
+import { useInviteTeamMember, useTeamMembers } from "@/lib/hooks/useEvents";
+import { usePublishEvent } from "@/lib/hooks/useEvents"; // Import the usePublish hook
+import { useSearchParams } from "next/navigation";
+// import { useTeamMembers } from "@/services/events-team/queries"; // Import the query hook
 import { zodResolver } from "@hookform/resolvers/zod";
 
-// Define the schema
+// import { useMyEvents } from '@/lib/hooks/useEvents';useInviteTeamMember
+
+// First, define the role type and schema
+const ROLES = {
+  EVENT_ORGANIZER: "EVENT_ORGANIZER",
+  EVENT_TEAM: "EVENT_TEAM",
+  SELLER: "SELLER",
+  CUSTOMER: "CUSTOMER",
+} as const;
+
+type Role = keyof typeof ROLES;
+
 const teamSchema = z.object({
   user_email: z.string().email("Please enter a valid email address"),
-  role: z.nativeEnum(TeamMemberRole, {
+  role: z.enum(["EVENT_ORGANIZER", "EVENT_TEAM", "SELLER", "CUSTOMER"], {
     required_error: "Please select a role",
   }),
 });
@@ -44,44 +56,41 @@ export default function TeamMembersForm() {
   const teamForm = useForm<z.infer<typeof teamSchema>>({
     resolver: zodResolver(teamSchema),
     defaultValues: {
-      user_email: "",
-      role: TeamMemberRole.EVENT_TEAM,
+      user_email: "", // Adjusted to match the new schema
+      role: "EVENT_TEAM", // Default role
     },
   });
 
-  const { searchParams } = useSearchParamsContext();
+  const searchParams = useSearchParams();
   const eventId = searchParams.get("eventId");
 
-  // Get hooks from useEvent
-  const { useTeamMembers, useInviteTeamMember, usePublishEvent } = useEvent();
-
   // Fetch current team members
-  const { data: teamMembers, refetch } = useTeamMembers(eventId || "");
+  const { data: teamMembers, refetch } = useTeamMembers(eventId);
 
-  const inviteTeamMember = useInviteTeamMember(eventId || "");
+  const inviteTeamMember = useInviteTeamMember(eventId); // Use the mutation to invite a team member
 
   const handleInvite = async () => {
     const memberData = {
       user_email: teamForm.getValues("user_email"),
       role: teamForm.getValues("role"),
-    };
-    if (eventId) {
-      await inviteTeamMember.mutateAsync(memberData);
-      teamForm.reset();
-      refetch();
-    }
+    }; // Get email and role from form
+    if (eventId)
+      await inviteTeamMember.mutateAsync({ eventId, data: memberData });
+    console.log({ memberData });
+    refetch(); // Refetch team members after inviting
   };
 
   // Initialize the publish mutation
-  const publishEvent = usePublishEvent();
+  const publishEvent = usePublishEvent(); // Use the publish hook
 
   const handlePublish = async () => {
     try {
-      if (eventId) {
-        await publishEvent.mutateAsync(eventId);
-        console.log("Event published successfully!");
-      }
+      // Call the publish function (you may need to pass eventId or other data)
+      if (eventId) await publishEvent.mutateAsync(eventId); // Adjust as necessary
+      // Optionally, handle success (e.g., show a success message)
+      console.log("Event published successfully!");
     } catch (error) {
+      // Handle error (e.g., show an error message)
       console.error("Error publishing event:", error);
     }
   };
@@ -106,9 +115,6 @@ export default function TeamMembersForm() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Role
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -119,9 +125,6 @@ export default function TeamMembersForm() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {member.role}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {member.status}
                     </td>
                   </tr>
                 ))}
@@ -138,7 +141,7 @@ export default function TeamMembersForm() {
                 {/* Input for team member email */}
                 <FormField
                   control={teamForm.control}
-                  name="user_email"
+                  name="user_email" // Updated to match the new schema
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -156,7 +159,7 @@ export default function TeamMembersForm() {
                 {/* Dropdown for role selection */}
                 <FormField
                   control={teamForm.control}
-                  name="role"
+                  name="role" // Updated to match the new schema
                   render={({ field }) => (
                     <FormItem>
                       <Select
@@ -167,18 +170,12 @@ export default function TeamMembersForm() {
                           <SelectValue placeholder="Select Role" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value={TeamMemberRole.EVENT_ORGANIZER}>
+                          <SelectItem value="EVENT_ORGANIZER">
                             Event Organizer
                           </SelectItem>
-                          <SelectItem value={TeamMemberRole.EVENT_TEAM}>
-                            Event Team
-                          </SelectItem>
-                          <SelectItem value={TeamMemberRole.SELLER}>
-                            Seller
-                          </SelectItem>
-                          <SelectItem value={TeamMemberRole.CUSTOMER}>
-                            Customer
-                          </SelectItem>
+                          <SelectItem value="EVENT_TEAM">Event Team</SelectItem>
+                          <SelectItem value="SELLER">Seller</SelectItem>
+                          <SelectItem value="CUSTOMER">Customer</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -189,12 +186,9 @@ export default function TeamMembersForm() {
                   type="submit"
                   variant="outline"
                   size="sm"
-                  className="dark:bg-zinc-900 dark:border-gray-700 rounded-full"
-                  disabled={inviteTeamMember.isPending}
+                  className=" dark:bg-zinc-900 dark:border-gray-700 rounded-full"
                 >
-                  {inviteTeamMember.isPending
-                    ? "Inviting..."
-                    : "Invite Team Member"}
+                  Invite Team Member
                 </Button>
               </form>
             </Form>
@@ -207,13 +201,8 @@ export default function TeamMembersForm() {
           </CardHeader>
           <CardContent className="flex items-center justify-between">
             <span>Is everything set?</span>
-            <Button
-              variant="default"
-              className="ml-4"
-              onClick={handlePublish}
-              disabled={publishEvent.isPending}
-            >
-              {publishEvent.isPending ? "Publishing..." : "Publish Event"}
+            <Button variant="default" className="ml-4" onClick={handlePublish}>
+              Publish Event
             </Button>
           </CardContent>
         </Card>
