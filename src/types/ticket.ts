@@ -20,8 +20,8 @@ export interface TicketType extends TimeStamped {
   quantity: number;
   remaining_tickets: number;
   is_active: boolean;
-  sale_start_date: string;
-  sale_end_date: string;
+  sale_start_date: Date;
+  sale_end_date: Date;
   flash_sale?: TicketTypeWithFlashSale | null;
 }
 

@@ -156,6 +156,15 @@ export const useAcceptTeamInvitation = (eventId: string) => {
   });
 };
 
+// Fetch list of team members
+export function useTeamMembers(eventId: string | null) {
+  return useQuery({
+      queryKey: ['team', eventId],
+      queryFn: () => eventApi.getEventTeamMembers(eventId!),
+      enabled: !!eventId, // Only run query if eventId exists
+  });
+}
+
 /** Fetches list of featured events */
 export function useFeaturedEvents() {
   return useQuery({
