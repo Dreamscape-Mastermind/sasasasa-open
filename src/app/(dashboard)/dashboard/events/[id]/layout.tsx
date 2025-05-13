@@ -11,7 +11,6 @@ export default function EventLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const eventId = params.id as string;
 
-
   const { data: event, isLoading, error } = useEvent().useEvent(eventId);
 
   if (isLoading) {
