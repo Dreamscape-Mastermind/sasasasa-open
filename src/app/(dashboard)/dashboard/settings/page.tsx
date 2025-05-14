@@ -98,7 +98,7 @@ function SettingsContent() {
       animate="visible"
       variants={containerVariants}
     >
-      {action === 'link-email' && (
+      {(action === 'link-email' || user?.is_verified == false) && (
         <Alert variant="warning" className="bg-yellow-500/10 border-yellow-500/50">
           <AlertCircle className="h-4 w-4 text-yellow-500" />
           <AlertTitle>Email Verification Required</AlertTitle>

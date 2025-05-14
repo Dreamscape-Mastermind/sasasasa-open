@@ -99,6 +99,7 @@ function EmailSettingsContent() {
       if (response.ok) {
         toast.success('Email verified successfully');
         // Refresh the page or update user state
+        router.push('/dashboard/settings');
         window.location.reload();
       } else {
         const error = await response.json();

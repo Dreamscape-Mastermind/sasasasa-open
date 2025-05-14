@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAppKitAccount, useAppKitNetworkCore, useAppKitProvider} from "@reown/appkit/react";
+import { useAppKitAccount, useAppKitNetworkCore, useAppKitProvider, useDisconnect} from "@reown/appkit/react";
 
 import {
   BrowserProvider,
@@ -128,16 +128,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { chainId } = useAppKitNetworkCore();
   // AppKit hook to get the wallet provider
   const { walletProvider } = useAppKitProvider("eip155");
+  
+  const { disconnect } = useDisconnect();
 
   const handleSignMsg = async (message: any, address: string) => {
+
     // create the provider and signer
     const provider = new BrowserProvider(walletProvider as Eip1193Provider, chainId);
     const signer = new JsonRpcSigner(provider, address as string);
     // sign the message
+
     const signature = await signer?.signMessage(message);
     
-    // log the signature
-    console.log(signature);
 
     return signature
   };
@@ -285,7 +287,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setTokens(null)
     localStorage.removeItem(StorageKey.USER)
     localStorage.removeItem(StorageKey.TOKENS)
-    
+    disconnect()
     router.push('/')
   }
 
@@ -332,11 +334,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }),
     })
 
+    
+    const resVerify = await response.json() as Web3AuthResponse;
+
     if (response.ok) {
-      const res = await response.json() as Web3AuthResponse;
       const newTokens = {
-        access: res.result.tokens.access,
-        refresh: res.result.tokens.refresh,
+        access: resVerify.result.tokens.access,
+        refresh: resVerify.result.tokens.refresh,
       }
       setTokens(newTokens)
       localStorage.setItem(StorageKey.TOKENS, JSON.stringify(newTokens))
@@ -348,27 +352,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error('Failed to sign in via SIWE')
     }
 
-    console.log('Signed in via SIWE')
 
-    return {signature, message_data: message_data}
+    return {signature, message_data: message_data, response: resVerify}
   }
 
   const loginWithWallet = async (walletAddress: `0x${string}`) => {
-
-    if (!walletAddress || (!(walletAddress === address)) || !isConnected) {
-      throw new Error('Wallet address is required')
+    if (!walletAddress || !(walletAddress === address) || !isConnected) {
+      throw new Error("Wallet address is required");
     }
 
-    const signature = await loginWithSIWE(walletAddress)
+    const res = (await loginWithSIWE(walletAddress))
+      .response as unknown as Web3AuthResponse;
 
+    // Create user object
     const walletUser: User = {
-      id: walletAddress,
-      email: embeddedWalletInfo?.user?.email || '',
-      walletAddress: walletAddress as `0x${string}`,
-      authType: 'web3'
-    }
-    setUser(walletUser)
-    localStorage.setItem(StorageKey.USER, JSON.stringify(walletUser))
+      id: res.result.user.id || address,
+      email: res.result.user.email || embeddedWalletInfo?.user?.email || "",
+      walletAddress: address as `0x${string}`,
+      authType: "web3",
+      is_verified: res.result.user.is_verified,
+      first_name: res.result.user.first_name || "",
+      last_name: res.result.user.last_name || "",
+      bio: res.result.user.bio || "",
+      avatar: res.result.user.avatar || "",
+      is_active: res.result.user.is_active !== false, // Default to true if not provided
+      last_online_at: res.result.user.last_online_at || null,
+      // Social media handles if available
+      social: {
+        instagram: res.result.user.instagram_handle || "",
+        twitter: res.result.user.twitter_handle || "",
+        linkedin: res.result.user.linkedin_handle || "",
+        website: res.result.user.website || "",
+      },
+    };
+
+    setUser(walletUser);
+    localStorage.setItem(StorageKey.USER, JSON.stringify(walletUser));
   }
 
   
@@ -513,7 +532,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       // Request linking nonce
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/web3/link-wallet`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/web3/link_wallet`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -538,7 +557,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const signature = await handleSignMsg(message as any, address);
       
       // Verify signature and complete linking
-      const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/web3/verify-link-wallet`, {
+      const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/web3/verify_link_wallet`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

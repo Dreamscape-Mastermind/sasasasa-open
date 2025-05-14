@@ -12,6 +12,9 @@ import Image from 'next/image'
 import { AppKit } from 'contexts/AppKit'
 import { useAuth } from 'contexts/AuthContext'
 import { useAppKitAccount } from '@reown/appkit/react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs2'
+import { WalletAddress } from '@/components/ui/wallet-address'
+import { ArrowLeft } from 'lucide-react'
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -21,6 +24,7 @@ export default function Login() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [activeTab, setActiveTab] = useState<'email' | 'wallet'>('email')
   const { loginWithWallet } = useAuth()
   const { isConnected, address } = useAppKitAccount()
 
@@ -61,6 +65,20 @@ export default function Login() {
     }
   }
 
+  const handleStandardLogin = async () => {
+    if (!address || !isConnected) return
+    
+    setLoading(true)
+    try {
+      await loginWithWallet(address)
+    } catch (error) {
+      console.error('Login error:', error)
+      setError('Failed to login with wallet')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8">
@@ -72,80 +90,84 @@ export default function Login() {
             height={50}
             className="mx-auto mb-4"
           />
-          <h2 className="mt-6 text-3xl font-bold">Welcome Back</h2>
+          <h2 className="mt-6 text-3xl font-bold">Welcome to Sasasasa</h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-200">
             Sign in to get started
           </p>
         </div>
 
-        <Form {...form}>
-          {error && (
-            <p className="text-red-500 text-sm text-center">{error}</p>
-          )}
-          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="Enter your email"
-                      className="rounded-full"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+        <Tabs defaultValue="email" className="mt-6" onValueChange={(value) => setActiveTab(value as 'email' | 'wallet')}>
+          <TabsList className="grid w-full grid-cols-2 rounded-3xl">
+            <TabsTrigger value="email" className="text-sm font-medium rounded-3xl">
+              Email Login
+            </TabsTrigger>
+            <TabsTrigger value="wallet" className="text-sm font-medium rounded-3xl">
+              Wallet Login
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="email" className="mt-4">
+            <Form {...form}>
+              {error && (
+                <p className="text-red-500 text-sm text-center">{error}</p>
               )}
-            />
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Enter your email"
+                          className="rounded-full"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? 'Sending Code...' : 'Continue with Email'}
-            </Button>
-          </form>
-          
-          <div className='flex items-center justify-center my-4'>
-            <div className='bg-gray-300 dark:bg-gray-700 h-px flex-grow'></div>
-            <span className='px-4 text-gray-500'>Or</span>
-            <div className='bg-gray-300 dark:bg-gray-700 h-px flex-grow'></div>
-          </div>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loading}
+                >
+                  {loading ? 'Sending Code...' : 'Continue with Email'}
+                </Button>
+              </form>
+            </Form>
+          </TabsContent>
 
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => router.push('/web3-login')}
-          >
-            Continue with Wallet
-          </Button>
-          
-          {/* { (
-            <>
-              <div className='mt-4 flex justify-center'>
-                <AppKit/>
+          <TabsContent value="wallet" className="mt-4">
+            {!isConnected ? (
+              <div className='flex justify-center'>
+                <AppKit />
               </div>
-            </>
-          )}
-          
-          {address && isConnected && (
-            <div className='mt-4 flex justify-center'>
-              <Button
-                type="submit"
-                className="w-full"
-                onClick={() => {
-                  loginWithWallet(address)
-                }}
-              >
-                {loading ? 'Signing In' : `Sign In Via ..${address?.substring(0, 6)}...${address?.substring(address.length - 4, address.length)}`}
-              </Button>
-            </div>
-          )} */}
-        </Form>
+            ) : (
+              <div className="space-y-6">
+                <div className="mt-4">
+                  <WalletAddress 
+                    address={address || ''} 
+                    showChainId={false}
+                    showIcon={true}
+                    size="md"
+                  />
+                </div>
+                
+                <Button
+                  className="w-full transition-colors"
+                  onClick={handleStandardLogin}
+                  disabled={loading}
+                >
+                  {loading ? 'Signing In...' : 'Sign In with Wallet'}
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )
