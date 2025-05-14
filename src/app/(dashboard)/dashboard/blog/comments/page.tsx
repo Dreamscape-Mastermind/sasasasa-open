@@ -134,7 +134,7 @@ export default function CommentsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              comments?.results.map((comment) => (
+              comments?.map((comment) => (
                 <>
                   <TableRow key={comment.id}>
                     <TableCell className="font-medium">

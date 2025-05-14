@@ -1,3 +1,5 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBlogComments, useCreateComment } from "@/lib/hooks/useBlog";
 
@@ -13,8 +15,8 @@ interface CommentSectionProps {
 
 export function CommentSection({ postId }: CommentSectionProps) {
   const [content, setContent] = useState("");
-  const { data: comments, isLoading } = useBlogComments({ post: postId });
-  const { mutate: createComment, isLoading: isSubmitting } = useCreateComment();
+  const { data: comments = [], isLoading } = useBlogComments({ post: postId });
+  const { mutate: createComment, isPending: isSubmitting } = useCreateComment();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,10 +86,8 @@ export function CommentSection({ postId }: CommentSectionProps) {
       </form>
 
       <div className="space-y-8">
-        <h3 className="text-lg font-semibold">
-          {comments?.length || 0} Comments
-        </h3>
-        {comments?.map(renderComment)}
+        <h3 className="text-lg font-semibold">{comments.length} Comments</h3>
+        {comments.map(renderComment)}
       </div>
     </div>
   );

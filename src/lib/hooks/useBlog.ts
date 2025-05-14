@@ -31,6 +31,7 @@ export const useBlogComments = (params?: CommentListQueryParams) => {
   return useQuery({
     queryKey: ["blog-comments", params],
     queryFn: () => blogApi.getComments(params),
+    select: (data) => data.results,
   });
 };
 
@@ -156,5 +157,13 @@ export const useRemoveReaction = () => {
       queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
       queryClient.invalidateQueries({ queryKey: ["blog-comments"] });
     },
+  });
+};
+
+export const useSearchTags = (query: string) => {
+  return useQuery({
+    queryKey: ["blog-tags", query],
+    queryFn: () => blogApi.searchTags(query),
+    enabled: query.length > 0,
   });
 };

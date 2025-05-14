@@ -24,6 +24,7 @@ export interface BlogPost {
   status: BlogPostStatus;
   publish_date: string | null;
   tags: string[];
+  tag_list: string[];
   meta_title: string;
   meta_description: string;
   view_count: number;
@@ -47,6 +48,7 @@ export interface BlogPostListItem {
   comment_count: number;
   reaction_count: number;
   created_at: string;
+  tag_list: string[];
 }
 
 export interface Comment {
@@ -75,21 +77,23 @@ export interface Reaction {
 export interface CreateBlogPostRequest {
   title: string;
   content: string;
-  excerpt: string;
-  featured_image: File;
-  tags: string[];
-  meta_title: string;
-  meta_description: string;
+  excerpt?: string;
+  status?: BlogPostStatus;
+  meta_title?: string;
+  meta_description?: string;
+  tags: string;
+  featured_image?: File;
 }
 
 export interface UpdateBlogPostRequest {
   title?: string;
   content?: string;
   excerpt?: string;
-  featured_image?: File;
-  tags?: string[];
+  status?: BlogPostStatus;
   meta_title?: string;
   meta_description?: string;
+  tags?: string;
+  featured_image?: string | File;
 }
 
 export interface CreateCommentRequest {
@@ -122,6 +126,14 @@ export interface CommentListQueryParams {
   parent?: number;
 }
 
+export interface TagSearchQueryParams {
+  q: string;
+}
+
+export interface TagSearch {
+  tags: string[];
+}
+
 export interface BlogResponse<T> {
   status: "success" | "error";
   message: string;
@@ -139,3 +151,5 @@ export type CommentListResponse = ApiResponse<PaginatedResponse<Comment>>;
 export type CommentResponse = ApiResponse<Comment>;
 export type ReactionResponse = ApiResponse<Reaction>;
 export type SuccessResponse = ApiResponse<null>;
+
+export type TagSearchResponse = ApiResponse<TagSearch>;

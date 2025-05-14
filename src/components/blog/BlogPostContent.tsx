@@ -1,12 +1,25 @@
-import { BlogPost } from "@/types/blog";
+"use client";
+
 import { CommentSection } from "@/components/blog/CommentSection";
 import { ReactionButtons } from "@/components/blog/ReactionButtons";
+import { useBlogPost } from "@/lib/hooks/useBlog";
+import { notFound } from "next/navigation";
 
 interface BlogPostContentProps {
-  post: BlogPost;
+  slug: string;
 }
 
-export function BlogPostContent({ post }: BlogPostContentProps) {
+export function BlogPostContent({ slug }: BlogPostContentProps) {
+  const { data: post, isLoading, error } = useBlogPost(slug);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error || !post) {
+    notFound();
+  }
+
   return (
     <article className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
       <header className="py-12">

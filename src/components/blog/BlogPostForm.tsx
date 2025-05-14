@@ -6,6 +6,15 @@ import {
   UpdateBlogPostRequest,
 } from "@/types/blog";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Form,
   FormControl,
   FormField,
@@ -13,7 +22,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Tag as ReactTag, WithContext as ReactTags } from "react-tag-input";
 import {
   Select,
   SelectContent,
@@ -21,32 +29,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateBlogPost, useUpdateBlogPost } from "@/lib/hooks/useBlog";
+import {
+  useBlogPost,
+  useCreateBlogPost,
+  useUpdateBlogPost,
+  useSearchTags,
+} from "@/lib/hooks/useBlog";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Editor } from "@/components/ui/editor";
 import { Input } from "@/components/ui/input";
 import { Save } from "lucide-react";
+import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "react-hot-toast";
-import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ReactTags } from "react-tag-autocomplete";
+import { useForm } from "react-hook-form";
 
-type Tag = ReactTag;
+type Tag = {
+  id: string;
+  text: string;
+};
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  slug: z.string().min(1, "Slug is required"),
   content: z.string().min(1, "Content is required"),
-  excerpt: z.string().min(1, "Excerpt is required"),
-  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
-  featured_image: z.instanceof(File).optional(),
-  meta_title: z.string().min(1, "Meta title is required"),
-  meta_description: z.string().min(1, "Meta description is required"),
-  tags: z.array(z.string()),
+  excerpt: z.string().optional(),
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).optional(),
+  meta_title: z.string().optional(),
+  meta_description: z.string().optional(),
+  tags: z.string(),
+  featured_image: z.union([z.string(), z.instanceof(File)]).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -54,96 +70,182 @@ type FormValues = z.infer<typeof formSchema>;
 interface BlogPostFormProps {
   post?: BlogPost;
   mode: "create" | "edit";
+  slug?: string;
 }
 
-export default function BlogPostForm({ post, mode }: BlogPostFormProps) {
+const EditorPopup = ({
+  content,
+  onChange,
+}: {
+  content: string;
+  onChange: (content: string) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [localContent, setLocalContent] = useState(content);
+
+  const handleSave = () => {
+    onChange(localContent);
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="w-full">
+          {content ? "Edit Content" : "Add Content"}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-[80vw] w-[80vw] h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>{content ? "Edit Content" : "Add Content"}</DialogTitle>
+          <DialogDescription>
+            {content
+              ? "Edit the content of the blog post."
+              : "Add content to the blog post."}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex-1 overflow-auto">
+          <SimpleEditor content={localContent} onChange={setLocalContent} />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave}>Save Changes</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default function BlogPostForm({
+  post: initialPost,
+  mode,
+  slug,
+}: BlogPostFormProps) {
   const router = useRouter();
+  const { data: fetchedPost, isLoading } = useBlogPost(slug || "");
   const { mutate: createPost, isPending: isCreating } = useCreateBlogPost();
   const { mutate: updatePost, isPending: isUpdating } = useUpdateBlogPost();
-  const [tags, setTags] = useState<Tag[]>(
-    post?.tags.map((tag) => ({
-      id: tag,
-      text: tag,
-      className:
-        "bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1",
-    })) || []
-  );
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const { data: suggestions = [], isLoading: isLoadingSuggestions } =
+    useSearchTags(inputValue);
+
+  const post = initialPost || fetchedPost;
+
+  // Initialize tags when post data is available
+  useEffect(() => {
+    if (post?.tag_list) {
+      setTags(
+        post.tag_list.map((tag) => ({
+          id: tag,
+          text: tag,
+          className:
+            "bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1",
+        }))
+      );
+    }
+  }, [post?.tag_list]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: post?.title || "",
-      slug: post?.slug || "",
       content: post?.content || "",
       excerpt: post?.excerpt || "",
       status: post?.status || "DRAFT",
       meta_title: post?.meta_title || "",
       meta_description: post?.meta_description || "",
-      tags: post?.tags || [],
+      tags: post?.tag_list?.join(",") || "",
+      featured_image: post?.featured_image || "",
     },
   });
 
+  // Update form values when post data changes
+  useEffect(() => {
+    if (post) {
+      form.reset({
+        title: post.title,
+        content: post.content,
+        excerpt: post.excerpt,
+        status: post.status,
+        meta_title: post.meta_title,
+        meta_description: post.meta_description,
+        tags: post.tag_list?.join(",") || "",
+        featured_image: post.featured_image || "",
+      });
+    }
+  }, [post, form]);
+
   const handleAddTag = (tag: Tag) => {
     setTags([...tags, tag]);
-    form.setValue(
-      "tags",
-      [...tags, tag].map((t) => t.text)
-    );
+    form.setValue("tags", [...tags, tag].map((t) => t.text).join(","));
   };
 
   const handleDeleteTag = (i: number) => {
     const newTags = tags.filter((tag, index) => index !== i);
     setTags(newTags);
-    form.setValue(
-      "tags",
-      newTags.map((t) => t.text)
-    );
-  };
-
-  const handleDragTag = (tag: Tag, currPos: number, newPos: number) => {
-    const newTags = tags.slice();
-    newTags.splice(currPos, 1);
-    newTags.splice(newPos, 0, tag);
-    setTags(newTags);
-    form.setValue(
-      "tags",
-      newTags.map((t) => t.text)
-    );
-  };
-
-  const addImage = () => {
-    const url = window.prompt("Enter image URL");
-    if (url && editor) {
-      editor.chain().focus().setImage({ src: url }).run();
-    }
-  };
-
-  const addLink = () => {
-    const url = window.prompt("Enter URL");
-    if (url && editor) {
-      editor.chain().focus().setLink({ href: url }).run();
-    }
+    form.setValue("tags", newTags.map((t) => t.text).join(","));
   };
 
   const onSubmit = (values: FormValues) => {
-    const formData = {
-      ...values,
-    };
-
     if (mode === "create") {
-      createPost(formData as CreateBlogPostRequest, {
-        onSuccess: () => {
-          toast.success("Blog post created successfully");
-          router.push("/dashboard/blog/posts");
-        },
-        onError: (error) => {
-          toast.error(error.message || "Failed to create blog post");
-        },
-      });
+      createPost(
+        {
+          ...values,
+          tags: values.tags,
+        } as CreateBlogPostRequest,
+        {
+          onSuccess: () => {
+            toast.success("Blog post created successfully");
+            router.push("/dashboard/blog/posts");
+          },
+          onError: (error) => {
+            toast.error(error.message || "Failed to create blog post");
+          },
+        }
+      );
     } else {
       if (!post?.slug) return;
+
+      // Compare current values with initial values to find changed fields
+      const changedFields: Partial<UpdateBlogPostRequest> = {};
+
+      if (values.title !== post.title) changedFields.title = values.title;
+      if (values.content !== post.content)
+        changedFields.content = values.content;
+      if (values.excerpt !== post.excerpt)
+        changedFields.excerpt = values.excerpt;
+      if (values.status !== post.status) changedFields.status = values.status;
+      if (values.meta_title !== post.meta_title)
+        changedFields.meta_title = values.meta_title;
+      if (values.meta_description !== post.meta_description)
+        changedFields.meta_description = values.meta_description;
+
+      // Compare tags
+      const currentTags = values.tags;
+      const originalTags = (post.tag_list || []).join(",");
+      if (currentTags !== originalTags) {
+        changedFields.tags = values.tags;
+      }
+
+      // Check if featured_image is a File (new upload) or different from original
+      if (
+        values.featured_image instanceof File ||
+        values.featured_image !== post.featured_image
+      ) {
+        changedFields.featured_image = values.featured_image;
+      }
+
+      // Only proceed if there are changes
+      if (Object.keys(changedFields).length === 0) {
+        toast("No changes to update");
+        return;
+      }
+
       updatePost(
-        { slug: post.slug, data: formData as UpdateBlogPostRequest },
+        { slug: post.slug, data: changedFields },
         {
           onSuccess: () => {
             toast.success("Blog post updated successfully");
@@ -156,6 +258,14 @@ export default function BlogPostForm({ post, mode }: BlogPostFormProps) {
       );
     }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (mode === "edit" && !post) {
+    return <div>Post not found</div>;
+  }
 
   return (
     <Form {...form}>
@@ -176,13 +286,36 @@ export default function BlogPostForm({ post, mode }: BlogPostFormProps) {
 
         <FormField
           control={form.control}
-          name="slug"
-          render={({ field }) => (
+          name="featured_image"
+          render={({ field: { value, onChange, ...field } }) => (
             <FormItem>
-              <FormLabel>Slug</FormLabel>
+              <FormLabel>Featured Image</FormLabel>
               <FormControl>
-                <Input placeholder="enter-post-slug" {...field} />
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      onChange(file);
+                    }
+                  }}
+                  {...field}
+                />
               </FormControl>
+              {value && (
+                <div className="mt-2">
+                  <img
+                    src={
+                      typeof value === "string"
+                        ? value
+                        : URL.createObjectURL(value)
+                    }
+                    alt="Featured"
+                    className="max-w-[200px] rounded-md"
+                  />
+                </div>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -195,7 +328,7 @@ export default function BlogPostForm({ post, mode }: BlogPostFormProps) {
             <FormItem>
               <FormLabel>Content</FormLabel>
               <FormControl>
-                <Editor
+                <EditorPopup
                   content={field.value}
                   onChange={(content) => field.onChange(content)}
                 />
@@ -255,27 +388,48 @@ export default function BlogPostForm({ post, mode }: BlogPostFormProps) {
               <FormControl>
                 <div className="space-y-2">
                   <ReactTags
-                    tags={tags}
-                    handleDelete={handleDeleteTag}
-                    handleAddition={handleAddTag}
-                    handleDrag={handleDragTag}
-                    delimiters={[188, 13]}
-                    placeholder="Press enter to add new tag"
-                    inputFieldPosition="inline"
+                    selected={tags.map((tag) => ({
+                      value: tag.id || tag.text,
+                      label: tag.text,
+                    }))}
+                    suggestions={suggestions.map((tag) => ({
+                      value: tag,
+                      label: tag,
+                    }))}
+                    onAdd={(tag) =>
+                      handleAddTag({ id: tag.value, text: tag.label })
+                    }
+                    onDelete={(index) => handleDeleteTag(index)}
+                    onInput={setInputValue}
+                    placeholderText="Type to search tags..."
+                    allowNew
+                    allowBackspace
+                    allowResize
                     classNames={{
-                      tags: "flex flex-wrap gap-2 my-2 w-full",
-                      tag: "bg-[#CC322D] text-white px-2 py-1 my-2  rounded-md flex items-center gap-1 transition-colors",
-                      tagInput:
-                        "border border-[#CC322D] rounded-md px-3 py-1 w-full bg-background text-foreground dark:bg-background dark:text-foreground focus:outline-none focus:ring-2 focus:ring-[#CC322D] mt-3",
-                      tagInputField:
-                        "bg-transparent text-foreground dark:text-foreground placeholder:text-[#CC322D]/70 dark:placeholder:text-white/70",
-                      remove:
-                        "text-white hover:text-[#CC322D] hover:bg-white rounded-full ml-1 cursor-pointer transition-colors",
-                      clearAll:
-                        "text-xs text-[#CC322D] hover:text-white hover:bg-[#CC322D] cursor-pointer ml-2 rounded px-2 py-1 transition-colors",
+                      root: "flex flex-wrap gap-2",
+                      rootIsActive: "is-active",
+                      rootIsDisabled: "is-disabled",
+                      rootIsInvalid: "is-invalid",
+                      label: "react-tags__label",
+                      tagList: "flex flex-wrap gap-2",
+                      tagListItem: "react-tags__list-item",
+                      tag: "bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1",
+                      tagName: "react-tags__tag-name",
+                      comboBox: "flex-1",
+                      input:
+                        "w-full bg-transparent border-none focus:outline-none focus:ring-0 p-0",
+                      listBox:
+                        "absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-popover-foreground shadow-md",
+                      option: "react-tags__listbox-option",
+                      optionIsActive: "bg-accent text-accent-foreground",
+                      highlight: "react-tags__listbox-option-highlight",
                     }}
-                    maxTags={10}
                   />
+                  {isLoadingSuggestions && inputValue && (
+                    <div className="text-sm text-muted-foreground">
+                      Searching tags...
+                    </div>
+                  )}
                 </div>
               </FormControl>
               <FormMessage />

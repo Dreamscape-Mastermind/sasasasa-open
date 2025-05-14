@@ -12,6 +12,7 @@ import {
   SuccessResponse,
   UpdateBlogPostRequest,
   UpdateCommentRequest,
+  TagSearchResponse,
 } from "@/types/blog";
 
 import axios from "./axios";
@@ -25,6 +26,8 @@ export const blogApi = {
         params,
       }
     );
+
+    console.log(response);
     return response.data.result;
   },
 
@@ -37,13 +40,23 @@ export const blogApi = {
 
   createPost: async (data: CreateBlogPostRequest) => {
     const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (key === "tags") {
-        formData.append(key, JSON.stringify(value));
-      } else {
-        formData.append(key, value);
-      }
-    });
+
+    // Append all text fields
+    formData.append("title", data.title);
+    formData.append("content", data.content);
+    if (data.excerpt) formData.append("excerpt", data.excerpt);
+    if (data.status) formData.append("status", data.status);
+    if (data.meta_title) formData.append("meta_title", data.meta_title);
+    if (data.meta_description)
+      formData.append("meta_description", data.meta_description);
+
+    // Append tags as comma-separated string
+    formData.append("tags", JSON.stringify(data.tags));
+
+    // Append file if exists
+    if (data.featured_image) {
+      formData.append("featured_image", data.featured_image);
+    }
 
     const response = await axios.post<BlogPostResponse>(
       "/api/v1/blog/posts",
@@ -59,17 +72,28 @@ export const blogApi = {
 
   updatePost: async (slug: string, data: UpdateBlogPostRequest) => {
     const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined) {
-        if (key === "tags") {
-          formData.append(key, JSON.stringify(value));
-        } else {
-          formData.append(key, value);
-        }
-      }
-    });
 
-    const response = await axios.put<BlogPostResponse>(
+    // Only append fields that have changed
+    if (data.title !== undefined) formData.append("title", data.title);
+    if (data.content !== undefined) formData.append("content", data.content);
+    if (data.excerpt !== undefined) formData.append("excerpt", data.excerpt);
+    if (data.status !== undefined) formData.append("status", data.status);
+    if (data.meta_title !== undefined)
+      formData.append("meta_title", data.meta_title);
+    if (data.meta_description !== undefined)
+      formData.append("meta_description", data.meta_description);
+
+    // Only append tags if they were changed
+    if (data.tags !== undefined) {
+      formData.append("tags", JSON.stringify(data.tags));
+    }
+
+    // Only append featured_image if it was changed
+    if (data.featured_image !== undefined) {
+      formData.append("featured_image", data.featured_image);
+    }
+
+    const response = await axios.patch<BlogPostResponse>(
       `/api/v1/blog/posts/${slug}`,
       formData,
       {
@@ -143,5 +167,15 @@ export const blogApi = {
       `/api/v1/blog/reactions/${id}`
     );
     return response.data.result;
+  },
+
+  searchTags: async (query: string) => {
+    const response = await axios.get<TagSearchResponse>(
+      "/api/v1/blog/posts/search_tags",
+      {
+        params: { q: query },
+      }
+    );
+    return response.data.result.tags;
   },
 };

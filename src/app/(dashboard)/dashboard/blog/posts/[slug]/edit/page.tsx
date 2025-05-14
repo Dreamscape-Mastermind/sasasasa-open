@@ -1,6 +1,5 @@
-import { Metadata } from "next";
-import { useBlogPost } from "@/lib/hooks/useBlog";
 import BlogPostForm from "@/components/blog/BlogPostForm";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Edit Blog Post | Dashboard",
@@ -13,16 +12,10 @@ interface EditBlogPostPageProps {
   };
 }
 
-export default function EditBlogPostPage({ params }: EditBlogPostPageProps) {
-  const { data: post, isLoading } = useBlogPost(params.slug);
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!post) {
-    return <div>Post not found</div>;
-  }
+export default async function EditBlogPostPage({
+  params,
+}: EditBlogPostPageProps) {
+  const { slug } = await params;
 
   return (
     <div className="space-y-6">
@@ -30,7 +23,7 @@ export default function EditBlogPostPage({ params }: EditBlogPostPageProps) {
         <h1 className="text-3xl font-bold tracking-tight">Edit Blog Post</h1>
         <p className="text-muted-foreground">Edit your existing blog post.</p>
       </div>
-      <BlogPostForm mode="edit" post={post} />
+      <BlogPostForm mode="edit" slug={slug} />
     </div>
   );
 }

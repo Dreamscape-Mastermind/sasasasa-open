@@ -1,19 +1,20 @@
 "use client";
 
-import { useBlogPosts } from "@/lib/hooks/useBlog";
-import { Button } from "@/components/ui/button";
+import { Archive, Pencil, PlusCircle } from "lucide-react";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { PlusCircle, Pencil, Archive } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { useBlogPosts } from "@/lib/hooks/useBlog";
 
 export default function BlogPosts() {
   const { data: posts, isLoading } = useBlogPosts();

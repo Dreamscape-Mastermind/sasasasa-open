@@ -2,7 +2,6 @@ import { BlogPostContent } from "@/components/blog/BlogPostContent";
 import { Metadata } from "next";
 import SectionContainer from "@/components/SectionContainer";
 import { blogApi } from "@/lib/api/blogApiService";
-import { notFound } from "next/navigation";
 
 interface BlogPostPageProps {
   params: {
@@ -14,8 +13,7 @@ export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
   try {
-    const response = await blogApi.getPost(params.slug);
-    const post = response.result;
+    const post = await blogApi.getPost(params.slug);
 
     if (!post) {
       return {
@@ -42,21 +40,10 @@ export async function generateMetadata({
   }
 }
 
-export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  try {
-    const response = await blogApi.getPost(params.slug);
-    const post = response.result;
-
-    if (!post) {
-      notFound();
-    }
-
-    return (
-      <SectionContainer>
-        <BlogPostContent post={post} />
-      </SectionContainer>
-    );
-  } catch (error) {
-    notFound();
-  }
+export default function BlogPostPage({ params }: BlogPostPageProps) {
+  return (
+    <SectionContainer>
+      <BlogPostContent slug={params.slug} />
+    </SectionContainer>
+  );
 }
