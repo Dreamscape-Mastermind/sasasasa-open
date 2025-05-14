@@ -105,12 +105,10 @@ export default async function Home() {
           <div className="container mx-auto px-4 py-24 relative z-10">
             <div className="text-center space-y-8 max-w-3xl mx-auto">
               <h1 className="text-5xl font-bold tracking-tight">
-                Your Next Great Event Starts Here
+              Commerce for your community on demand.
               </h1>
               <p className="text-xl text-muted-foreground">
-                Discover, create, and manage extraordinary events. From intimate
-                gatherings to grand celebrations, make every moment
-                unforgettable.
+                Discover, create, and manage experiences and custom products with $0 investment. From intimate circles to global audiences.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/dashboard">
@@ -121,7 +119,7 @@ export default async function Home() {
                 </Link>
                 <Link href="/e">
                   <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto">
-                    Browse Events
+                    Browse Sasasasa
                     <Ticket className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -134,9 +132,9 @@ export default async function Home() {
         <div className="container mx-auto px-4 py-16">
           <div className="space-y-8">
             <div className="flex justify-between items-center">
-              <h2 className="text-3xl font-bold">Featured Events</h2>
+              <h2 className="text-3xl font-bold">Featured Experiences</h2>
               <Link href="/e">
-                <Button variant="ghost">View All Events</Button>
+                <Button variant="ghost">View All Experiences</Button>
               </Link>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -195,8 +193,7 @@ export default async function Home() {
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl font-bold mb-4">Why Choose Sasasasa?</h2>
             <p className="text-muted-foreground">
-              Everything you need to create and manage successful events, all in
-              one place.
+              Everything you need to create and manage and print out your experiences.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -204,9 +201,9 @@ export default async function Home() {
               <div className="bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center mx-auto">
                 <Calendar className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold">Easy Event Creation</h3>
+              <h3 className="text-xl font-semibold">Get Started Quick and Easy</h3>
               <p className="text-muted-foreground">
-                Create and customize your events in minutes with our intuitive
+                Create and customize your experiences in minutes with our intuitive
                 tools and templates.
               </p>
             </div>
@@ -236,7 +233,7 @@ export default async function Home() {
         {/* Promoted Events */}
         <div className="container mx-auto px-4 py-8 sm:py-16">
           <div className="space-y-6 sm:space-y-8">
-            <h2 className="text-2xl sm:text-3xl font-bold">Special Offers</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold">Specials</h2>
             <div className="grid gap-4 sm:gap-6">
               {featuredEvents
                 .filter((event) => event.discount > 0)
@@ -272,8 +269,7 @@ export default async function Home() {
                               <span className="truncate">{event.date}</span>
                             </div>
                             <p className="mt-2 sm:mt-4 text-sm sm:text-base text-muted-foreground line-clamp-2">
-                              Don't miss this special offer for an amazing event
-                              experience!
+                              Don't miss this special offer!
                             </p>
                           </div>
                           <div className="flex items-center justify-between mt-3 sm:mt-4">

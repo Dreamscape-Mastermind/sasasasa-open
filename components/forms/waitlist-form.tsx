@@ -1,16 +1,15 @@
 'use client'
 
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form'
-
 import { ChevronRightIcon } from '@radix-ui/react-icons'
 import { Input } from '../ui/input'
-import ReCAPTCHA from 'react-google-recaptcha'
 import { useForm } from 'react-hook-form'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
+import ReCAPTCHA from 'react-google-recaptcha'
 
 // Update schema to validate email and name
 const formSchema = z.object({
@@ -28,6 +27,7 @@ export function WaitlistForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const ref = useRef<ReCAPTCHA>(null)
 
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [showCaptcha, setShowCaptcha] = useState(false)
@@ -125,7 +125,9 @@ export function WaitlistForm() {
           )}
         />
         {showCaptcha && (
+          // @ts-ignore recaptcha error 
           <ReCAPTCHA
+            ref={ref}
             sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
             onChange={(token) => setCaptchaToken('token')}
           />

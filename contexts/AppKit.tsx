@@ -30,7 +30,8 @@ createAppKit({
   },
   themeVariables: {
     '--w3m-color-mix': colors.pink[500],
-    '--w3m-color-mix-strength': 40
+    '--w3m-color-mix-strength': 40,
+    '--w3m-accent': '#CC322D'
   },
   allWallets: 'SHOW', // default to SHOW
 })

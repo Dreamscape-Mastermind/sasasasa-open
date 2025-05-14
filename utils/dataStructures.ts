@@ -196,3 +196,153 @@ export const sampleReferralCodes: ReferralCode[] = [
     status: 'expired'
   }
 ];
+
+export interface Wallet {
+  address: string;
+  chain_id: number;
+  is_primary: boolean;
+  is_verified?: boolean;
+  created_at?: string;
+}
+
+// Enhanced User interface based on backend responses
+export interface User {
+  id: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  walletAddress?: `0x${string}`;
+  authType: 'web2' | 'web3';
+  capabilities?: Record<string, any>; // For ReCap authentication
+  is_verified?: boolean;
+  phone?: string;
+  name?: string;
+  has_verified_email?: boolean;
+  [key: string]: any;
+}
+
+// Web3 authentication related types
+export interface SiweMessageData {
+  domain: string;
+  address: string;
+  statement?: string;
+  uri?: string;
+  version?: string;
+  chain_id: number;
+  nonce: string;
+  issued_at: string;
+  expiration_time?: string;
+  not_before?: string;
+  resources?: string[];
+  [key: string]: any;
+}
+
+export interface NonceResponse {
+  status: string;
+  message: string;
+  result: {
+    message: string;
+    message_data: SiweMessageData;
+    recap_data?: string;
+  };
+}
+
+export interface Web3AuthResponse {
+  status: string;
+  message: string;
+  result: {
+    tokens: {
+      access: string;
+      refresh: string;
+    };
+    user: User;
+    requires_email?: boolean;
+    capabilities?: Record<string, any>;
+  };
+}
+
+export interface WalletLinkResponse {
+  status: string;
+  message: string;
+  result: {
+    message: string;
+    message_data: SiweMessageData;
+  };
+}
+
+export interface WalletVerifyResponse {
+  status: string;
+  message: string;
+  result: Wallet;
+}
+
+export interface WalletsResponse {
+  status: string;
+  message: string;
+  result: {
+    primary_wallet: Wallet | null;
+    wallets: Wallet[];
+  };
+}
+
+// OTP Authentication responses
+export interface OtpLoginResponse {
+  status: string;
+  message: string;
+  result: {
+    identifier: string;
+  } | null;
+}
+
+export interface OtpVerifyResponse {
+  status: string;
+  message: string;
+  result: {
+    user: User;
+    tokens: {
+      access: string;
+      refresh: string;
+    };
+  };
+}
+
+export interface TokenRefreshResponse {
+  status: string;
+  message: string;
+  result: {
+    access: string;
+    refresh: string;
+  };
+}
+
+// Generic error response
+export interface ErrorResponse {
+  status: string;
+  message: string;
+  result?: {
+    errors?: Record<string, string[]>;
+    detail?: string;
+  };
+}
+
+// Use a more flexible approach for any API response
+export interface ApiResponseFlexible<T = any> {
+  status: string;
+  message: string;
+  result: T;
+}
+
+// Add new interfaces for email verification
+export interface EmailLinkResponse {
+  status: string;
+  message: string;
+  result: {
+    email: string;
+    otp_sent: boolean;
+  };
+}
+
+// Export authentication response types for use in other files
+export type SiweResponse = NonceResponse;
+export type Web3VerifyResponse = Web3AuthResponse;
+export type EmailVerifyResponse = SingleItemResponse<User>;

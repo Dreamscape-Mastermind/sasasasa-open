@@ -48,7 +48,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useTimezoneSelect, allTimezones } from "react-timezone-select";
 import toast from "react-hot-toast"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "contexts/AuthContext"
+import { Suspense } from 'react';
 // import toast, { Toaster } from 'react-hot-toast';
 
 const formSchema = z.object({
@@ -58,8 +59,8 @@ const formSchema = z.object({
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
-  start_date: z.date(),
-  end_date: z.date(),
+  start_date: z.date().or(z.string()),
+  end_date: z.date().or(z.string()),
   timezone: z.any(),
   venue: z.string().min(2, {
     message: "Venue must be at least 2 characters"
@@ -164,6 +165,14 @@ const CustomTimezoneSelect = ({ onChange, value }) => {
 };
 
 export default function EventForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <EventFormContent />
+    </Suspense>
+  );
+}
+
+function EventFormContent() {
   const searchParams = useSearchParams();
   const eventId = searchParams.get('eventId');
   
@@ -212,16 +221,16 @@ export default function EventForm() {
   useEffect(() => {
     if (eventData && eventData.result) {
       formData.setValue("title", eventData.result.title);
-      formData.setValue("description", eventData.result.description);
-      formData.setValue("start_date", new Date(eventData.result.start_date));
-      formData.setValue("end_date", new Date(eventData.result.end_date));
-      formData.setValue("venue", eventData.result.venue);
-      formData.setValue("capacity", parseInt(eventData.result.capacity, 10));
-      formData.setValue("cover_image", eventData.result.cover_image ? eventData.result.cover_image : "");
+      formData.setValue("description", eventData.result.description || "");
+      formData.setValue("start_date", new Date(eventData.result.start_date || ""));
+      formData.setValue("end_date", new Date(eventData.result.end_date || ""));
+      formData.setValue("venue", eventData.result.venue || "");
+      formData.setValue("capacity", parseInt(eventData.result.capacity?.toString() || "0", 10));
+      formData.setValue("cover_image", eventData.result.cover_image || "");
       formData.setValue("timezone", eventData.result.timezone);
       // Populate other fields as necessary
       setIsEditing(true); // Set editing mode to true if event data is loaded
-      setImagePreview(eventData.result.cover_image);
+      setImagePreview(eventData.result.cover_image || "");
       setIsLoading(false); 
     }
     if (eventError) {
@@ -415,7 +424,7 @@ export default function EventForm() {
                                 <FormItem className="flex flex-col flex-1">
                                   <FormLabel className="text-gray-700 dark:text-gray-300">Start Date & Time</FormLabel>
                                   <DatePicker
-                                    selected={field.value}
+                                    selected={field.value ? new Date(field.value) : null}
                                     onChange={(date) => field.onChange(date)}
                                     className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-zinc-800 rounded-full "
                                     placeholderText="Select start date and time"
@@ -438,7 +447,7 @@ export default function EventForm() {
                                 <FormItem className="flex flex-col flex-1">
                                   <FormLabel className="text-gray-700 dark:text-gray-300">End Date & Time</FormLabel>
                                   <DatePicker
-                                    selected={field.value}
+                                    selected={field.value ? new Date(field.value) : null}
                                     onChange={(date) => field.onChange(date)}
                                     className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-zinc-800 rounded-full "
                                     placeholderText="Select end date and time"

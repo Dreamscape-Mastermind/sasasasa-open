@@ -19,7 +19,7 @@ import {
 } from '../../../components/ui/dialog'
 import { motion } from 'framer-motion'
 import { CheckCircle2 } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from 'contexts/AuthContext'
 
 const otpSchema = z.object({
   otp: z.string().length(6, { message: 'OTP must be 6 digits' }).regex(/^\d+$/, { message: 'OTP must contain only numbers' }),

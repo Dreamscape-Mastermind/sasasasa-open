@@ -9,15 +9,26 @@ import EnhancedTicketCard from "./enhanced-ticket-card"
 const tickets = [
   {
     id: "T-12345",
+    name: "Future Music Festival",
+    description: "VIP Access to Future Music Festival",
+    price: 150,
+    quantity: 100,
+    remaining_tickets: 99,
+    sale_start_date: "2025-03-15",
+    sale_end_date: "2025-03-15",
+    event: "Future Music Festival",
+    is_active: true,
+    flash_sale: null,
+    created_at: "2024-03-15",
+    event_id: "E-12345",
     eventName: "Future Music Festival",
     date: "March 15, 2025",
     time: "8:00 PM",
     venue: "Tech Arena",
-    price: 150,
     section: "A",
     row: "10",
     seat: "15",
-    isBlockchainVerified: true,
+    onchain: true,
     transferLimit: 2,
     transfersUsed: 1,
     tokenId: "0x7a69...4e21",
@@ -25,15 +36,26 @@ const tickets = [
       "/placeholder.svg?height=200&width=400&text=Music+Festival+1",
       "/placeholder.svg?height=200&width=400&text=Music+Festival+2",
       "/placeholder.svg?height=200&width=400&text=Music+Festival+3",
-    ],
+    ]
   },
   {
     id: "T-67890",
+    name: "Digital Art Exhibition",
+    description: "Access to Digital Art Exhibition",
+    price: 85,
+    quantity: 100,
+    remaining_tickets: 99,
+    sale_start_date: "2025-04-22",
+    sale_end_date: "2025-04-22",
+    event: "Digital Art Exhibition",
+    is_active: true,
+    flash_sale: null,
+    created_at: "2024-04-22",
+    event_id: "E-67890",
     eventName: "Digital Art Exhibition",
     date: "April 22, 2025",
     time: "6:30 PM",
     venue: "Nexus Gallery",
-    price: 85,
     section: "B",
     row: "5",
     seat: "8",
@@ -45,15 +67,26 @@ const tickets = [
       "/placeholder.svg?height=200&width=400&text=Digital+Art+1",
       "/placeholder.svg?height=200&width=400&text=Digital+Art+2",
       "/placeholder.svg?height=200&width=400&text=Digital+Art+3",
-    ],
+    ]
   },
   {
     id: "T-24680",
+    name: "Blockchain Summit",
+    description: "VIP Access to Blockchain Summit",
+    price: 250,
+    quantity: 100,
+    remaining_tickets: 99,
+    sale_start_date: "2025-05-10",
+    sale_end_date: "2025-05-10",
+    event: "Blockchain Summit",
+    is_active: true,
+    flash_sale: null,
+    created_at: "2024-05-10",
+    event_id: "E-24680",
     eventName: "Blockchain Summit",
     date: "May 10, 2025",
     time: "9:00 AM",
     venue: "Innovation Center",
-    price: 250,
     section: "VIP",
     row: "2",
     seat: "4",
@@ -65,8 +98,8 @@ const tickets = [
       "/placeholder.svg?height=200&width=400&text=Blockchain+Summit+1",
       "/placeholder.svg?height=200&width=400&text=Blockchain+Summit+2",
       "/placeholder.svg?height=200&width=400&text=Blockchain+Summit+3",
-    ],
-  },
+    ]
+  }
 ]
 
 export default function EnhancedTicketShowcase() {
@@ -95,7 +128,7 @@ export default function EnhancedTicketShowcase() {
             <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
               <span className="text-primary">
-                Blockchain-Verified Tickets
+                Your Collection 
               </span>
             </h1>
             <p className="text-muted-foreground max-w-md mx-auto">

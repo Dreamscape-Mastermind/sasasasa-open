@@ -109,7 +109,7 @@ export default function AnalyticsPage({ params }: { params: Promise<{ id: string
 
   const topEvents = [
     {
-      name: currentEvent.name,
+      name: currentEvent.title,
       sales: totalSales,
       revenue: totalRevenue,
       conversion: Math.round((totalSales / (totalSales + 10)) * 100), // Example conversion calculation
@@ -120,7 +120,7 @@ export default function AnalyticsPage({ params }: { params: Promise<{ id: string
     <div className="space-y-6 animate-in">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">{currentEvent.name} Analytics</h1>
+          <h1 className="text-3xl font-bold">{currentEvent.title} Analytics</h1>
           <p className="text-muted-foreground">
             Track your event performance and metrics
           </p>

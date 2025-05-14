@@ -6,7 +6,7 @@ import { X } from 'lucide-react'
 import Cart from './Cart'
 
 export function Sidebar() {
-  const { isSidebarOpen, closeSidebar } = useSidebar()
+  const { isOpen: isSidebarOpen, toggleSidebar, closeSidebar } = useSidebar()
 
   useEffect(() => {
     if (isSidebarOpen) {

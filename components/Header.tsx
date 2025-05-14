@@ -26,8 +26,8 @@ import { ShoppingCart } from "lucide-react";
 import ThemeSwitch from "./ThemeSwitch";
 import headerNavLinks from "utils/data/headerNavLinks";
 import siteMetadata from "@/data/siteMetadata";
-import type { title } from "process";
-import { useSidebar } from "@/components/providers/SidebarContext";
+import { useAuth } from "contexts/AuthContext";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const notifications = [
@@ -61,9 +61,16 @@ const Header = () => {
   const [unreadCount, setUnreadCount] = useState(
     notifications.filter((n) => !n.read).length
   );
+  const { user, logout, isAuthenticated } = useAuth();
+  const router = useRouter();
 
   const markAllAsRead = () => {
     setUnreadCount(0);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
   };
 
   let headerClass =
@@ -71,8 +78,6 @@ const Header = () => {
   if (siteMetadata.stickyNav) {
     headerClass += " sticky top-0 z-50";
   }
-
-  const { openSidebar } = useSidebar();
 
   return (
     <header className={headerClass}>
@@ -108,105 +113,107 @@ const Header = () => {
               </Link>
             ))}
         </div>
-        {/* <Button
-            onClick={openSidebar}
-            variant="ghost"
-            size="icon"
-            className="relative"
-          >
-          <ShoppingCart className="h-5 w-5" />
-          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#CC322D] text-[10px] font-medium text-white flex items-center justify-center">
-            2
-          </span>
-        </Button> */}
-        <Link href="/dashboard">
-          <Button size="icon" variant="ghost" className="sm:hidden">
-            <DashboardIcon className="h-5 w-5" />
-          </Button>
-          <Button className="hidden sm:flex items-center space-x-2">
-            <DashboardIcon className="h-5 w-5" />
-            <span>Go to Dashboard</span>
-          </Button>
-        </Link>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-xs text-primary-foreground flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80" align="end">
-            <div className="flex justify-between items-center border-b pb-2">
-              <h4 className="font-semibold">Notifications</h4>
-              <Button
-                variant="ghost"
-                className="text-xs"
-                onClick={markAllAsRead}
-              >
-                Mark all as read
+        {isAuthenticated ? (
+          <>
+            <Link href="/dashboard">
+              <Button size="icon" variant="ghost" className="sm:hidden">
+                <DashboardIcon className="h-5 w-5" />
               </Button>
-            </div>
-            <ScrollArea className="h-[300px]">
-              <div className="space-y-4 py-4">
-                {notifications.map((notification, index) => (
-                  <div
-                    key={index}
-                    className={`flex gap-4 px-2 py-2 rounded-lg ${
-                      !notification.read ? "bg-muted" : ""
-                    }`}
+              <Button className="hidden sm:flex items-center space-x-2">
+                <DashboardIcon className="h-5 w-5" />
+                <span>Go to Dashboard</span>
+              </Button>
+            </Link>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-xs text-primary-foreground flex items-center justify-center">
+                      {unreadCount}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80" align="end">
+                <div className="flex justify-between items-center border-b pb-2">
+                  <h4 className="font-semibold">Notifications</h4>
+                  <Button
+                    variant="ghost"
+                    className="text-xs"
+                    onClick={markAllAsRead}
                   >
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {notification.title}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {notification.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {notification.time}
-                      </p>
-                    </div>
+                    Mark all as read
+                  </Button>
+                </div>
+                <ScrollArea className="h-[300px]">
+                  <div className="space-y-4 py-4">
+                    {notifications.map((notification, index) => (
+                      <div
+                        key={index}
+                        className={`flex gap-4 px-2 py-2 rounded-lg ${
+                          !notification.read ? "bg-muted" : ""
+                        }`}
+                      >
+                        <div className="flex-1 space-y-1">
+                          <p className="text-sm font-medium leading-none">
+                            {notification.title}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {notification.description}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {notification.time}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </PopoverContent>
-        </Popover>
-        <ThemeSwitch />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces" />
-                <AvatarFallback>JD</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">John Doe</p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  joe@sasasasa.com
-                </p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Link href="/dashboard/settings">Profile</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link href="/dashboard/settings">Settings</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link href="/signout">Sign out</Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+                </ScrollArea>
+              </PopoverContent>
+            </Popover>
+            <ThemeSwitch />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces"} />
+                    <AvatarFallback>{user?.first_name?.[0]}{user?.last_name?.[0] || "U"}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {user?.first_name} {user?.last_name || "User"}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user?.email || user?.walletAddress}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/settings?tab=general">Profile</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/settings?tab=account">Settings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        ) : (
+          <>
+            <ThemeSwitch />
+            <Link href="/login">
+              <Button variant="default">Sign In</Button>
+            </Link>
+          </>
+        )}
         <MobileNav />
       </div>
     </header>

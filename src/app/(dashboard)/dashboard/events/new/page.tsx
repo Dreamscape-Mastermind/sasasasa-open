@@ -55,8 +55,9 @@ import {
 } from "@/components/ui/select";
 import TeamMembersForm from "@/components/forms/team-members-form"
 import { useSearchParams } from "next/navigation"
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from 'contexts/AuthContext'
 import { useRouter } from 'next/navigation'
+import { Suspense } from 'react'
 
 // First, define the role type and schema
 const ROLES = {
@@ -77,9 +78,15 @@ const teamSchema = z.object({
   })).min(1, "At least one team member is required"),
 });
 
+export default function NewEventPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewEventContent />
+    </Suspense>
+  );
+}
 
-
-export default function CreateEvent() {
+function NewEventContent() {
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   const router = useRouter()
   const [venueSearchResults, setVenueSearchResults] = useState<VenueSearchResult[]>([])

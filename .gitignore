@@ -86,3 +86,5 @@ ignition/deployments/chain-31337
 
 
 web3/
+.cursor/
+.cursorrules

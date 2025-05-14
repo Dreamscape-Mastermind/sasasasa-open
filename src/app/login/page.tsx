@@ -10,6 +10,8 @@ import { Input } from '../../../components/ui/input'
 import { Button } from '../../../components/ui/button'
 import Image from 'next/image'
 import { AppKit } from 'contexts/AppKit'
+import { useAuth } from 'contexts/AuthContext'
+import { useAppKitAccount } from '@reown/appkit/react'
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -19,6 +21,8 @@ export default function Login() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const { loginWithWallet } = useAuth()
+  const { isConnected, address } = useAppKitAccount()
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -72,12 +76,9 @@ export default function Login() {
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-200">
             Sign in to get started
           </p>
-          <div className='mt-4 flex justify-center'>
-            <AppKit/>
-          </div>
         </div>
 
-        {/* <Form {...form}>
+        <Form {...form}>
           {error && (
             <p className="text-red-500 text-sm text-center">{error}</p>
           )}
@@ -108,7 +109,43 @@ export default function Login() {
               {loading ? 'Sending Code...' : 'Continue with Email'}
             </Button>
           </form>
-        </Form> */}
+          
+          <div className='flex items-center justify-center my-4'>
+            <div className='bg-gray-300 dark:bg-gray-700 h-px flex-grow'></div>
+            <span className='px-4 text-gray-500'>Or</span>
+            <div className='bg-gray-300 dark:bg-gray-700 h-px flex-grow'></div>
+          </div>
+
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => router.push('/web3-login')}
+          >
+            Continue with Wallet
+          </Button>
+          
+          {/* { (
+            <>
+              <div className='mt-4 flex justify-center'>
+                <AppKit/>
+              </div>
+            </>
+          )}
+          
+          {address && isConnected && (
+            <div className='mt-4 flex justify-center'>
+              <Button
+                type="submit"
+                className="w-full"
+                onClick={() => {
+                  loginWithWallet(address)
+                }}
+              >
+                {loading ? 'Signing In' : `Sign In Via ..${address?.substring(0, 6)}...${address?.substring(address.length - 4, address.length)}`}
+              </Button>
+            </div>
+          )} */}
+        </Form>
       </div>
     </div>
   )

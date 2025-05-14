@@ -2,7 +2,7 @@ import "./globals.css";
 
 import { Anton, Sen } from "next/font/google";
 
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "contexts/AuthContext";
 import Footer from "@/components/Footer";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Header from "@/components/Header";

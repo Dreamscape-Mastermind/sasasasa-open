@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from 'contexts/AuthContext'
 import EnhancedTicketCard from './enhanced-ticket-card'
 import EnhancedTicketShowcase from './enhanced-ticket-showcase'
 import { motion } from 'framer-motion'

@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useState, useCallback, useMemo } 
 import { useRouter } from 'next/navigation'
 import { jwtDecode } from 'jwt-decode'
 import { AuthTokens, StorageKey } from '@/utils/dataStructures';
+import { CombinedProvider, useAppKitAccount, useAppKitProvider, useWalletInfo } from '@reown/appkit/react';
+import { BrowserProvider, Eip1193Provider } from 'ethers';
 
 // Use Sets for O(1) lookup performance
 const ROUTE_SETS = {
@@ -53,6 +55,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   getAccessToken: () => string | null;
   isLoading: boolean;
+  onSignAndVerifyMessage: (message: string) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -120,6 +123,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const { address } = useAppKitAccount()
+
+  const { walletProvider } = useAppKitProvider('eip155')
+
+
+
+  async function getNonceMessage(address: string, chainId= 534351) {
+    const messageData = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/web3/nonce`, {
+      method: 'POST',
+      body: JSON.stringify({ address, chain_id: chainId  })
+    })
+    const message = await messageData.json()
+    return message as { message: string, data: any }
+  }
+
+  const onSignAndVerifyMessage = useCallback(async (message: string) => {
+    if(!address) {
+      throw new Error('No address found')
+    }
+
+    // But now we need to see what One Click login version of this is like
+    
+    const signAndVerifyMessage = async () => {
+      const provider = new BrowserProvider(walletProvider as CombinedProvider)
+      const messageData = await getNonceMessage(address)
+      console.log(messageData)
+      const signer = await provider.getSigner()
+      const signature = await signer?.signMessage(messageData.data)
+      console.log(signature)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/v1/web3/verify`, {
+        method: 'POST',
+        body: JSON.stringify({ message_data: messageData.data, signature })
+      })
+      const data = await response.json()
+      console.log(data)
+    }
+    await signAndVerifyMessage()
+  }, [address])
 
   // Optimize route checking with debounce
   useEffect(() => {
@@ -227,7 +268,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated,
     getAccessToken,
     isLoading,
-  }), [user, login, logout, isAuthenticated, getAccessToken, isLoading]);
+    onSignAndVerifyMessage
+  }), [user, login, logout, isAuthenticated, getAccessToken, isLoading, onSignAndVerifyMessage]);
 
   return (
     <AuthContext.Provider value={contextValue}>

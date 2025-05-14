@@ -261,7 +261,6 @@ function CheckoutCallback() {
   )
 }
 
-// Wrap the main component with Suspense
 export default function CheckoutCallbackPage() {
   return (
     <Suspense fallback={

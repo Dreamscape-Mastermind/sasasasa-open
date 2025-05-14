@@ -27,11 +27,11 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Overview } from "@/components/dashboard/overview";
 import { Progress } from "@/components/ui/progress";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "services/events/api";
 import { ApiResponse, sampleReferralCodes, SasasasaEvent } from "@/utils/dataStructures";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "contexts/AuthContext";
 import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -105,6 +105,7 @@ export default function DashboardPage() {
   // Keep track of selected event
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const { isAuthenticated, isLoading: isLoadingAuth } = useAuth();
+
   // Fetch events data
   const { data: eventsData, isLoading } = useQuery<ApiResponse<SasasasaEvent>>({
     queryKey: ["events"],
@@ -147,6 +148,13 @@ export default function DashboardPage() {
     enabled: !!selectedEventId,
   });
 
+  
+  useEffect(() => {
+    if(!isAuthenticated && !isLoadingAuth) {
+      redirect("/login");
+    }
+  }, [isAuthenticated, isLoadingAuth])
+
 
   if (isLoading || isLoadingAuth) {
     return (
@@ -181,8 +189,9 @@ export default function DashboardPage() {
       </div>
     );
   }
+
   
-  if(!isAuthenticated) {
+  if(!isAuthenticated && !isLoadingAuth) {
     redirect("/login");
   }
 
