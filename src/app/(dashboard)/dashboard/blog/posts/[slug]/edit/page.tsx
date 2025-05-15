@@ -6,15 +6,11 @@ export const metadata: Metadata = {
   description: "Edit an existing blog post.",
 };
 
-interface EditBlogPostPageProps {
-  params: {
-    slug: string;
-  };
-}
+type PageProps = {
+  params: Promise<{ slug: string }>;
+};
 
-export default async function EditBlogPostPage({
-  params,
-}: EditBlogPostPageProps) {
+export default async function EditBlogPostPage({ params }: PageProps) {
   const { slug } = await params;
 
   return (

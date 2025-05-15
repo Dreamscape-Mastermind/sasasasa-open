@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import siteMetadata from "../lib/config/siteMetadata";
+import siteMetadata from "@/config/siteMetadata";
 
 const ScrollTopAndComment = () => {
   const [show, setShow] = useState(false);

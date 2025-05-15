@@ -4,9 +4,9 @@ import SectionContainer from "@/components/SectionContainer";
 import { blogApi } from "@/lib/api/blogApiService";
 
 interface BlogPostPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({

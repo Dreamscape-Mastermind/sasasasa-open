@@ -32,22 +32,22 @@ import {
 import {
   useBlogPost,
   useCreateBlogPost,
-  useUpdateBlogPost,
   useSearchTags,
+  useUpdateBlogPost,
 } from "@/lib/hooks/useBlog";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ReactTags } from "react-tag-autocomplete";
 import { Save } from "lucide-react";
 import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "react-hot-toast";
+import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ReactTags } from "react-tag-autocomplete";
-import { useForm } from "react-hook-form";
 
 type Tag = {
   id: string;
@@ -392,12 +392,16 @@ export default function BlogPostForm({
                       value: tag.id || tag.text,
                       label: tag.text,
                     }))}
+                    isDisabled={true}
                     suggestions={suggestions.map((tag) => ({
                       value: tag,
                       label: tag,
                     }))}
                     onAdd={(tag) =>
-                      handleAddTag({ id: tag.value, text: tag.label })
+                      handleAddTag({
+                        id: tag.value as string,
+                        text: tag.label as string,
+                      })
                     }
                     onDelete={(index) => handleDeleteTag(index)}
                     onInput={setInputValue}

@@ -18,7 +18,7 @@ export async function generateMetadata(
   const MAX_TITLE_LENGTH = 50;
   try {
     const slug = (await params).slug;
-    const response = await eventApi.getEvents(1, { short_url: slug });
+    const response = await eventApi.getEvents({ short_url: slug }, 1);
 
     // Since we're filtering by short_url, we should get only the matching event
     const event = response.results[0];
