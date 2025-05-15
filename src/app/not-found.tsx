@@ -1,7 +1,7 @@
-import Link from '@/components/Link'
-import { Button } from '@/components/ui/button'
-import { ChevronRightIcon } from '@radix-ui/react-icons'
-import Image from 'next/image'
+import { Button } from "@/components/ui/button";
+import { ChevronRightIcon } from "@radix-ui/react-icons";
+import Image from "next/image";
+import Link from "@/components/Link";
 
 export default function NotFound() {
   return (
@@ -22,7 +22,9 @@ export default function NotFound() {
         <p className="mb-4 text-xl font-bold leading-normal md:text-2xl">
           Sorry we couldn't find this page.
         </p>
-        <p className="mb-8">But dont worry, you can find plenty of other things on our homepage.</p>
+        <p className="mb-8">
+          But dont worry, you can find plenty of other things on our homepage.
+        </p>
         <Button asChild>
           <Link href="/">
             Back to homepage <ChevronRightIcon className="h-4 w-4" />
@@ -30,5 +32,5 @@ export default function NotFound() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

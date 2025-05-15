@@ -1,0 +1,132 @@
+@startuml Sasasasa Checkout Flow - Class Diagram
+
+!define MUTED_RED #E57373
+!define MUTED_BLUE #90CAF9
+!define MUTED_GREEN #A5D6A7
+!define MUTED_ORANGE #FFCC80
+!define MUTED_PURPLE #CE93D8
+!define MUTED_GRAY #BDBDBD
+
+skinparam backgroundColor white
+skinparam ArrowColor MUTED_GRAY
+skinparam ClassBackgroundColor MUTED_BLUE
+skinparam ClassBorderColor #7986CB
+skinparam NoteBackgroundColor MUTED_ORANGE
+skinparam NoteBorderColor #FFB74D
+
+' Data Structures
+class Ticket {
+  id: string
+  name: string
+  description?: string
+  price: string | number
+  quantity: number
+  remaining_tickets: number
+  sale_start_date: string
+  sale_end_date: string
+  event: string
+  is_active: boolean
+  flash_sale: FlashSale | null
+  created_at: string
+}
+
+class FlashSale {
+  id: string
+  name: string
+  status: 'ACTIVE' | 'INACTIVE'
+  discount_type: 'FIXED' | 'PERCENTAGE'
+  discount_amount: number
+  discounted_price: number
+  start_date: string
+  end_date: string
+  remaining_tickets: number
+}
+
+class SasasasaEvent {
+  id: string
+  title: string
+  description?: string
+  start_date: string
+  end_date?: string
+  venue?: string
+  cover_image?: string
+  available_tickets?: Ticket[]
+  performers?: Performer[]
+  ' Other properties omitted for clarity
+}
+
+' Components
+class EventPage {
+  + generateMetadata()
+  + EventPage()
+}
+
+class EventDetails {
+  + event: SasasasaEvent
+  + performers?: Performer[]
+  + isLoading?: boolean
+  - formatEventDate()
+  - formatEventTime()
+  - shareEvent()
+}
+
+class Tickets {
+  + tickets: Ticket[]
+  + formatDate: Function
+  - quantities: { [key: string]: number }
+  - showCheckout: boolean
+  - updateQuantity()
+  - calculateTotal()
+  - hasValidTickets()
+}
+
+class Checkout {
+  + isOpen: boolean
+  + onClose: Function
+  + total: number
+  + tickets: Ticket[]
+  - step: 'details' | 'payment' | 'processing' | 'success' | 'error'
+  - error: string | null
+  - onSubmit()
+  - calculateTotal()
+  - renderStep()
+}
+
+class CheckoutCallback {
+  - transaction: TransactionResult | null
+  - loading: boolean
+  - eventId: string | null
+  - verifyPayment()
+  - handleClose()
+}
+
+class PaymentVerifyAPI {
+  + GET(req: NextRequest)
+  + OPTIONS()
+}
+
+' Relationships
+EventPage --> EventDetails : renders
+EventDetails --> Tickets : includes
+Tickets --> Checkout : opens
+Checkout ..> PaymentVerifyAPI : calls for free tickets
+CheckoutCallback ..> PaymentVerifyAPI : calls to verify payment
+
+note right of Checkout
+  Form Data:
+  - firstName
+  - lastName
+  - email
+  - discountCode (optional)
+end note
+
+note bottom of PaymentVerifyAPI
+  Response:
+  - status: 'COMPLETED' | 'FAILED'
+  - message: string
+  - reference: string
+  - eId: string
+  - amount: number
+end note
+
+@enduml

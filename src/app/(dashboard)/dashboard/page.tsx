@@ -1,8 +1,8 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Calendar,
   Copy,
   Facebook,
   Instagram,
@@ -10,20 +10,17 @@ import {
   Music2,
   PlusCircle,
   Search,
-  Share2,
-  Ticket,
   Trophy,
   Twitter,
   Users2,
   Video,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Overview } from "@/components/dashboard/overview";
-import { Progress } from "@/components/ui/progress";
+import { toast } from "react-hot-toast";
 import { useState } from "react";
 
 const eventCategories = [
@@ -97,7 +94,7 @@ export default function DashboardPage() {
 
   const copyReferralCode = () => {
     navigator.clipboard.writeText(referralCode);
-    // You could add a toast notification here
+    toast.success("Referral code copied to clipboard");
   };
 
   return (

@@ -4,7 +4,10 @@ import { fontFamily } from "tailwindcss/defaultTheme";
 
 const config: Config = {
   darkMode: ["class"],
-  content: ["src/app/**/*.{js,ts,jsx,tsx}", "components/**/*.{js,ts,jsx,tsx}"],
+  content: [
+    "./src/app/**/*.{js,ts,jsx,tsx}",
+    "./src/components/**/*.{js,ts,jsx,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -62,6 +65,16 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
+        },
       },
       zIndex: {
         60: "60",
@@ -75,22 +88,59 @@ const config: Config = {
       },
       keyframes: {
         "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
+          from: {
+            height: "0",
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
+          },
         },
         "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: "0",
+          },
         },
         pulse: {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: ".5" },
+          "0%, 100%": {
+            opacity: "1",
+          },
+          "50%": {
+            opacity: ".5",
+          },
+        },
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        slideUp: {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        zoomOut: {
+          "0%": { transform: "scale(1.1)" },
+          "100%": { transform: "scale(1)" },
+        },
+        shake: {
+          "0%, 90%, 100%": { transform: "translateX(0)" },
+          "91%": { transform: "translateX(-3px)" },
+          "92%": { transform: "translateX(3px)" },
+          "93%": { transform: "translateX(-2px)" },
+          "94%": { transform: "translateX(2px)" },
+          "95%": { transform: "translateX(0)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        fadeIn: "fadeIn 0.8s ease-in-out forwards",
+        slideUp: "slideUp 0.6s ease-out forwards",
+        zoomOut: "zoomOut 1.5s ease-out forwards",
+        shake: "shake 20s ease-in-out infinite",
+        spin: "spin 0.5s linear",
       },
       typography: ({ theme }) => ({
         DEFAULT: {
@@ -146,5 +196,19 @@ const config: Config = {
       });
     },
   ],
+  utilities: {
+    ".animation-delay-100": {
+      "animation-delay": "100ms",
+    },
+    ".animation-delay-200": {
+      "animation-delay": "200ms",
+    },
+    ".animation-delay-300": {
+      "animation-delay": "300ms",
+    },
+    ".animation-delay-400": {
+      "animation-delay": "400ms",
+    },
+  },
 };
 export default config;
