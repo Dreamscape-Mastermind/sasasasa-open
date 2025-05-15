@@ -12,8 +12,10 @@ interface BlogPostPageProps {
 export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
+  const { slug } = await params;
+
   try {
-    const post = await blogApi.getPost(params.slug);
+    const post = await blogApi.getPost(slug);
 
     if (!post) {
       return {
@@ -40,10 +42,12 @@ export async function generateMetadata({
   }
 }
 
-export default function BlogPostPage({ params }: BlogPostPageProps) {
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const { slug } = await params;
+
   return (
     <SectionContainer>
-      <BlogPostContent slug={params.slug} />
+      <BlogPostContent slug={slug} />
     </SectionContainer>
   );
 }

@@ -1,12 +1,12 @@
 import {
   AddReactionRequest,
   BlogListQueryParams,
-  Comment,
   CommentListQueryParams,
   CreateBlogPostRequest,
   CreateCommentRequest,
   UpdateBlogPostRequest,
   UpdateCommentRequest,
+  UpdateReactionRequest,
 } from "@/types/blog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -32,6 +32,13 @@ export const useBlogComments = (params?: CommentListQueryParams) => {
     queryKey: ["blog-comments", params],
     queryFn: () => blogApi.getComments(params),
     select: (data) => data.results,
+  });
+};
+
+export const useBlogComment = (id: string) => {
+  return useQuery({
+    queryKey: ["blog-comment", id],
+    queryFn: () => blogApi.getComment(id),
   });
 };
 
@@ -96,9 +103,11 @@ export const useCreateComment = () => {
     mutationFn: (data: CreateCommentRequest) => blogApi.createComment(data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["blog-comments"] });
-      queryClient.invalidateQueries({
-        queryKey: ["blog-post", variables.post],
-      });
+      if (variables.post) {
+        queryClient.invalidateQueries({
+          queryKey: ["blog-post", variables.post],
+        });
+      }
     },
   });
 };
@@ -107,11 +116,13 @@ export const useUpdateComment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateCommentRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateCommentRequest }) =>
       blogApi.updateComment(id, data),
     onSuccess: (comment) => {
       queryClient.invalidateQueries({ queryKey: ["blog-comments"] });
-      queryClient.invalidateQueries({ queryKey: ["blog-post", comment.post] });
+      queryClient.invalidateQueries({
+        queryKey: ["blog-comment", comment.comment_id],
+      });
     },
   });
 };
@@ -120,14 +131,37 @@ export const useApproveComment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => blogApi.approveComment(id),
-    onSuccess: (comment: Comment | null) => {
-      if (comment) {
-        queryClient.invalidateQueries({ queryKey: ["blog-comments"] });
-        queryClient.invalidateQueries({
-          queryKey: ["blog-post", comment.post],
-        });
-      }
+    mutationFn: (id: string) => blogApi.approveComment(id),
+    onSuccess: (comment) => {
+      queryClient.invalidateQueries({ queryKey: ["blog-comments"] });
+      queryClient.invalidateQueries({
+        queryKey: ["blog-comment", comment.comment_id],
+      });
+    },
+  });
+};
+
+export const useDenyComment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => blogApi.denyComment(id),
+    onSuccess: (comment) => {
+      queryClient.invalidateQueries({ queryKey: ["blog-comments"] });
+      queryClient.invalidateQueries({
+        queryKey: ["blog-comment", comment.comment_id],
+      });
+    },
+  });
+};
+
+export const useDeleteComment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => blogApi.deleteComment(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blog-comments"] });
     },
   });
 };
@@ -137,11 +171,32 @@ export const useAddReaction = () => {
 
   return useMutation({
     mutationFn: (data: AddReactionRequest) => blogApi.addReaction(data),
-    onSuccess: (_, data) => {
-      if (data.post) {
-        queryClient.invalidateQueries({ queryKey: ["blog-post", data.post] });
+    onSuccess: (reaction) => {
+      if (reaction.post) {
+        queryClient.invalidateQueries({
+          queryKey: ["blog-post", reaction.post],
+        });
       }
-      if (data.comment) {
+      if (reaction.comment) {
+        queryClient.invalidateQueries({ queryKey: ["blog-comments"] });
+      }
+    },
+  });
+};
+
+export const useUpdateReaction = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateReactionRequest }) =>
+      blogApi.updateReaction(id, data),
+    onSuccess: (reaction) => {
+      if (reaction.post) {
+        queryClient.invalidateQueries({
+          queryKey: ["blog-post", reaction.post],
+        });
+      }
+      if (reaction.comment) {
         queryClient.invalidateQueries({ queryKey: ["blog-comments"] });
       }
     },
@@ -152,7 +207,7 @@ export const useRemoveReaction = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => blogApi.removeReaction(id),
+    mutationFn: (id: string) => blogApi.removeReaction(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
       queryClient.invalidateQueries({ queryKey: ["blog-comments"] });
@@ -165,5 +220,23 @@ export const useSearchTags = (query: string) => {
     queryKey: ["blog-tags", query],
     queryFn: () => blogApi.searchTags(query),
     enabled: query.length > 0,
+  });
+};
+
+export const useIncrementViewCount = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (slug: string) => blogApi.incrementViewCount(slug),
+    onSuccess: (viewCount, slug) => {
+      // Update the view count in the blog post cache
+      queryClient.setQueryData(["blog-post", slug], (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          view_count: viewCount,
+        };
+      });
+    },
   });
 };

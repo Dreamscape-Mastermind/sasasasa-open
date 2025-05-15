@@ -52,12 +52,12 @@ export interface BlogPostListItem {
 }
 
 export interface Comment {
-  id: number;
-  post: number;
-  author: number;
+  id: string;
+  post: string;
+  author: string;
   author_name: string;
   content: string;
-  parent: number | null;
+  parent: string | null;
   is_approved: boolean;
   created_at: string;
   replies: Comment[];
@@ -66,11 +66,11 @@ export interface Comment {
 }
 
 export interface Reaction {
-  id: number;
-  user: number;
+  id: string;
+  user: string;
   reaction_type: ReactionType;
-  post?: number;
-  comment?: number;
+  post: string | null;
+  comment: string | null;
   created_at: string;
 }
 
@@ -97,9 +97,9 @@ export interface UpdateBlogPostRequest {
 }
 
 export interface CreateCommentRequest {
-  post: number;
+  post: string;
   content: string;
-  parent?: number;
+  parent?: string;
 }
 
 export interface UpdateCommentRequest {
@@ -107,8 +107,12 @@ export interface UpdateCommentRequest {
 }
 
 export interface AddReactionRequest {
-  post?: number;
-  comment?: number;
+  post?: string;
+  comment?: string;
+  reaction_type: ReactionType;
+}
+
+export interface UpdateReactionRequest {
   reaction_type: ReactionType;
 }
 
@@ -121,9 +125,9 @@ export interface BlogListQueryParams {
 }
 
 export interface CommentListQueryParams {
-  post?: number;
-  author?: number;
-  parent?: number;
+  post?: string;
+  author?: string;
+  parent?: string;
 }
 
 export interface TagSearchQueryParams {
@@ -132,6 +136,10 @@ export interface TagSearchQueryParams {
 
 export interface TagSearch {
   tags: string[];
+}
+
+export interface IncrementViewCount {
+  view_count: number;
 }
 
 export interface BlogResponse<T> {
@@ -148,8 +156,12 @@ export type BlogPostListResponse = ApiResponse<
   PaginatedResponse<BlogPostListItem>
 >;
 export type CommentListResponse = ApiResponse<PaginatedResponse<Comment>>;
-export type CommentResponse = ApiResponse<Comment>;
+export type CommentResponse = ApiResponse<{
+  status: "success" | "error";
+  message: string;
+  comment_id: string;
+}>;
 export type ReactionResponse = ApiResponse<Reaction>;
 export type SuccessResponse = ApiResponse<null>;
-
+export type IncrementViewCountResponse = ApiResponse<IncrementViewCount>;
 export type TagSearchResponse = ApiResponse<TagSearch>;

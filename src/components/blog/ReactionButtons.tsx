@@ -7,16 +7,25 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAddReaction, useRemoveReaction } from "@/lib/hooks/useBlog";
+import {
+  useAddReaction,
+  useRemoveReaction,
+  useUpdateReaction,
+} from "@/lib/hooks/useBlog";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ReactionType } from "@/types/blog";
-import { useState } from "react";
 
 interface ReactionButtonsProps {
-  postId: number;
+  postSlug?: string;
+  commentId?: string;
   reactions: Record<ReactionType, number>;
   userReaction?: ReactionType;
+  userReactionId?: string;
+  onReactionSuccess?: (reaction: any) => void;
+  onReactionUpdate?: (oldType: ReactionType, newType: ReactionType) => void;
+  onReactionRemove?: (type: ReactionType) => void;
 }
 
 const REACTION_ICONS: Record<ReactionType, React.ReactNode> = {
@@ -29,28 +38,74 @@ const REACTION_ICONS: Record<ReactionType, React.ReactNode> = {
 };
 
 export function ReactionButtons({
-  postId,
+  postSlug,
+  commentId,
   reactions,
   userReaction,
+  userReactionId,
+  onReactionSuccess,
+  onReactionUpdate,
+  onReactionRemove,
 }: ReactionButtonsProps) {
   const [selectedReaction, setSelectedReaction] = useState<
     ReactionType | undefined
   >(userReaction);
+  const [currentReactionId, setCurrentReactionId] = useState<
+    string | undefined
+  >(userReactionId);
+
   const { mutate: addReaction } = useAddReaction();
+  const { mutate: updateReaction } = useUpdateReaction();
   const { mutate: removeReaction } = useRemoveReaction();
+
+  // Update local state when props change
+  useEffect(() => {
+    setSelectedReaction(userReaction);
+    setCurrentReactionId(userReactionId);
+  }, [userReaction, userReactionId]);
 
   const handleReaction = (type: ReactionType) => {
     if (selectedReaction === type) {
       // Remove reaction
-      removeReaction(postId);
-      setSelectedReaction(undefined);
+      if (currentReactionId) {
+        removeReaction(currentReactionId, {
+          onSuccess: () => {
+            setSelectedReaction(undefined);
+            setCurrentReactionId(undefined);
+            onReactionRemove?.(type);
+          },
+        });
+      }
+    } else if (currentReactionId) {
+      // Update existing reaction
+      updateReaction(
+        {
+          id: currentReactionId,
+          data: { reaction_type: type },
+        },
+        {
+          onSuccess: () => {
+            setSelectedReaction(type);
+            onReactionUpdate?.(selectedReaction!, type);
+          },
+        }
+      );
     } else {
       // Add new reaction
-      addReaction({
-        post: postId,
-        reaction_type: type,
-      });
-      setSelectedReaction(type);
+      addReaction(
+        {
+          ...(postSlug ? { post: postSlug } : {}),
+          ...(commentId ? { comment: commentId } : {}),
+          reaction_type: type,
+        },
+        {
+          onSuccess: (reaction) => {
+            setSelectedReaction(type);
+            setCurrentReactionId(reaction.id);
+            onReactionSuccess?.(reaction);
+          },
+        }
+      );
     }
   };
 

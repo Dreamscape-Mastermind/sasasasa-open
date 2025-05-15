@@ -10,9 +10,11 @@ import {
   CreateCommentRequest,
   ReactionResponse,
   SuccessResponse,
+  TagSearchResponse,
   UpdateBlogPostRequest,
   UpdateCommentRequest,
-  TagSearchResponse,
+  UpdateReactionRequest,
+  type IncrementViewCountResponse,
 } from "@/types/blog";
 
 import axios from "./axios";
@@ -26,8 +28,6 @@ export const blogApi = {
         params,
       }
     );
-
-    console.log(response);
     return response.data.result;
   },
 
@@ -130,6 +130,13 @@ export const blogApi = {
     return response.data.result;
   },
 
+  getComment: async (id: string) => {
+    const response = await axios.get<CommentResponse>(
+      `/api/v1/blog/comments/${id}`
+    );
+    return response.data.result;
+  },
+
   createComment: async (data: CreateCommentRequest) => {
     const response = await axios.post<CommentResponse>(
       "/api/v1/blog/comments",
@@ -138,17 +145,31 @@ export const blogApi = {
     return response.data.result;
   },
 
-  updateComment: async (id: number, data: UpdateCommentRequest) => {
-    const response = await axios.put<CommentResponse>(
+  updateComment: async (id: string, data: UpdateCommentRequest) => {
+    const response = await axios.patch<CommentResponse>(
       `/api/v1/blog/comments/${id}`,
       data
     );
     return response.data.result;
   },
 
-  approveComment: async (id: number) => {
+  approveComment: async (id: string) => {
     const response = await axios.post<CommentResponse>(
       `/api/v1/blog/comments/${id}/approve`
+    );
+    return response.data.result;
+  },
+
+  denyComment: async (id: string) => {
+    const response = await axios.post<CommentResponse>(
+      `/api/v1/blog/comments/${id}/deny`
+    );
+    return response.data.result;
+  },
+
+  deleteComment: async (id: string) => {
+    const response = await axios.delete<SuccessResponse>(
+      `/api/v1/blog/comments/${id}`
     );
     return response.data.result;
   },
@@ -162,7 +183,15 @@ export const blogApi = {
     return response.data.result;
   },
 
-  removeReaction: async (id: number) => {
+  updateReaction: async (id: string, data: UpdateReactionRequest) => {
+    const response = await axios.patch<ReactionResponse>(
+      `/api/v1/blog/reactions/${id}`,
+      data
+    );
+    return response.data.result;
+  },
+
+  removeReaction: async (id: string) => {
     const response = await axios.delete<SuccessResponse>(
       `/api/v1/blog/reactions/${id}`
     );
@@ -177,5 +206,12 @@ export const blogApi = {
       }
     );
     return response.data.result.tags;
+  },
+
+  incrementViewCount: async (slug: string) => {
+    const response = await axios.post<IncrementViewCountResponse>(
+      `/api/v1/blog/posts/${slug}/increment_view_count`
+    );
+    return response.data.result.view_count;
   },
 };

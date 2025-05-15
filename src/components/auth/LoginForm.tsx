@@ -20,30 +20,45 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
+  email: z
+    .string()
+    .min(1, { message: "Email is required" })
+    .email({ message: "Please enter a valid email address" })
+    .max(255, { message: "Email is too long" }),
 });
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, user, isLoading, isAuthenticated } = useAuth();
+  const { login, isLoading, error, isAuthenticated } = useAuth();
   const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
 
+  // Redirect if user is already authenticated
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
+    if (isAuthenticated) {
       router.replace(redirectTo);
     }
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, redirectTo, router]);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
     },
+    mode: "onChange",
   });
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     await login(values.email);
+  }
+
+  // Show loading spinner when checking authentication
+  if (isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
@@ -59,6 +74,8 @@ export function LoginForm() {
                   type="email"
                   placeholder="Enter your email"
                   className="rounded-full"
+                  autoComplete="email"
+                  disabled={isLoading}
                   {...field}
                 />
               </FormControl>
@@ -67,7 +84,15 @@ export function LoginForm() {
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        {error && (
+          <div className="text-sm text-red-500 text-center">{error}</div>
+        )}
+
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isLoading || !form.formState.isValid}
+        >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

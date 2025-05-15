@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LayoutDashboard, LogOut, Settings } from "lucide-react";
 import { getAvatarUrl, getRoleName } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -20,11 +21,8 @@ import { useAuth } from "@/context/auth-context";
 export function ProfileDropdown() {
   const { user, roles, logout } = useAuth();
 
-  const handleSignOut = async () => {
-    await logout();
-  };
+  if (!user) return null;
 
-  // Get initials from first and last name, fallback to email first letter
   const getInitials = () => {
     if (user?.first_name || user?.last_name) {
       return `${user.first_name?.[0] || ""}${user.last_name?.[0] || ""}`;
@@ -32,7 +30,6 @@ export function ProfileDropdown() {
     return user?.email?.[0]?.toUpperCase() || "U";
   };
 
-  // Get display name
   const getDisplayName = () => {
     if (user?.first_name || user?.last_name) {
       return `${user.first_name || ""} ${user.last_name || ""}`.trim();
@@ -40,14 +37,25 @@ export function ProfileDropdown() {
     return user?.email?.split("@")[0] || "User";
   };
 
-  if (!user) return null;
+  const menuItems = [
+    {
+      icon: <LayoutDashboard className="mr-2 h-4 w-4" />,
+      label: "Dashboard",
+      href: ROUTES.DASHBOARD,
+    },
+    {
+      icon: <Settings className="mr-2 h-4 w-4" />,
+      label: "Settings",
+      href: ROUTES.DASHBOARD_SETTINGS,
+    },
+  ];
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-accent"
         >
           <Avatar className="h-8 w-8">
             {user?.avatar ? (
@@ -79,20 +87,23 @@ export function ProfileDropdown() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <Link href={ROUTES.DASHBOARD} className="w-full">
-            Dashboard
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Link href={ROUTES.DASHBOARD_SETTINGS} className="w-full">
-            Settings
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleSignOut}>
-          <Link href={ROUTES.HOME} className="w-full">
-            Sign out
-          </Link>
+        {menuItems.map((item) => (
+          <DropdownMenuItem key={item.href} asChild>
+            <Link
+              href={item.href}
+              className="flex w-full cursor-pointer items-center"
+            >
+              {item.icon}
+              {item.label}
+            </Link>
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuItem
+          onClick={logout}
+          className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,8 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useEffect } from "react";
+import React, { createContext, useCallback, useContext } from "react";
 import { Role, User } from "@/types";
-import { setUserRoles } from "@/lib/auth";
 import {
   useLogin,
   useLogout,
@@ -41,79 +40,96 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resendOTPMutation = useResendOTP();
   const [error, setError] = React.useState<string | null>(null);
 
-  // Update roles in localStorage when they change
-  useEffect(() => {
-    if (roles) {
-      setUserRoles(roles);
-    }
-  }, [roles]);
+  const handleError = useCallback((error: unknown, defaultMessage: string) => {
+    setError(error instanceof Error ? error.message : defaultMessage);
+  }, []);
 
-  const login = async (identifier: string) => {
-    try {
-      setError(null);
-      await loginMutation.mutateAsync({ identifier });
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Login failed");
-    }
-  };
+  const login = useCallback(
+    async (identifier: string) => {
+      try {
+        setError(null);
+        await loginMutation.mutateAsync({ identifier });
+      } catch (error) {
+        handleError(error, "Login failed");
+      }
+    },
+    [loginMutation, handleError]
+  );
 
-  const verifyOTP = async (identifier: string, otp: string) => {
-    try {
-      setError(null);
-      await verifyOTPMutation.mutateAsync({ identifier, otp });
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "OTP verification failed"
-      );
-    }
-  };
+  const verifyOTP = useCallback(
+    async (identifier: string, otp: string) => {
+      try {
+        setError(null);
+        await verifyOTPMutation.mutateAsync({ identifier, otp });
+      } catch (error) {
+        handleError(error, "OTP verification failed");
+      }
+    },
+    [verifyOTPMutation, handleError]
+  );
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       setError(null);
       await logoutMutation.mutateAsync();
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Logout failed");
+      handleError(error, "Logout failed");
     }
-  };
+  }, [logoutMutation, handleError]);
 
-  const updateProfile = async (data: FormData) => {
-    try {
-      setError(null);
-      await updateProfileMutation.mutateAsync(data);
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Profile update failed"
-      );
-    }
-  };
+  const updateProfile = useCallback(
+    async (data: FormData) => {
+      try {
+        setError(null);
+        await updateProfileMutation.mutateAsync(data);
+      } catch (error) {
+        handleError(error, "Profile update failed");
+      }
+    },
+    [updateProfileMutation, handleError]
+  );
 
-  const resendOTP = async (identifier: string) => {
-    try {
-      setError(null);
-      await resendOTPMutation.mutateAsync({ identifier });
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "OTP resend failed");
-    }
-  };
+  const resendOTP = useCallback(
+    async (identifier: string) => {
+      try {
+        setError(null);
+        await resendOTPMutation.mutateAsync({ identifier });
+      } catch (error) {
+        handleError(error, "OTP resend failed");
+      }
+    },
+    [resendOTPMutation, handleError]
+  );
+
+  const contextValue = React.useMemo(
+    () => ({
+      user: user || null,
+      isAuthenticated: !!user,
+      isLoading: isUserLoading || isRolesLoading,
+      error,
+      roles: roles || [],
+      login,
+      verifyOTP,
+      logout,
+      resendOTP,
+      updateProfile,
+    }),
+    [
+      user,
+      isUserLoading,
+      isRolesLoading,
+      error,
+      roles,
+      login,
+      verifyOTP,
+      logout,
+      resendOTP,
+      updateProfile,
+    ]
+  );
 
   return (
-    <AuthContext.Provider
-      value={{
-        user: user || null,
-        isAuthenticated: !!user,
-        isLoading: isUserLoading || isRolesLoading,
-        error,
-        roles: roles || [],
-        login,
-        verifyOTP,
-        logout,
-        resendOTP,
-        updateProfile,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }
 

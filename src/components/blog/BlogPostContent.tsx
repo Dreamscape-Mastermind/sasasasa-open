@@ -1,9 +1,13 @@
 "use client";
 
+import { useBlogPost, useIncrementViewCount } from "@/lib/hooks/useBlog";
+
 import { CommentSection } from "@/components/blog/CommentSection";
 import { ReactionButtons } from "@/components/blog/ReactionButtons";
-import { useBlogPost } from "@/lib/hooks/useBlog";
 import { notFound } from "next/navigation";
+import { useAuth } from "@/context/auth-context";
+import { useEffect } from "react";
+import { useReactions } from "@/lib/hooks/useReactions";
 
 interface BlogPostContentProps {
   slug: string;
@@ -11,6 +15,24 @@ interface BlogPostContentProps {
 
 export function BlogPostContent({ slug }: BlogPostContentProps) {
   const { data: post, isLoading, error } = useBlogPost(slug);
+  const { mutate: incrementViewCount } = useIncrementViewCount();
+  const { user, isAuthenticated } = useAuth();
+  const {
+    handleReactionSuccess,
+    handleReactionUpdate,
+    handleReactionRemove,
+    getReactionsRecord,
+  } = useReactions({
+    queryKey: ["blog-post", slug],
+    id: slug,
+  });
+
+  // Increment view count only once when post is loaded
+  useEffect(() => {
+    if (slug) {
+      incrementViewCount(slug);
+    }
+  }, [slug]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -19,6 +41,16 @@ export function BlogPostContent({ slug }: BlogPostContentProps) {
   if (error || !post) {
     notFound();
   }
+
+  // Get user's reaction only if they are authenticated
+  const userReaction = isAuthenticated
+    ? post.reactions?.find((reaction) => reaction.user === user?.id)
+    : undefined;
+  const userReactionId = userReaction?.id;
+  const userReactionType = userReaction?.reaction_type;
+
+  // Convert reactions array to record
+  const reactionsRecord = getReactionsRecord(post.reactions);
 
   return (
     <article className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -41,6 +73,8 @@ export function BlogPostContent({ slug }: BlogPostContentProps) {
               post.publish_date || post.created_at
             ).toLocaleDateString()}
           </time>
+          <span>•</span>
+          <span>{post.view_count || 0} views</span>
         </div>
       </header>
 
@@ -49,11 +83,19 @@ export function BlogPostContent({ slug }: BlogPostContentProps) {
       </div>
 
       <div className="mt-12 border-t border-gray-200 dark:border-gray-800 pt-8">
-        <ReactionButtons postId={post.id} reactions={post.reaction_count} />
+        <ReactionButtons
+          postSlug={post.slug}
+          reactions={reactionsRecord}
+          userReaction={userReactionType}
+          userReactionId={userReactionId}
+          onReactionSuccess={handleReactionSuccess}
+          onReactionUpdate={handleReactionUpdate}
+          onReactionRemove={handleReactionRemove}
+        />
       </div>
 
       <div className="mt-12 border-t border-gray-200 dark:border-gray-800 pt-8">
-        <CommentSection postId={post.id} />
+        <CommentSection postId={post.id.toString()} />
       </div>
     </article>
   );

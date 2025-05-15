@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Loader2 } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import { useAuth } from "@/context/auth-context";
 import { useEffect } from "react";
@@ -28,15 +29,16 @@ const otpSchema = z.object({
 export function VerifyOTPForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { verifyOTP, resendOTP, user, isLoading, isAuthenticated } = useAuth();
+  const { verifyOTP, resendOTP, isLoading, isAuthenticated, error } = useAuth();
   const email = searchParams?.get("email");
   const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
 
+  // Redirect if user is already authenticated
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
+    if (isAuthenticated) {
       router.replace(redirectTo);
     }
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, redirectTo, router]);
 
   const form = useForm<z.infer<typeof otpSchema>>({
     resolver: zodResolver(otpSchema),
@@ -56,7 +58,14 @@ export function VerifyOTPForm() {
     form.setValue("otp", "");
   };
 
-  if (!email) return null;
+  // Show loading spinner when checking authentication or email
+  if (!email || isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>
@@ -76,6 +85,7 @@ export function VerifyOTPForm() {
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   aria-label="Enter verification code"
+                  disabled={isLoading}
                   {...field}
                 />
               </FormControl>
@@ -84,11 +94,15 @@ export function VerifyOTPForm() {
           )}
         />
 
+        {error && (
+          <div className="text-sm text-red-500 text-center">{error}</div>
+        )}
+
         <div className="space-y-3">
           <Button
             type="submit"
             className="w-full h-12 text-base"
-            disabled={isLoading}
+            disabled={isLoading || !form.formState.isValid}
           >
             {isLoading ? "Verifying..." : "Verify Email"}
           </Button>
