@@ -4,6 +4,7 @@ import {
   RefundRequest,
   TicketPurchaseRequest,
   TicketType,
+  TicketTypeUpdateRequest,
 } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -52,16 +53,16 @@ export const useCreateTicketType = (eventId: string) => {
 /**
  * Hook to update an existing ticket type
  */
-export const useUpdateTicketType = (eventId: string, ticketTypeId: string) => {
+export const useUpdateTicketType = (eventId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: Partial<TicketType>) =>
-      ticketApi.updateTicketType(eventId, ticketTypeId, data),
-    onSuccess: () => {
+    mutationFn: ({ ticketId, data }: { ticketId: string; data: Partial<TicketTypeUpdateRequest> }) =>
+      ticketApi.updateTicketType(eventId, ticketId, data as TicketTypeUpdateRequest),
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["ticketTypes", eventId] });
       queryClient.invalidateQueries({
-        queryKey: ["ticketType", eventId, ticketTypeId],
+        queryKey: ["ticketType", eventId, data.id],
       });
       toast.success("Ticket type updated successfully");
     },

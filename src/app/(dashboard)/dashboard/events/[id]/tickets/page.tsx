@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Download, Filter, QrCode, Search, Ticket } from 'lucide-react';
+import TicketForm from '@/components/forms/ticket-form';
 
 const tickets = [
   {
@@ -53,6 +54,7 @@ const tickets = [
 export default function TicketsPage() {
   return (
     <div className="space-y-6 animate-in">
+      <TicketForm/>
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Tickets</h1>

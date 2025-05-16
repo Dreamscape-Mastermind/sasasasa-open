@@ -5,6 +5,7 @@ import {
   type TeamMemberAcceptRequest,
   type TeamMemberInviteRequest,
   EventFilterParams,
+  TeamMemberRole,
 } from "@/types/event";
 import { eventApi } from "@/lib/api/eventApiService";
 import toast from "react-hot-toast";
@@ -106,7 +107,7 @@ export const useCancelEvent = (eventId: string) => {
 export const useInviteTeamMember = (eventId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: TeamMemberInviteRequest) =>
+    mutationFn: (data: { user_email: string; role: TeamMemberRole }) =>
       eventApi.inviteTeamMember(eventId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["event", eventId] });

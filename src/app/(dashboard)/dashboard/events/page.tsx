@@ -54,7 +54,7 @@ export default function EventsPage() {
     <div className="space-y-6 animate-in">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Events</h1>
-        <Link href="/dashboard/events/new">
+        <Link href="/dashboard/events/create">
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
             Create Event
