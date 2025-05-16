@@ -112,9 +112,20 @@ export interface CreateTicketTypeRequest {
   description?: string;
   price: number;
   quantity: number;
-  sale_start_date: string;
-  sale_end_date: string;
   is_active?: boolean;
+  sale_start_date: Date;
+  sale_end_date: Date;
+}
+
+export interface TicketTypeUpdateRequest {
+  id: string;
+  name?: string;
+  description?: string;
+  price?: number;
+  quantity?: number;
+  is_active?: boolean;
+  sale_start_date?: Date;
+  sale_end_date?: Date;
 }
 
 export interface UpdateTicketTypeRequest

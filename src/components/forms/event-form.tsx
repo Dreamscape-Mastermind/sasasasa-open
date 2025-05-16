@@ -77,7 +77,7 @@ const formSchema = z
     venue: z.string().min(2, {
       message: "Venue must be at least 2 characters",
     }),
-    capacity: z.number().min(1, {
+    capacity: z.string().min(1, {
       message: "Capacity is required.",
     }),
     cover_image: z.any().optional(),
@@ -200,24 +200,15 @@ export default function EventForm() {
   const [isEditing, setIsEditing] = useState(false);
 
   // Fetch event details if eventId is present
-  const { data: eventData, error: eventError } = useEvent(eventId);
+  const { data: eventData, error: eventError, isLoading: loading } = useEvent(eventId);
 
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent();
 
-  useEffect(() => {
-    if (createEvent.isSuccess) {
-      setIsEditing(true); // Set editing mode to true after successful creation
-    }
-  }, [createEvent.isSuccess]);
 
-  const [venueSearchResults, setVenueSearchResults] = useState<
-    VenueSearchResult[]
-  >([]);
-  const [isSearching, setIsSearching] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -228,7 +219,7 @@ export default function EventForm() {
       end_time: "",
       venue: "",
       cover_image: "",
-      capacity: 0,
+      capacity: "",
       facebook_url: "",
       website_url: "",
       linkedin_url: "",
@@ -237,6 +228,12 @@ export default function EventForm() {
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     },
   });
+
+  useEffect(() => {
+    if (createEvent.isSuccess) {
+      setIsEditing(true); // Set editing mode to true after successful creation
+    }
+  }, [createEvent.isSuccess]);
 
   // Populate the form with event data if available
   useEffect(() => {
@@ -265,8 +262,8 @@ export default function EventForm() {
       setImagePreview(eventData.result.cover_image);
       setIsLoading(false);
     }
+    console.log({ eventError, eventData });
     if (eventError) {
-      console.log({ eventError });
       const errorMessage = eventError?.message.includes("401")
         ? "Session expired, please login again"
         : "An error occurred while fetching event details.";
@@ -275,51 +272,29 @@ export default function EventForm() {
     }
   }, [eventData, eventError, form]); // Run effect when eventData changes
 
-  // const searchVenues = (query: string) => {
-  //   if (!query || query.length <= 2) {
-  //     setVenueSearchResults([])
-  //     return
-  //   }
-  //   setIsSearching(true)
-  //   // Simulated venue search - replace with actual API call
-  //   setTimeout(() => {
-  //     setVenueSearchResults([
-  //       { place_id: '1', description: 'Convention Center' } as VenueSearchResult,
-  //       { place_id: '2', description: 'City Hall' },
-  //       { place_id: '3', description: 'Sports Arena' },
-  //     ])
-  //     setIsSearching(false)
-  //   }, 1000)
-  // }
-
-  // function onSubmit(values: z.infer<typeof formSchema>) {
-  //   const startDateTime = combineDateTime(values.start_date, values.start_time);
-  //   const endDateTime = combineDateTime(values.end_date, values.end_time);
-  //   const data = {
-  //     ...values,
-  //     start_date: startDateTime,
-  //     end_date: endDateTime
-  //   }
-  //   createEvent.mutate(data);
-  //   console.log(data);
-  // }
   const onSubmit = async (data) => {
-    // Handle form submission logic
+    console.log("Form submission started");
+    console.log("Form data:", data);
 
     const processedData = {
       ...data,
-      // cover_image: imagePreview,
-      // start_date: combineDateTime(data.start_date, data.start_time),
-      // end_date: combineDateTime(data.end_date, data.end_time),
+      start_date: data.start_date.toISOString(),
+      end_date: data.end_date.toISOString(),
     };
 
-    console.log({ processedData });
+    console.log("Processed data:", processedData);
 
-    if (isEditing && eventId) {
-      // Call the update function here
-      await updateEvent.mutateAsync({ eventId, data: processedData });
-    } else {
-      await createEvent.mutateAsync(processedData);
+    try {
+      if (isEditing && eventId) {
+        console.log("Updating event with ID:", eventId);
+        await updateEvent.mutateAsync({ eventId, data: processedData });
+      } else {
+        console.log("Creating new event");
+        await createEvent.mutateAsync(processedData);
+      }
+      console.log("Form submission successful");
+    } catch (error) {
+      console.error("Form submission failed:", error);
     }
   };
 
@@ -347,7 +322,24 @@ export default function EventForm() {
         ) : (
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={(e) => {
+                console.log("Form submit event triggered");
+                console.log("Current form state:", {
+                  isValid: form.formState.isValid,
+                  errors: form.formState.errors,
+                  isDirty: form.formState.isDirty,
+                  values: form.getValues()
+                });
+                form.handleSubmit(
+                  (data) => {
+                    console.log("Form validation passed, submitting data");
+                    onSubmit(data);
+                  },
+                  (errors) => {
+                    console.log("Form validation failed:", errors);
+                  }
+                )(e);
+              }}
               className="space-y-8"
               encType="multipart/form-data"
             >
@@ -471,7 +463,12 @@ export default function EventForm() {
                                 </FormLabel>
                                 <DatePicker
                                   selected={field.value}
-                                  onChange={(date) => field.onChange(date)}
+                                  onChange={(date) => {
+                                    field.onChange(date);
+                                    if (date) {
+                                      form.setValue("start_time", format(date, "HH:mm"));
+                                    }
+                                  }}
                                   className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-zinc-800 rounded-full "
                                   placeholderText="Select start date and time"
                                   dateFormat="MMM d, yyyy h:mm aa"
@@ -496,7 +493,12 @@ export default function EventForm() {
                                 </FormLabel>
                                 <DatePicker
                                   selected={field.value}
-                                  onChange={(date) => field.onChange(date)}
+                                  onChange={(date) => {
+                                    field.onChange(date);
+                                    if (date) {
+                                      form.setValue("end_time", format(date, "HH:mm"));
+                                    }
+                                  }}
                                   className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-zinc-800 rounded-full "
                                   placeholderText="Select end date and time"
                                   dateFormat="MMM d, yyyy h:mm aa"
@@ -535,62 +537,6 @@ export default function EventForm() {
                       </div>
                     </div>
 
-                    {/* <FormField
-                        control={form.control}
-                        name="venue"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel className="text-gray-700">Venue</FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className={cn(
-                                      "w-full justify-between bg-gray-50 border-gray-300 rounded-none",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {field.value.name ? field.value.name : "Search for a venue"}
-                                    <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-[400px] p-0">
-                                <Command>
-                                  <CommandInput
-                                    placeholder="Search for a venue..."
-                                    onValueChange={searchVenues}
-                                  />
-                                  <CommandEmpty>No venues found.</CommandEmpty>
-                                  <CommandGroup>
-                                    {isSearching && (
-                                      <div className="flex items-center justify-center p-4">
-                                        <Loader2 className="h-6 w-6 animate-spin" />
-                                      </div>
-                                    )}
-                                    {venueSearchResults.map((venue) => (
-                                      <CommandItem
-                                        key={venue.place_id}
-                                        value={venue.description}
-                                        onSelect={() => {
-                                          form.setValue("venue", { name: venue.description, place_id: venue.place_id })
-                                        }}
-                                      >
-                                        <MapPin className="mr-2 h-4 w-4" />
-                                        {venue.description}
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage className="text-red-500" />
-                          </FormItem>
-                        )}
-                      /> */}
-
                     <FormField
                       control={form.control}
                       name="venue"
@@ -619,7 +565,7 @@ export default function EventForm() {
                           </FormLabel>
                           <FormControl>
                             <Input
-                              type="number"
+                              type="text"
                               placeholder="Enter maximum capacity"
                               {...field}
                               className="bg-gray-50 dark:bg-zinc-900 border-gray-300 dark:border-gray-700 rounded-full "
@@ -746,6 +692,7 @@ export default function EventForm() {
                       type="submit"
                       variant="default"
                       className="w-full text-white dark:bg-gray-700 dark:hover:bg-gray-600 mt-4"
+                      onClick={() => console.log("Submit button clicked")}
                     >
                       {isEditing ? "Edit Event" : "Create Event"}
                     </Button>

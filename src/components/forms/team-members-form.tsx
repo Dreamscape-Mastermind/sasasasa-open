@@ -28,7 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useInviteTeamMember, useTeamMembers } from "@/lib/hooks/useEvents";
 import { usePublishEvent } from "@/lib/hooks/useEvents"; // Import the usePublish hook
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 // import { useTeamMembers } from "@/services/events-team/queries"; // Import the query hook
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -52,6 +52,9 @@ const teamSchema = z.object({
 });
 
 export default function TeamMembersForm() {
+
+  const params = useParams();
+  const eventId = params.id as string;
   // Initialize the form
   const teamForm = useForm<z.infer<typeof teamSchema>>({
     resolver: zodResolver(teamSchema),
@@ -62,31 +65,31 @@ export default function TeamMembersForm() {
   });
 
   const searchParams = useSearchParams();
-  const eventId = searchParams.get("eventId");
+  // const eventId = searchParams.get("eventId");
 
   // Fetch current team members
   const { data: teamMembers, refetch } = useTeamMembers(eventId);
 
   const inviteTeamMember = useInviteTeamMember(eventId); // Use the mutation to invite a team member
-
+  console.log({teamMembers})
   const handleInvite = async () => {
     const memberData = {
       user_email: teamForm.getValues("user_email"),
       role: teamForm.getValues("role"),
     }; // Get email and role from form
     if (eventId)
-      await inviteTeamMember.mutateAsync({ eventId, data: memberData });
+      await inviteTeamMember.mutateAsync(memberData);
     console.log({ memberData });
     refetch(); // Refetch team members after inviting
   };
 
   // Initialize the publish mutation
-  const publishEvent = usePublishEvent(); // Use the publish hook
+  const publishEvent = usePublishEvent(eventId); // Use the publish hook
 
   const handlePublish = async () => {
     try {
       // Call the publish function (you may need to pass eventId or other data)
-      if (eventId) await publishEvent.mutateAsync(eventId); // Adjust as necessary
+      if (eventId) await publishEvent.mutateAsync(); // Adjust as necessary
       // Optionally, handle success (e.g., show a success message)
       console.log("Event published successfully!");
     } catch (error) {
@@ -118,7 +121,7 @@ export default function TeamMembersForm() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {teamMembers?.result?.results?.map((member) => (
+                {teamMembers?.results?.map((member) => (
                   <tr key={member.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {member.email}
@@ -195,7 +198,7 @@ export default function TeamMembersForm() {
           </CardContent>
         </Card>
 
-        <Card className="mt-6">
+        {/* <Card className="mt-6">
           <CardHeader>
             <CardTitle className="text-lg font-bold">Publish Event</CardTitle>
           </CardHeader>
@@ -205,7 +208,7 @@ export default function TeamMembersForm() {
               Publish Event
             </Button>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );
