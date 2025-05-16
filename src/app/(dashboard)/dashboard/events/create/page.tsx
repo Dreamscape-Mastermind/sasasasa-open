@@ -140,7 +140,7 @@ export default function CreateEvent() {
           </TabsContent>
 
           <TabsContent value="tickets">
-            {/* <TicketForm/> */}
+            <TicketForm/>
           </TabsContent>
 
           {/* <TabsContent value="social">
@@ -148,7 +148,7 @@ export default function CreateEvent() {
           </TabsContent> */}
 
           <TabsContent value="team">
-            {/* <TeamMembersForm/> */}
+            <TeamMembersForm/>
           </TabsContent>
         </Tabs>
 

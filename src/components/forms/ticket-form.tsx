@@ -12,13 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/ShadCard";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
 import { Control, useForm } from "react-hook-form";
 import {
   Form,
@@ -28,11 +21,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -45,6 +33,7 @@ import {
 import {
   useCreateTicketType,
   useDeleteTicketType,
+  useTicketTypes,
   useUpdateTicketType,
 } from "@/lib/hooks/useTickets";
 import { useRef, useState } from "react";
@@ -55,7 +44,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useTickets } from "@/lib/hooks/useTickets";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -66,71 +55,12 @@ function combineDateTime(date: Date, time: string): Date {
   return datetime;
 }
 
-interface TimePickerProps {
-  name: string;
-  control: Control<any>;
-}
-
-const TimePicker = ({ name, control }: TimePickerProps) => {
-  const times = Array.from({ length: 48 }, (_, i) => {
-    const hour = Math.floor(i / 2);
-    const minute = i % 2 === 0 ? "00" : "30";
-    return `${hour.toString().padStart(2, "0")}:${minute}`;
-  });
-
-  return (
-    <FormField
-      control={control}
-      name={name}
-      render={({ field, fieldState }) => (
-        <FormItem className="flex flex-col">
-          <Popover>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "w-[100px] pl-3 text-left font-normal bg-white border-gray-300 hover:bg-gray-100",
-                    !field.value && "text-gray-500",
-                    fieldState.error && "border-red-500"
-                  )}
-                >
-                  {field.value || "Time"}
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0" align="start">
-              <Command>
-                <CommandInput placeholder="Search time..." />
-                <CommandEmpty>No time found.</CommandEmpty>
-                <CommandGroup className="max-h-[200px] overflow-auto">
-                  {times.map((time) => (
-                    <CommandItem
-                      key={time}
-                      value={time}
-                      onSelect={(value: string) => field.onChange(value)}
-                    >
-                      {time}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </Command>
-            </PopoverContent>
-          </Popover>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  );
-};
-
 const ticketSchema = z
   .object({
     name: z.string().min(1, "Ticket name is required"),
     description: z.string().min(1, "Description is required"),
-    price: z.number().min(1, "Price is required"),
-    quantity: z.number().min(1, "Quantity is required"),
+    price: z.coerce.number().nonnegative("Price should be  positive"),
+    quantity: z.coerce.number().gt(0, "Quantity is required"),
     sale_start_date: z.date({
       required_error: "Sale start date is required",
     }),
@@ -146,18 +76,21 @@ const ticketSchema = z
     },
     {
       message: "Sale end date must be after sale start date",
-      path: ["tickets"],
+      path: ["sale_end_date"],
     }
   );
 
 export default function TicketForm() {
+  const params = useParams();
+  const eventId = params.id as string;
+  
   const searchParams = useSearchParams();
-  const eventId = searchParams.get("eventId");
-  const { data: tickets, isLoading: isLoadingTickets } = useTickets(eventId);
+  // const eventId = searchParams.get("eventId");
+  const { data: tickets, isLoading: isLoadingTickets } = useTicketTypes(eventId);
   const createTicket = useCreateTicketType(eventId);
   const updateTicket = useUpdateTicketType(eventId);
   const deleteTicket = useDeleteTicketType(eventId);
-  console.log({ "tickets data": useTickets(eventId).data });
+  console.log({ "tickets data": tickets });
   const formRef = useRef<HTMLDivElement>(null);
   const ticketForm = useForm<z.infer<typeof ticketSchema>>({
     resolver: zodResolver(ticketSchema),
@@ -175,6 +108,7 @@ export default function TicketForm() {
   const [isEditing, setIsEditing] = useState(false);
 
   const onSubmitTicket = async (data: z.infer<typeof ticketSchema>) => {
+    console.log({data})
     try {
       const processedTicket = {
         ...data,
@@ -185,11 +119,9 @@ export default function TicketForm() {
       };
 
       if (editingTicketId && eventId) {
-        await updateTicket.mutateAsync({
-          eventId,
-          ticketId: editingTicketId,
-          data: processedTicket,
-        });
+        await updateTicket.mutateAsync({ticketId: editingTicketId,
+          data: processedTicket}
+        );
         setIsEditing(false); // Reset editing state after submission
       } else {
         await createTicket.mutateAsync(processedTicket);
@@ -227,7 +159,7 @@ export default function TicketForm() {
 
   const handleDeleteTicket = async (ticketId) => {
     try {
-      if (eventId) await deleteTicket.mutateAsync({ eventId, ticketId }); // Call the delete function
+      if (eventId) await deleteTicket.mutateAsync(ticketId); // Call the delete function
       // Optionally, you can refresh the tickets or show a success message
     } catch (error) {
       console.error("Error deleting ticket:", error);
@@ -356,7 +288,28 @@ export default function TicketForm() {
           <CardContent>
             <Form {...ticketForm}>
               <form
-                onSubmit={ticketForm.handleSubmit(onSubmitTicket)}
+                onSubmit={
+                  (e) => {
+                    console.log("Form submit event triggered");
+                    console.log("Current form state:", {
+                      isValid: ticketForm.formState.isValid,
+                      errors: ticketForm.formState.errors,
+                      isDirty: ticketForm.formState.isDirty,
+                      values: ticketForm.getValues()
+                    });
+                    ticketForm.handleSubmit(
+                      (data) => {
+                        console.log("Form validation passed, submitting data");
+                        onSubmitTicket(data);
+                      },
+                      (errors) => {
+                        console.log("Form validation failed:", errors);
+                      }
+                    )(e);
+                  }}
+                
+                  
+                  // ticketForm.handleSubmit(onSubmitTicket)}
                 className="space-y-6"
               >
                 {/* Single Ticket Form Fields */}
