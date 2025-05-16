@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { ReactNode } from "react";
+
+export const metadata: Metadata = {
+  title: "SASASASA",
+  description: "SASASASA",
+};
 
 export default function MainLayout({ children }: { children: ReactNode }) {
   return (

@@ -37,3 +37,5 @@ export interface SocialMediaUrls {
 
 // Common discount types
 export type DiscountType = "PERCENTAGE" | "FIXED";
+
+export type DeleteResponse = ApiResponse<null>;

@@ -1,6 +1,7 @@
 import { Metadata, ResolvingMetadata } from "next";
 
 import Spinner from "@/components/ui/spiner";
+import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { eventApi } from "@/lib/api/eventApiService";
 
@@ -68,8 +69,16 @@ const EventDetails = dynamic(() => import("@/components/events/EventDetails"), {
   loading: () => <Spinner />,
 });
 
+function EventPageContent({ slug }: { slug: string }) {
+  return <EventDetails slug={slug} />;
+}
+
 export default async function EventPage({ params }: Props) {
   const slug = (await params).slug;
 
-  return <EventDetails slug={slug} />;
+  return (
+    <Suspense fallback={<Spinner />}>
+      <EventPageContent slug={slug} />
+    </Suspense>
+  );
 }

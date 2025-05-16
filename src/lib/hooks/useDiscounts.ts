@@ -1,17 +1,17 @@
-import { DiscountCreateRequest, DiscountUpdateRequest } from "@/types";
+import {
+  DiscountCreateRequest,
+  DiscountFilterParams,
+  DiscountUpdateRequest,
+} from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { discountApi } from "../api/discountApiService";
 import toast from "react-hot-toast";
 
-interface ListDiscountsParams {
-  status?: string;
-  discount_type?: string;
-  search?: string;
-  ordering?: string;
-}
-
-export const useDiscounts = (eventId: string, params?: ListDiscountsParams) => {
+export const useDiscounts = (
+  eventId: string,
+  params?: DiscountFilterParams
+) => {
   return useQuery({
     queryKey: ["discounts", eventId, params],
     queryFn: () => discountApi.listDiscounts(eventId, params),

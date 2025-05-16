@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { Metadata } from "next";
+import Spinner from "@/components/ui/spiner";
+import { Suspense } from "react";
 import { VerifyOTPForm } from "@/components/auth/VerifyOTPForm";
 
 export const metadata: Metadata = {
@@ -44,7 +46,9 @@ export default function VerifyOTP() {
             </p>
           </div>
 
-          <VerifyOTPForm />
+          <Suspense fallback={<Spinner />}>
+            <VerifyOTPForm />
+          </Suspense>
         </div>
       </div>
     </div>

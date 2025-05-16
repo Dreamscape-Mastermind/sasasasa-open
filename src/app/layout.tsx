@@ -9,6 +9,8 @@ import { Metadata } from "next";
 import Providers from "@/components/providers/query-provider";
 import SectionContainer from "@/components/SectionContainer";
 import { Sidebar } from "@/components/Sidebar";
+import Spinner from "@/components/ui/spiner";
+import { Suspense } from "react";
 import siteMetadata from "@/config/siteMetadata";
 
 // import localFont from "next/font/local";
@@ -90,14 +92,16 @@ export default function RootLayout({
       <body
         className={`${sen.variable} ${anton.variable} antialiased "bg-white pl-[calc(100vw-100%)] text-black dark:bg-gray-950 dark:text-white`}
       >
-        <Providers>
-          <SectionContainer>
-            <Header />
-            {children}
-            <Footer />
-            <Sidebar />
-          </SectionContainer>
-        </Providers>
+        <Suspense fallback={<Spinner />}>
+          <Providers>
+            <SectionContainer>
+              <Header />
+              {children}
+              <Footer />
+              <Sidebar />
+            </SectionContainer>
+          </Providers>
+        </Suspense>
       </body>
       <GoogleAnalytics gaId={siteMetadata.googleAnalyticsId} />
     </html>

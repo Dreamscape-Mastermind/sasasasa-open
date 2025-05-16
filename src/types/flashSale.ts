@@ -120,4 +120,3 @@ export type FlashSaleListResponse = ApiResponse<PaginatedResponse<FlashSale>>;
 export type FlashSaleStatsResponse = ApiResponse<FlashSaleStats>;
 export type FlashSaleValidationResult =
   ApiResponse<FlashSaleValidationResponse>;
-export type DeleteResponse = ApiResponse<null>;

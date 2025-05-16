@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { Metadata } from "next";
+import Spinner from "@/components/ui/spiner";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Login | Sasasasa",
@@ -37,10 +39,11 @@ export default function Page() {
               Enter your email to receive a verification code
             </p>
           </div>
-          <LoginForm />
+          <Suspense fallback={<Spinner />}>
+            <LoginForm />
+          </Suspense>
         </div>
       </div>
-      {/* The footer is already in your layout, so nothing needed here */}
     </div>
   );
 }

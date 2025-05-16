@@ -217,4 +217,3 @@ export type PerformerListResponse = ApiResponse<{
 }>;
 export type TeamMemberResponse = ApiResponse<TeamMember>;
 export type TeamMemberListResponse = ApiResponse<PaginatedResponse<TeamMember>>;
-export type DeleteResponse = ApiResponse<null>;

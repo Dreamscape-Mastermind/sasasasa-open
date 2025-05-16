@@ -2,7 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   type EventUpdateRequest,
-  EventFilterParams
+  type TeamMemberAcceptRequest,
+  type TeamMemberInviteRequest,
+  EventFilterParams,
 } from "@/types/event";
 import { eventApi } from "@/lib/api/eventApiService";
 import toast from "react-hot-toast";
@@ -104,7 +106,7 @@ export const useCancelEvent = (eventId: string) => {
 export const useInviteTeamMember = (eventId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { user_email: string; role: string }) =>
+    mutationFn: (data: TeamMemberInviteRequest) =>
       eventApi.inviteTeamMember(eventId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["event", eventId] });
@@ -140,8 +142,8 @@ export const useRemoveTeamMember = (eventId: string) => {
 export const useAcceptTeamInvitation = (eventId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (token: string) =>
-      eventApi.acceptTeamInvitation(eventId, token),
+    mutationFn: (data: TeamMemberAcceptRequest) =>
+      eventApi.acceptTeamInvitation(eventId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["event", eventId] });
       toast.success("Team invitation accepted successfully");

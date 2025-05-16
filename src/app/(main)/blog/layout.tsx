@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import SectionContainer from "@/components/SectionContainer";
 
 export const metadata: Metadata = {
   title: "Blog | SASASASA",
@@ -17,5 +18,5 @@ export default function BlogLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <SectionContainer>{children}</SectionContainer>;
 }
