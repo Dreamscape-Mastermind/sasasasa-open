@@ -1,12 +1,13 @@
 import { BlogPostContent } from "@/components/blog/BlogPostContent";
 import { Metadata } from "next";
-import SectionContainer from "@/components/SectionContainer";
+import Spinner from "@/components/ui/spiner";
+import { Suspense } from "react";
 import { blogApi } from "@/lib/api/blogApiService";
 
 interface BlogPostPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({
@@ -46,8 +47,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
 
   return (
-    <SectionContainer>
+    <Suspense fallback={<Spinner />}>
       <BlogPostContent slug={slug} />
-    </SectionContainer>
+    </Suspense>
   );
 }

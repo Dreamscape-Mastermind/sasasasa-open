@@ -1,10 +1,12 @@
+import type { Metadata } from "next";
 import Spinner from "@/components/ui/spiner";
+import { Suspense } from "react";
 import dynamic from "next/dynamic";
 
-// Lazy load below-the-fold components
-// const Hero = dynamic(() => import("@/components/Hero"), {
-//   loading: () => <Spinner />,
-// });
+export const metadata: Metadata = {
+  title: "SASASASA",
+  description: "SASASASA",
+};
 
 const FeaturedEvents = dynamic(
   () => import("@/components/home/FeaturedEvents"),
@@ -19,14 +21,16 @@ const AllEvents = dynamic(() => import("@/components/home/AllEvents"), {
 
 export default async function Home() {
   return (
-    <div>
+    <>
       {/* Features Section */}
-      <FeaturedEvents />
+      <Suspense fallback={<Spinner />}>
+        <FeaturedEvents />
+      </Suspense>
 
       {/* Promoted Events */}
-      <AllEvents />
-
-      {/* <Hero /> */}
-    </div>
+      <Suspense fallback={<Spinner />}>
+        <AllEvents />
+      </Suspense>
+    </>
   );
 }

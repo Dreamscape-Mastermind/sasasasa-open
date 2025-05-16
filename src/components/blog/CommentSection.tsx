@@ -27,7 +27,7 @@ export function CommentSection({ postId }: CommentSectionProps) {
     handleReactionRemove,
     getReactionsRecord,
   } = useReactions({
-    queryKey: ["blog-comments", { post: postId.toString() }],
+    queryKey: ["blog-comments", postId.toString()],
     id: postId.toString(),
   });
 

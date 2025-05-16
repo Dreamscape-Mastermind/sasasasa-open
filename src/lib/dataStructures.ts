@@ -30,11 +30,6 @@ export type {
 
 // Add any additional types that might be used but not in the centralized types
 export interface VenueSearchResult {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  country: string;
-  latitude?: string;
-  longitude?: string;
+  place_id: string;
+  description: string;
 }

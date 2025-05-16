@@ -87,4 +87,3 @@ export type DiscountResponse = ApiResponse<Discount>;
 export type DiscountListResponse = ApiResponse<PaginatedResponse<Discount>>;
 export type DiscountUsageResponse = ApiResponse<DiscountUsage[]>;
 export type DiscountAnalyticsResponse = ApiResponse<DiscountAnalytics>;
-export type DeleteResponse = ApiResponse<null>;

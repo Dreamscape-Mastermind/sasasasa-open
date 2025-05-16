@@ -9,7 +9,13 @@ import { useLogger } from "@/lib/hooks/useLogger";
 export default function AllEvents() {
   const logger = useLogger({ context: "AllEvents" });
 
-  const { data: allEvents, isLoading, error } = useEvents();
+  const {
+    data: allEvents,
+    isLoading,
+    error,
+  } = useEvents(1, {
+    status: "PUBLISHED",
+  });
 
   if (isLoading) {
     logger.info("Loading all events...");

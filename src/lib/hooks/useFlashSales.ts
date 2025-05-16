@@ -119,7 +119,7 @@ export const useValidateFlashSalePurchase = (
   });
 };
 
-export const useActiveFlashSale = (eventId: string, ticketTypeId?: string) => {
+export const useActiveFlashSale = (eventId: string, ticketTypeId: string) => {
   return useQuery({
     queryKey: ["activeFlashSale", eventId, ticketTypeId],
     queryFn: () => flashSaleApi.getActiveSale(eventId, ticketTypeId),

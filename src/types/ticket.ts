@@ -1,5 +1,6 @@
 import { ApiResponse, PaginatedResponse, TimeStamped } from "./common";
 
+import type { PaymentProvider } from "./payment";
 import type { TicketTypeWithFlashSale } from "./flashSale";
 
 export type TicketStatus =
@@ -9,7 +10,6 @@ export type TicketStatus =
   | "CANCELLED"
   | "REFUNDED";
 export type RefundStatus = "PENDING" | "APPROVED" | "REJECTED" | "PROCESSED";
-export type PaymentProvider = "PAYSTACK" | "PESAPAL";
 
 export interface TicketType extends TimeStamped {
   id: string;
@@ -153,4 +153,3 @@ export type TicketPurchaseResult = ApiResponse<TicketPurchaseResponse>;
 export type ExportTicketsResult = ApiResponse<ExportTicketsResponse>;
 export type ComplementaryTicketsResult =
   ApiResponse<ComplementaryTicketsResponse>;
-export type DeleteResponse = ApiResponse<null>;
