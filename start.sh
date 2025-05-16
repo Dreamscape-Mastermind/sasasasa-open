@@ -18,6 +18,9 @@ else
     echo "WARNING: .env.production file not found"
 fi
 
+# Clean up previous build
+rm -rf .next
+
 # Install dependencies
 yarn install
 

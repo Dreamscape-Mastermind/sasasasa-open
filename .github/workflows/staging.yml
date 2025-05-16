@@ -2,10 +2,9 @@ name: Staging Deployment
 
 on:
   workflow_dispatch:
-
-  # push:
-  #   branches:
-  #     - develop
+  push:
+    branches:
+      - develop
 
 jobs:
   deploy-to-staging:
@@ -20,20 +19,19 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
 
+      - name: Copy Files to VPS
+        run: |
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            . ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }}:${{ secrets.PROJECT_PATH }}
+
       - name: Upload Environment Variables
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }} << 'EOF'
             echo "${{ secrets.STAGING_FRONTEND_ENV }}" | sudo tee ${{ secrets.PROJECT_PATH }}/.env.production > /dev/null || { echo "Failed to create .env.production file"; exit 1; }
           EOF
-
-      - name: Copy Files to VPS
-        run: |
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='node_modules' \
-            --exclude='.next' \
-            . ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }}:${{ secrets.PROJECT_PATH }}
 
       - name: Run Deployment Script on VPS
         run: |
