@@ -6,7 +6,8 @@
     "hooks": "@/hooks",
     "lib": "@/lib",
     "ui": "@/components/ui",
-    "utils": "@/lib/utils"
+    "utils": "@/lib/utils",
+    "types": "@/types"
   },
   "rsc": true,
   "style": "default",
