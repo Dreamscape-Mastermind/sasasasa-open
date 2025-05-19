@@ -19,7 +19,7 @@ import {
 } from '../../../components/ui/dialog'
 import { motion } from 'framer-motion'
 import { CheckCircle2 } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from 'contexts/AuthContext'
 
 const otpSchema = z.object({
   otp: z.string().length(6, { message: 'OTP must be 6 digits' }).regex(/^\d+$/, { message: 'OTP must contain only numbers' }),
@@ -140,12 +140,16 @@ function VerifyOTPContent() {
         const { user, tokens } = data.result
         login(user, tokens)
         setSuccess('Email verified successfully!')
-        setShowConfetti(true)
-        setShowWelcomeDialog(true)
-        setTimeout(() => {
-          setShowConfetti(false)
-          router.push('/dash')
-        }, 5000)
+        // TODO only show confetti when verifying email for the waitlist
+        if (searchParams?.get('type') === 'waitlist') {
+          setShowConfetti(true)
+          setShowWelcomeDialog(true)
+          setTimeout(() => {
+            setShowConfetti(false)
+          }, 5000)
+        } else {
+          router.push('/dashboard')
+        }
       } else {
         setError(data.error || 'Invalid verification code')
       }

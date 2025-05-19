@@ -55,6 +55,9 @@ import {
 } from "@/components/ui/select";
 import TeamMembersForm from "@/components/forms/team-members-form"
 import { useSearchParams } from "next/navigation"
+import { useAuth } from 'contexts/AuthContext'
+import { useRouter } from 'next/navigation'
+import { Suspense } from 'react'
 
 // First, define the role type and schema
 const ROLES = {
@@ -75,9 +78,17 @@ const teamSchema = z.object({
   })).min(1, "At least one team member is required"),
 });
 
+export default function NewEventPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewEventContent />
+    </Suspense>
+  );
+}
 
-
-export default function CreateEvent() {
+function NewEventContent() {
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
+  const router = useRouter()
   const [venueSearchResults, setVenueSearchResults] = useState<VenueSearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -101,6 +112,25 @@ export default function CreateEvent() {
     name: "team",
   });
 
+  useEffect(() => {
+    if (!isAuthLoading && !isAuthenticated) {
+      router.push('/login?redirect=/create')
+    }
+  }, [isAuthLoading, isAuthenticated, router])
+
+  // Show loading state while checking authentication
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-zinc-900 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  // Don't render the page content if not authenticated
+  if (!isAuthenticated) {
+    return null
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-900 text-gray-900 dark:text-gray-200 p-6">

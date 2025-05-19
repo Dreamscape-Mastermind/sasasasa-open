@@ -1,5 +1,6 @@
 import { Header } from "@/components/dashboard/header";
 import { Sidebar } from "@/components/dashboard/sidebar";
+import { EventProvider } from "@/contexts/event-context";
 
 export default function DashboardLayout({
   children,
@@ -7,17 +8,17 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="">
-      <div className="flex h-full">
-        <div className="hidden md:flex w-72 flex-col">
+    <EventProvider>
+      <div className="min-h-screen flex flex-col">
+        <div className="flex-1 flex">
           <Sidebar />
-        </div>
-        <div className="flex-1">
-          {/* <main className="h-[calc(100vh-4rem)] overflow-y-auto p-6"> */}
-          <main className="h-full overflow-y-auto p-6">{children}</main>
-          {/* </main> */}
+          <div className="flex-1 w-full">
+            <main className="p-6 min-h-screen overflow-y-auto">
+              {children}
+            </main>
+          </div>
         </div>
       </div>
-    </div>
+    </EventProvider>
   );
 }

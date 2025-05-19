@@ -22,6 +22,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { CalendarIcon, Circle, ImagePlus, Loader2, MapPin, Check, CircleDot, X, Facebook, Twitter, Instagram, Linkedin, Globe } from 'lucide-react'
 import { useForm, Control, useFieldArray } from "react-hook-form"
 import * as z from "zod"
+import { Suspense } from 'react'
 
 import {
   Users,
@@ -60,7 +61,14 @@ const teamSchema = z.object({
 });
 
 export default function TeamMembersForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TeamMembersFormContent />
+    </Suspense>
+  );
+}
 
+function TeamMembersFormContent() {
   // Initialize the form
   const teamForm = useForm<z.infer<typeof teamSchema>>({
     resolver: zodResolver(teamSchema),

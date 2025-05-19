@@ -1,3 +1,4 @@
+'use client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -17,6 +18,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Download, Search, UserPlus } from 'lucide-react';
+import { useEvent } from '@/contexts/event-context';
 
 const attendees = [
   {
@@ -46,6 +48,13 @@ const attendees = [
 ];
 
 export default function AttendeesPage() {
+  const { currentEvent } = useEvent();
+  // TODO get all ticket types for the event
+
+  // TODO get all attendees for the event from all the ticket types
+
+  // TODO display the attendees in a table
+
   return (
     <div className="space-y-6 animate-in">
       <div className="flex justify-between items-center">

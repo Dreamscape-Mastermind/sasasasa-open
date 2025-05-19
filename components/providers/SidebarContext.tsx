@@ -1,31 +1,44 @@
 'use client'
 
-import { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext, useState } from 'react'
 
 interface SidebarContextType {
-  isSidebarOpen: boolean
-  openSidebar: () => void
-  closeSidebar: () => void
+  isOpen: boolean
   toggleSidebar: () => void
+  closeSidebar: () => void
+  openSidebar: () => void
 }
 
-const SidebarContext = createContext<SidebarContextType | undefined>(undefined)
+const SidebarContext = createContext<SidebarContextType>({
+  isOpen: false,
+  toggleSidebar: () => {},
+  closeSidebar: () => {},
+  openSidebar: () => {},
+})
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
-  const openSidebar = () => setIsSidebarOpen(true)
-  const closeSidebar = () => setIsSidebarOpen(false)
-  const toggleSidebar = () => setIsSidebarOpen(prev => !prev)
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen)
+  }
+
+  const closeSidebar = () => {
+    setIsOpen(false)
+  }
+
+  const openSidebar = () => {
+    setIsOpen(true)
+  }
 
   return (
-    <SidebarContext.Provider value={{ isSidebarOpen, openSidebar, closeSidebar, toggleSidebar }}>
+    <SidebarContext.Provider value={{ isOpen, toggleSidebar, closeSidebar, openSidebar }}>
       {children}
     </SidebarContext.Provider>
   )
 }
 
-export function useSidebar() {
+export const useSidebar = () => {
   const context = useContext(SidebarContext)
   if (context === undefined) {
     throw new Error('useSidebar must be used within a SidebarProvider')

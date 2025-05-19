@@ -134,11 +134,10 @@ export default function FeaturesPage() {
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl font-bold mb-4">
-              Everything You Need to Create Successful Events
+              Everything You Need to Create Quality Community Experiences
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Powerful features to help you manage events of any size, from
-              registration to check-in and beyond.
+              Powerful features to help you manage audience and community experiences.
             </p>
             <Button size="lg">Get Started</Button>
           </div>
@@ -214,7 +213,7 @@ export default function FeaturesPage() {
             Ready to Start Creating Events?
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands of event organizers who trust EventFlow to create
+            Join the diverse community of event organizers who trust Sasasasa to create
             memorable experiences for their attendees.
           </p>
           <div className="flex gap-4 justify-center">

@@ -42,6 +42,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useSearchParams } from "next/navigation"
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css"; // Import the CSS for react-datepicker
+import { Suspense } from 'react';
 
 
 function combineDateTime(date: Date, time: string): Date {
@@ -131,6 +132,14 @@ const ticketSchema = z.object({
 });
 
 export default function TicketForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TicketFormContent />
+    </Suspense>
+  );
+}
+
+function TicketFormContent() {
   const searchParams = useSearchParams();
   const eventId = searchParams.get('eventId');
   const { data: tickets, isLoading: isLoadingTickets } = useTickets(eventId);

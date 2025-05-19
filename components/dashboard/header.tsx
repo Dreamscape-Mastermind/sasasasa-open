@@ -15,11 +15,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import { Bell } from "lucide-react";
+import { Bell, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ThemeSwitch from "../ThemeSwitch";
 import { useState } from "react";
+import Link from "next/link";
+import { useSidebar } from "@/components/providers/SidebarContext";
 
 const notifications = [
   {
@@ -52,14 +54,23 @@ export function Header() {
   const [unreadCount, setUnreadCount] = useState(
     notifications.filter((n) => !n.read).length
   );
+  const { toggleSidebar } = useSidebar();
 
   const markAllAsRead = () => {
     setUnreadCount(0);
   };
 
   return (
-    <div className="border-b">
+    <div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center px-4">
+        <Button
+          variant="ghost"
+          className="mr-2 px-2 hover:bg-transparent lg:hidden"
+          onClick={toggleSidebar}
+        >
+          <Menu className="h-6 w-6" />
+          <span className="sr-only">Toggle sidebar</span>
+        </Button>
         <div className="ml-auto flex items-center space-x-4">
           <Popover>
             <PopoverTrigger asChild>
@@ -110,6 +121,36 @@ export function Header() {
             </PopoverContent>
           </Popover>
           <ThemeSwitch />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces" />
+                  <AvatarFallback>JD</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">John Doe</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    joe@sasasasa.com
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Link href="/dashboard/settings">Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="/dashboard/settings">Settings</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="/signout">Sign out</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>
