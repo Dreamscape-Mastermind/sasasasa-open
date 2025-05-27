@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-
   @keyframes zoomOut {
     from {
       transform: scale(1.1);
@@ -12,7 +11,7 @@
       transform: scale(1);
     }
   }
-  
+
   :root {
     --background: 2 20% 98%;
     --foreground: 2 64% 15%;
@@ -83,7 +82,7 @@
     -ms-overflow-style: none;
     -webkit-overflow-scrolling: touch;
   }
-   
+
   .no-visible-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -121,9 +120,7 @@
 /* https://stackoverflow.com/questions/61083813/how-to-avoid-internal-autofill-selected-style-to-be-applied */
 input:-webkit-autofill,
 input:-webkit-autofill:focus {
-  transition:
-    background-color 600000s 0s,
-    color 600000s 0s;
+  transition: background-color 600000s 0s, color 600000s 0s;
 }
 
 .katex-display {

@@ -9,7 +9,8 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Access-Control-Allow-Origin",
-            value: "https://stage.sasasasa.co, http://localhost, https://sasasasa.co, https://ra.sasasasa.co", // Set your origin
+            value:
+              "https://stage.sasasasa.co, http://localhost, https://sasasasa.co, https://ra.sasasasa.co", // Set your origin
           },
           {
             key: "Access-Control-Allow-Methods",
@@ -17,28 +18,31 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-    ]
+    ];
   },
   images: {
     remotePatterns: [
       {
-        hostname: 'stage.sasasasa.co',
+        hostname: "stage.sasasasa.co",
       },
       {
-        hostname: 'localhost',
+        hostname: "localhost",
       },
       {
-        hostname: 'sasasasa.co',
+        hostname: "sasasasa.co",
       },
       {
-        hostname: 'ra.sasasasa.co',
+        hostname: "ra.sasasasa.co",
+      },
+      {
+        hostname: "beta.sasasasa.co",
       },
     ],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96],
     domains: [
       // ... existing domains ...
-      'stage.sasasasa.co', // Add this line
+      "stage.sasasasa.co", // Add this line
     ],
   },
   // async rewrites() {
@@ -49,7 +53,6 @@ const nextConfig: NextConfig = {
   //     },
   //   ];
   // },
-  
 };
 
 module.exports = nextConfig;
