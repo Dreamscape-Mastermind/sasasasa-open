@@ -86,7 +86,7 @@ export default function EventsPage() {
               <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video relative">
                   <img
-                    src={event.cover_image ? event.cover_image : ''}
+                    src={event.cover_image ? event.cover_image : null}
                     alt={event.title}
                     className="object-cover w-full h-full"
                   />
@@ -127,7 +127,7 @@ export default function EventsPage() {
               <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video relative">
                   <img
-                    src={event.cover_image}
+                    src={event.cover_image ? event.cover_image : undefined}
                     alt={event.title}
                     className="object-cover w-full h-full"
                   />

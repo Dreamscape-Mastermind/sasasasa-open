@@ -50,16 +50,16 @@ export default function OverviewLayout() {
                 <p className="mb-8 leading-relaxed text-gray-500 md:mb-12 lg:w-4/5 xl:text-lg">{event.description}</p>
                 {/* bg-[#CC322D] dark:text-white text-primary2-foreground hover:bg-[#CC322D]/90 rounded-[4rem] */}
                 <div className="flex flex-col gap-2.5 sm:flex-row sm:justify-center lg:justify-start">
-                  <button className="inline-block rounded-lg bg-[#CC322D] px-8 py-3 text-center text-sm font-semibold text-white outline-none ring-indigo-300 transition duration-100 hover:bg-[#CC322D]/90  focus-visible:ring active:bg-[#CC322D]/90  md:text-base"
+                  <button className="inline-block rounded-full bg-[#CC322D] px-8 py-3 text-center text-sm font-semibold text-white outline-none ring-indigo-300 transition duration-100 hover:bg-[#CC322D]/90  focus-visible:ring active:bg-[#CC322D]/90  md:text-base"
                     onClick={handlePublish}>Publish</button>
 
-                  <a href="#" className="inline-block rounded-lg bg-gray-200 px-8 py-3 text-center text-sm font-semibold text-gray-500 outline-none ring-indigo-300 transition duration-100 hover:bg-gray-300 focus-visible:ring active:text-gray-700 md:text-base">Edit</a>
+                  <button className="inline-block rounded-full bg-gray-200 px-8 py-3 text-center text-sm font-semibold text-gray-500 outline-none ring-indigo-300 transition duration-100 hover:bg-gray-300 focus-visible:ring active:text-gray-700 md:text-base">Edit</button>
                 </div>
               </div>
 
               <div className="relative w-full xl:w-5/12">
                 <div className="aspect-square overflow-hidden rounded-lg bg-gray-100 shadow-lg">
-                  <img src={event.cover_image} loading="lazy" alt={event.title} className="h-full w-full object-cover object-center" />
+                  <img src={event.cover_image ? event.cover_image : ""} loading="lazy" alt={event.title} className="h-full w-full object-cover object-center" />
                 </div>
               </div>
             </section>
