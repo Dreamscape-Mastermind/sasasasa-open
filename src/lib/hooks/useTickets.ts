@@ -62,7 +62,7 @@ export const useUpdateTicketType = (eventId: string) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["ticketTypes", eventId] });
       queryClient.invalidateQueries({
-        queryKey: ["ticketType", eventId, data.id],
+        queryKey: ["ticketType", eventId, data.result.id],
       });
       toast.success("Ticket type updated successfully");
     },

@@ -102,39 +102,13 @@ export default function TeamMembersForm() {
     <div className="min-h-screen bg-white dark:bg-zinc-900 text-gray-900 dark:text-gray-200 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Card to display current team members */}
-        <Card className="mb-6">
+        <Card className="mb-6 rounded-lg">
           <CardHeader>
             <CardTitle className="text-lg font-bold">
-              Current Team Members
+              Invite Team Members
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {teamMembers?.results?.map((member) => (
-                  <tr key={member.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {member.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {member.role}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <hr className="my-4 border-gray-300 dark:border-gray-700" />
-            <h3 className="text-lg font-bold">Invite Team Members</h3>
             {/* Form to invite a new team member */}
             <Form {...teamForm}>
               <form
@@ -187,14 +161,42 @@ export default function TeamMembersForm() {
                 />
                 <Button
                   type="submit"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
-                  className=" dark:bg-zinc-900 dark:border-gray-700 rounded-full"
+                  className=" dark:bg-zinc-900 dark:border-gray-700 rounded-full hover:bg-gray-300"
                 >
                   Invite Team Member
                 </Button>
               </form>
             </Form>
+            <hr className="my-4 border-gray-300 dark:border-gray-700" />
+            <h3 className="text-lg font-bold">Current Team Members</h3>
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Role
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {teamMembers?.results?.map((member) => (
+                  <tr key={member.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {member.email}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {member.role}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+            
           </CardContent>
         </Card>
 
