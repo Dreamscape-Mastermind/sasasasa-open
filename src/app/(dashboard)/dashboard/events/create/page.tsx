@@ -1,57 +1,13 @@
 'use client'
-
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/ShadCard"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Textarea } from "@/components/ui/textarea"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { CalendarIcon, Circle, ImagePlus, Loader2, MapPin, Check, CircleDot, X, Facebook, Twitter, Instagram, Linkedin, Globe } from 'lucide-react'
 import { useForm, Control, useFieldArray } from "react-hook-form"
 import * as z from "zod"
 import { useEffect, useState } from "react"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
 import Image from "next/image"
-import { VenueSearchResult } from "utils/dataStructures"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/shadtab"
 import EventForm from "@/components/forms/event-form"
 import { format } from "date-fns";
 import TicketForm from "@/components/forms/ticket-form"
-import SocialLinksForm from "@/components/forms/social-links-form"
-import { 
-  Users, 
-  UserCircle, 
-  Store, 
-  User, 
-  Plus,
-} from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import TeamMembersForm from "@/components/forms/team-members-form"
 import { useSearchParams } from "next/navigation"
 
@@ -77,10 +33,6 @@ const teamSchema = z.object({
 
 
 export default function CreateEvent() {
-  const [venueSearchResults, setVenueSearchResults] = useState<VenueSearchResult[]>([])
-  const [isSearching, setIsSearching] = useState(false)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [currentStep, setCurrentStep] = useState(1);
   const searchParams = useSearchParams();
   const eventId = searchParams.get('eventId');
 
@@ -119,13 +71,6 @@ export default function CreateEvent() {
             >
               Ticket Types
             </TabsTrigger>
-            {/* <TabsTrigger 
-              value="social"
-              className="data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900"
-              disabled={!eventId}
-            >
-              Social Links
-            </TabsTrigger> */}
             <TabsTrigger 
               value="team"
               className="data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900"
@@ -143,10 +88,6 @@ export default function CreateEvent() {
             <TicketForm/>
           </TabsContent>
 
-          {/* <TabsContent value="social">
-            <SocialLinksForm/>
-          </TabsContent> */}
-
           <TabsContent value="team">
             <TeamMembersForm/>
           </TabsContent>
@@ -154,26 +95,6 @@ export default function CreateEvent() {
 
         {/* Navigation Buttons */}
         <div className="flex justify-end space-x-4 mt-6">
-          {/* <Button 
-            type="submit"
-            className="dark:bg-zinc-900"
-          >
-            Create Event
-          </Button> */}
-          {/* <Button 
-            onClick={handlePrevious}
-            disabled={currentStep === 1} // Disable if on the first step
-            className="dark:bg-zinc-900"
-          >
-            Previous
-          </Button>
-          <Button 
-            onClick={handleNext} // Assuming 4 is the last step
-            disabled={!eventId || currentStep === 3} // Disable if eventId is not available
-            className="dark:bg-zinc-900"
-          >
-            Next
-          </Button> */}
         </div>
       </div>
     </div>

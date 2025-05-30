@@ -1,9 +1,7 @@
 "use client";
 
 import "react-datepicker/dist/react-datepicker.css";
-
 import * as z from "zod";
-
 import {
   Accordion,
   AccordionContent,
@@ -17,13 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/ShadCard";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
 import { Control, useForm } from "react-hook-form";
 import { Facebook, Instagram, Linkedin, Twitter } from "../social-icons/icons";
 import {
@@ -35,11 +26,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Globe, ImagePlus, Loader2 } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { allTimezones, useTimezoneSelect } from "react-timezone-select";
 import { useCreateEvent, useUpdateEvent } from "@/lib/hooks/useEvents";
 import { useMyEvents } from '@/lib/hooks/useEvents';
@@ -50,16 +36,12 @@ import DatePicker from "react-datepicker";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { VenueSearchResult } from "@/lib/dataStructures";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-// import { useEvent } from "@/services/events/queries";
 import { useEvent } from '@/lib/hooks/useEvents';
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-// import toast, { Toaster } from 'react-hot-toast';
 
 const formSchema = z
   .object({
@@ -77,9 +59,9 @@ const formSchema = z
     venue: z.string().min(2, {
       message: "Venue must be at least 2 characters",
     }),
-    capacity: z.string().min(1, {
-      message: "Capacity is required.",
-    }),
+    capacity: z.coerce.number().nonnegative(
+      "Capacity is required."
+    ),
     cover_image: z.any().optional(),
     facebook_url: z.string(),
     website_url: z.string(),
@@ -111,59 +93,6 @@ interface TimePickerProps {
   control: Control<any>;
 }
 
-const TimePicker = ({ name, control }: TimePickerProps) => {
-  const times = Array.from({ length: 48 }, (_, i) => {
-    const hour = Math.floor(i / 2);
-    const minute = i % 2 === 0 ? "00" : "30";
-    return `${hour.toString().padStart(2, "0")}:${minute}`;
-  });
-
-  return (
-    <FormField
-      control={control}
-      name={name}
-      render={({ field, fieldState }) => (
-        <FormItem className="flex flex-col">
-          <Popover>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "w-[100px] pl-3 text-left font-normal bg-white border-gray-300 hover:bg-gray-100",
-                    !field.value && "text-gray-500",
-                    fieldState.error && "border-red-500"
-                  )}
-                >
-                  {field.value || "Time"}
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0" align="start">
-              <Command>
-                <CommandInput placeholder="Search time..." />
-                <CommandEmpty>No time found.</CommandEmpty>
-                <CommandGroup className="max-h-[200px] overflow-auto">
-                  {times.map((time) => (
-                    <CommandItem
-                      key={time}
-                      value={time}
-                      onSelect={(value: string) => field.onChange(value)}
-                    >
-                      {time}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </Command>
-            </PopoverContent>
-          </Popover>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  );
-};
 
 const labelStyle = "original";
 const timezones = {
@@ -193,8 +122,8 @@ const CustomTimezoneSelect = ({ onChange, value }) => {
 };
 
 export default function EventForm() {
-  const searchParams = useSearchParams();
-  const eventId = searchParams.get("eventId");
+  const params = useParams();
+  const eventId = params.id as string;
 
   // State to track if we are editing an event
   const [isEditing, setIsEditing] = useState(false);
@@ -203,7 +132,7 @@ export default function EventForm() {
   const { data: eventData, error: eventError, isLoading: loading } = useEvent(eventId);
 
   const createEvent = useCreateEvent();
-  const updateEvent = useUpdateEvent();
+  const updateEvent = useUpdateEvent(eventId);
 
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -219,7 +148,7 @@ export default function EventForm() {
       end_time: "",
       venue: "",
       cover_image: "",
-      capacity: "",
+      capacity: 0,
       facebook_url: "",
       website_url: "",
       linkedin_url: "",
@@ -237,29 +166,29 @@ export default function EventForm() {
 
   // Populate the form with event data if available
   useEffect(() => {
-    if (eventData && eventData.result) {
-      form.setValue("title", eventData.result.title);
-      form.setValue("description", eventData.result.description);
-      form.setValue("start_date", new Date(eventData.result.start_date));
+    if (eventData) {
+      form.setValue("title", eventData.title);
+      form.setValue("description", eventData.description);
+      form.setValue("start_date", new Date(eventData.start_date));
       form.setValue(
         "start_time",
-        format(new Date(eventData.result.start_date), "HH:mm")
+        format(new Date(eventData.start_date), "HH:mm")
       );
-      form.setValue("end_date", new Date(eventData.result.end_date));
+      form.setValue("end_date", new Date(eventData.end_date));
       form.setValue(
         "end_time",
-        format(new Date(eventData.result.end_date), "HH:mm")
+        format(new Date(eventData.end_date), "HH:mm")
       );
-      form.setValue("venue", eventData.result.venue);
-      form.setValue("capacity", eventData.result.capacity);
+      form.setValue("venue", eventData.venue);
+      form.setValue("capacity", eventData.capacity);
       form.setValue(
         "cover_image",
-        eventData.result.cover_image ? eventData.result.cover_image : ""
+        eventData.cover_image ? eventData.cover_image : ""
       );
-      form.setValue("timezone", eventData.result.timezone);
+      form.setValue("timezone", eventData.timezone);
       // Populate other fields as necessary
       setIsEditing(true); // Set editing mode to true if event data is loaded
-      setImagePreview(eventData.result.cover_image);
+      setImagePreview(eventData.cover_image ?? null);
       setIsLoading(false);
     }
     console.log({ eventError, eventData });
@@ -287,7 +216,7 @@ export default function EventForm() {
     try {
       if (isEditing && eventId) {
         console.log("Updating event with ID:", eventId);
-        await updateEvent.mutateAsync({ eventId, data: processedData });
+        await updateEvent.mutateAsync(processedData);
       } else {
         console.log("Creating new event");
         await createEvent.mutateAsync(processedData);
