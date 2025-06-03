@@ -29,7 +29,8 @@ export const usePayment = () => {
 
   const useVerifyPayment = () => {
     return useMutation({
-      mutationFn: (data: VerifyPaymentRequest) => paymentService.verifyPayment(data),
+      mutationFn: (data: VerifyPaymentRequest) =>
+        paymentService.verifyPayment(data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["payments"] });
       },
@@ -47,7 +48,8 @@ export const usePayment = () => {
 
   const useRefundPayment = () => {
     return useMutation({
-      mutationFn: ({ id, data }: { id: string; data: RefundPaymentRequest }) => paymentService.refundPayment(id, data),
+      mutationFn: ({ id, data }: { id: string; data: RefundPaymentRequest }) =>
+        paymentService.refundPayment(id, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["payments"] });
       },
@@ -72,7 +74,8 @@ export const usePayment = () => {
   // Payment Initialization
   const useInitializePayment = () => {
     return useMutation({
-      mutationFn: (data: InitializePaymentRequest) => paymentService.initializePayment(data),
+      mutationFn: (data: InitializePaymentRequest) =>
+        paymentService.initializePayment(data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["payments"] });
       },

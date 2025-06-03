@@ -1,5 +1,4 @@
 import {
-  BaseResponse,
   Nullable,
   PaginatedResponse,
   SuccessResponse,
@@ -113,8 +112,8 @@ export interface InitializePaymentRequest {
 }
 
 export interface VerifyPaymentRequest {
-  reference: string;
-  provider: PaymentProvider;
+  reference?: string;
+  trxref?: string;
 }
 
 export interface RefundPaymentRequest {
@@ -136,17 +135,7 @@ export interface PaymentProviderResponse
 export interface PaymentProvidersResponse
   extends SuccessResponse<PaginatedResponse<PaymentProviderConfig>> {}
 
-export interface PaymentVerificationResponse
-  extends SuccessResponse<{
-    status: PaymentStatus;
-    reference: string;
-    amount: number;
-    currency: string;
-    provider_reference: string;
-    provider_status: string;
-    requires_action: boolean;
-    action_url?: string;
-  }> {}
+export interface PaymentVerificationResponse extends SuccessResponse<Payment> {}
 
 export interface PaymentRefundResponse
   extends SuccessResponse<{
@@ -158,6 +147,14 @@ export interface PaymentRefundResponse
     reason: string;
     created_at: string;
   }> {}
+
+export interface PaymentDetailsResponse {
+  authorization_url?: string;
+  reference: string;
+  access_code?: string;
+  order_tracking_id?: string;
+  redirect_url?: string;
+}
 
 export interface PaymentMethodResponse
   extends SuccessResponse<PaymentMethodData> {}

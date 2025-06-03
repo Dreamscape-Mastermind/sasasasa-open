@@ -6,20 +6,21 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import Error from "@/components/ui/error";
-import { Event } from "@/types/event";
+import { Event, type EventQueryParams } from "@/types/event";
 import Image from "next/image";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { TicketType } from "@/types/ticket";
 import { TicketTypeWithFlashSale } from "@/types/flashsale";
-import { Tickets } from "@/components/Tickets";
+import { Tickets } from "@/components/events/tickets/Tickets";
 import { formatDateCustom } from "@/lib/dataFormatters";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useEvent } from "@/hooks/useEvent";
 import { useLogger } from "@/hooks/useLogger";
+import { ROUTES } from "@/lib/constants";
 
 type EventDetailsProps = {
   slug: string;
@@ -32,10 +33,13 @@ interface TicketWithFlashSale extends Omit<TicketType, "flash_sale"> {
 const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
   const logger = useLogger({ context: "EventDetails" });
   const analytics = useAnalytics();
-  const { useEventBySlug } = useEvent();
-  const { data: eventResponse, isLoading, error } = useEventBySlug(slug);
+  const { useEvents } = useEvent();
+  const [filters, setFilters] = useState<EventQueryParams>({
+    short_url: slug,
+  });
+  const { data: eventResponse, isLoading, error } = useEvents(filters);
 
-  const event = eventResponse?.result as Event | undefined;
+  const event = eventResponse?.result?.results[0] as Event | undefined;
 
   useEffect(() => {
     if (event) {
@@ -60,30 +64,54 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
       error: errorMessage,
       slug,
     });
-    analytics.trackError(
-      error instanceof Error ? error : new Error(errorMessage),
-      {
-        context: "EventDetails",
-        slug,
-      }
-    );
+    analytics.trackError(error as Error, {
+      context: "EventDetails",
+      slug,
+    });
     return <Error />;
   }
 
   // Handle loading state
   if (isLoading) {
     return (
-      <div className="animate-pulse mx-auto px-4 sm:px-14">
-        <div className="full-w overflow-hidden max-w-6xl mx-auto">
-          <div className="flex flex-col sm:flex-row gap-8 bg-zinc-900 text-white max-w-6xl sm:max-w-5xl items-left sm:items-start mx-auto sm:p-8">
-            <div className="basis-1/2 relative aspect-square bg-zinc-800"></div>
-            <div className="basis-1/2 text-left px-5 pb-4 sm:px-0 sm:pb-0 sm:pt-4">
-              <div className="h-6 bg-zinc-800 rounded w-3/4 mb-2"></div>
-              <div className="h-4 bg-zinc-800 rounded w-1/2 mb-6"></div>
-              <div className="h-10 bg-zinc-800 rounded w-full mb-4"></div>
-              <div className="h-32 bg-zinc-800 rounded w-full"></div>
-            </div>
+      <div className="flex flex-col items-center min-h-[60vh] w-full px-4">
+        <div className="bg-zinc-900 rounded-xl shadow-lg flex flex-col sm:flex-row w-full max-w-5xl overflow-hidden">
+          {/* Image skeleton */}
+          <div className="sm:w-1/2 w-full aspect-square bg-zinc-800 flex items-center justify-center">
+            <div className="w-4/5 h-4/5 bg-zinc-700 rounded-lg animate-pulse" />
           </div>
+          {/* Text skeleton */}
+          <div className="sm:w-1/2 w-full flex flex-col gap-4 p-8 justify-center">
+            <div className="h-6 w-2/3 bg-zinc-800 rounded animate-pulse mb-2" />
+            <div className="h-4 w-1/3 bg-zinc-800 rounded animate-pulse mb-4" />
+            <div className="h-10 w-full bg-zinc-800 rounded animate-pulse mb-4" />
+            <div className="h-24 w-full bg-zinc-800 rounded animate-pulse mb-4" />
+            <div className="h-8 w-1/2 bg-zinc-800 rounded animate-pulse mb-2" />
+            <div className="h-6 w-1/3 bg-zinc-800 rounded animate-pulse" />
+          </div>
+        </div>
+        {/* Tickets skeleton */}
+        <div className="w-full max-w-3xl mt-10">
+          <div className="mb-3 h-6 w-32 bg-zinc-800 rounded animate-pulse" />
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between bg-zinc-900 rounded-lg p-4 mb-4 shadow"
+            >
+              {/* Ticket name */}
+              <div className="h-6 w-24 bg-zinc-800 rounded animate-pulse" />
+              {/* Price */}
+              <div className="h-6 w-20 bg-amber-400/30 rounded animate-pulse" />
+              {/* Quantity controls */}
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 bg-zinc-800 rounded-full animate-pulse" />
+                <div className="h-6 w-6 bg-zinc-800 rounded animate-pulse" />
+                <div className="h-8 w-8 bg-zinc-800 rounded-full animate-pulse" />
+              </div>
+            </div>
+          ))}
+          {/* Checkout button skeleton */}
+          <div className="h-12 w-full bg-red-500/30 rounded-lg animate-pulse mt-2" />
         </div>
       </div>
     );
@@ -98,7 +126,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
           The event information is not available.
         </p>
         <Link
-          href="/"
+          href={ROUTES.EVENTS}
           className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-md transition-colors"
         >
           Browse Other Events
@@ -414,8 +442,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
             <h2 className="text-xl font-bold mb-3">TICKETS</h2>
             {event.available_tickets && event.available_tickets.length > 0 ? (
               <Tickets
-                tickets={event.available_tickets as TicketWithFlashSale[]}
+                tickets={event.available_tickets as TicketType[]}
                 formatDate={formatDateCustom}
+                slug={slug}
               />
             ) : (
               <div>

@@ -7,11 +7,11 @@ import { FeaturedEvents } from "./FeaturedEvents";
 import { Features } from "./Features";
 import { Hero } from "./Hero";
 import { HomeEventListing } from "./HomeEventListing";
+import { Skeleton } from "@/components/ui/skeleton";
 import dynamic from "next/dynamic";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useEvent } from "@/hooks/useEvent";
 import { useLogger } from "@/hooks/useLogger";
-import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load below-the-fold components
 const FeaturedEventBanner = dynamic(
@@ -141,14 +141,16 @@ export default function HomeContent() {
           </div>
         ) : hasMultipleFeaturedEvents ? (
           <div className="my-8 relative px-1 md:px-12">
-            <FeaturedCarousel events={featuredEvents?.result?.results || []} />
+            <FeaturedCarousel
+              events={featuredEvents?.result?.results?.slice(0, 3) || []}
+            />
           </div>
         ) : bannerEvent ? (
           <FeaturedEventBanner event={bannerEvent} />
         ) : null}
         {featuredEvents?.result?.results?.length ? (
           <FeaturedEvents
-            featuredEvents={featuredEvents.result.results}
+            featuredEvents={featuredEvents.result.results?.slice(0, 3)}
             isLoading={isLoadingFeatured}
           />
         ) : null}

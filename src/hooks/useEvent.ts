@@ -23,10 +23,10 @@ export const useEvent = () => {
     });
   };
 
-  const useEventBySlug = (slug: string) => {
+  const useEvent = (id: string) => {
     return useQuery({
-      queryKey: ["event", slug],
-      queryFn: () => eventService.getEvent(slug),
+      queryKey: ["event", id],
+      queryFn: () => eventService.getEvent(id),
     });
   };
 
@@ -171,7 +171,7 @@ export const useEvent = () => {
   return {
     // Events
     useEvents,
-    useEventBySlug,
+    useEvent,
     useCreateEvent,
     useUpdateEvent,
     useDeleteEvent,

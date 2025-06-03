@@ -1,8 +1,8 @@
 import { Metadata, ResolvingMetadata } from "next";
 
+import EventDetails from "@/components/events/EventDetails";
 import Spinner from "@/components/ui/spinner";
 import { Suspense } from "react";
-import dynamic from "next/dynamic";
 import { eventService } from "@/services/event.service";
 
 // Update the type definitions
@@ -18,8 +18,8 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const MAX_TITLE_LENGTH = 50;
   try {
-    const slug = (await params).slug;
-    const response = await eventService.getEvent(slug);
+    const shortUrl = (await params).slug;
+    const response = await eventService.getEvent(shortUrl);
 
     // Since we're filtering by short_url, we should get only the matching event
     const event = response.result;
@@ -64,21 +64,12 @@ export async function generateMetadata(
   }
 }
 
-// Use dynamic import for client component
-const EventDetails = dynamic(() => import("@/components/events/EventDetails"), {
-  loading: () => <Spinner />,
-});
-
-function EventPageContent({ slug }: { slug: string }) {
-  return <EventDetails slug={slug} />;
-}
-
 export default async function EventPage({ params }: Props) {
   const slug = (await params).slug;
 
   return (
     <Suspense fallback={<Spinner />}>
-      <EventPageContent slug={slug} />
+      <EventDetails slug={slug} />
     </Suspense>
   );
 }

@@ -33,42 +33,72 @@ class PaymentService {
   /**
    * Payment operations
    */
-  public async listPayments(params?: PaymentQueryParams): Promise<PaymentsResponse> {
-    return apiClient.get<PaymentsResponse>(`${this.baseUrl}/payments`, { params });
+  public async listPayments(
+    params?: PaymentQueryParams
+  ): Promise<PaymentsResponse> {
+    return apiClient.get<PaymentsResponse>(`${this.baseUrl}/payments`, {
+      params,
+    });
   }
 
   public async getPayment(id: string): Promise<PaymentResponse> {
     return apiClient.get<PaymentResponse>(`${this.baseUrl}/payments/${id}`);
   }
 
-  public async verifyPayment(data: VerifyPaymentRequest): Promise<PaymentVerificationResponse> {
-    return apiClient.post<PaymentVerificationResponse>(`${this.baseUrl}/payments/verify`, data);
+  public async verifyPayment(
+    data: VerifyPaymentRequest
+  ): Promise<PaymentVerificationResponse> {
+    return apiClient.post<PaymentVerificationResponse>(
+      `${this.baseUrl}/payments/verify?reference=${data.reference}&trxref=${data.trxref}`
+    );
   }
 
   public async retryPayment(id: string): Promise<PaymentResponse> {
-    return apiClient.post<PaymentResponse>(`${this.baseUrl}/payments/${id}/retry`);
+    return apiClient.post<PaymentResponse>(
+      `${this.baseUrl}/payments/${id}/retry`
+    );
   }
 
-  public async refundPayment(id: string, data: RefundPaymentRequest): Promise<PaymentRefundResponse> {
-    return apiClient.post<PaymentRefundResponse>(`${this.baseUrl}/payments/${id}/refund`, data);
+  public async refundPayment(
+    id: string,
+    data: RefundPaymentRequest
+  ): Promise<PaymentRefundResponse> {
+    return apiClient.post<PaymentRefundResponse>(
+      `${this.baseUrl}/payments/${id}/refund`,
+      data
+    );
   }
 
   /**
    * Payment provider operations
    */
-  public async listPaymentProviders(params?: PaymentProviderQueryParams): Promise<PaymentProvidersResponse> {
-    return apiClient.get<PaymentProvidersResponse>(`${this.baseUrl}/payment-providers`, { params });
+  public async listPaymentProviders(
+    params?: PaymentProviderQueryParams
+  ): Promise<PaymentProvidersResponse> {
+    return apiClient.get<PaymentProvidersResponse>(
+      `${this.baseUrl}/payment-providers`,
+      { params }
+    );
   }
 
-  public async getPaymentProvider(id: string): Promise<PaymentProviderResponse> {
-    return apiClient.get<PaymentProviderResponse>(`${this.baseUrl}/payment-providers/${id}`);
+  public async getPaymentProvider(
+    id: string
+  ): Promise<PaymentProviderResponse> {
+    return apiClient.get<PaymentProviderResponse>(
+      `${this.baseUrl}/payment-providers/${id}`
+    );
   }
 
   /**
    * Payment initialization
    */
-  public async initializePayment(data: InitializePaymentRequest): Promise<PaymentResponse> {
-    return apiClient.post<PaymentResponse>(`${this.baseUrl}/payments/initialize`, data);
+  public async initializePayment(
+    data: InitializePaymentRequest
+  ): Promise<PaymentResponse> {
+    return apiClient.post<PaymentResponse>(
+      `${this.baseUrl}/payments/initialize`,
+      data
+    );
   }
 }
 

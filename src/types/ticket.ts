@@ -5,7 +5,7 @@ import {
   TimeStamp,
 } from "./common";
 
-import { Payment } from "./payment";
+import { PaymentDetailsResponse } from "./payment";
 import { TicketTypeWithFlashSale } from "./flashsale";
 
 /**
@@ -127,7 +127,7 @@ export interface TicketPurchaseRequest {
   first_name?: string;
   last_name?: string;
   tickets: TicketPurchaseItem[];
-  discount_code?: string;
+  discount_code?: string | null;
   provider?: string;
   total_amount?: number; // Read-only field from serializer
 }
@@ -165,7 +165,7 @@ export interface TicketPurchaseResponse
   extends SuccessResponse<{
     tickets: Ticket[];
     total_amount: string;
-    payment_details: Payment;
+    payment_details: PaymentDetailsResponse;
   }> {}
 
 export interface TicketRefundResponse extends SuccessResponse<TicketRefund> {}
