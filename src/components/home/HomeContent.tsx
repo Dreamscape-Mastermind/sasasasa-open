@@ -12,6 +12,7 @@ import dynamic from "next/dynamic";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useEvent } from "@/hooks/useEvent";
 import { useLogger } from "@/hooks/useLogger";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Lazy load below-the-fold components
 const FeaturedEventBanner = dynamic(
@@ -66,6 +67,7 @@ const FeaturedCarousel = dynamic(
 
 export default function HomeContent() {
   const { useEvents } = useEvent();
+  const { hasAnyAccessLevel } = useAuth();
   const analytics = useAnalytics();
   const logger = useLogger({ context: "HomeContent" });
 

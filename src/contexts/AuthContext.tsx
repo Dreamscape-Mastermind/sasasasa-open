@@ -47,9 +47,9 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   loginWithEmail: (data: LoginRequest) => Promise<boolean>;
-  verifyOtp: (data: OTPVerificationRequest) => Promise<boolean>;
+  completeOtpVerification: (data: any) => Promise<boolean>;
   resendOtp: (data: ResendOtpRequest) => Promise<boolean>;
-  loginWithWallet: (walletAddress: string) => void;
+  loginWithWallet: (address: `0x${string}`) => Promise<boolean>;
   loginWithSIWEReCap: (
     address: `0x${string}`,
     capabilities?: Record<string, any>
@@ -105,6 +105,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginMutation = useLogin();
   const refreshTokenMutation = useRefreshToken();
   const logoutMutation = useLogout();
+  const web3NonceMutation = useWeb3Nonce();
+  const verifyWeb3SignatureMutation = useVerifyWeb3Signature();
   const web3RecapNonceMutation = useWeb3RecapNonce();
   const verifyWeb3RecapMutation = useVerifyWeb3Recap();
   const linkWalletMutation = useLinkWallet();
@@ -112,9 +114,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyOtpMutation = useVerifyOtp();
   const resendOtpMutation = useResendOtp();
 
-  // Role queries
-  const { data: rolesData } = useRoles();
-  const { data: availableRolesData } = useAvailableRoles();
+  // Role queries - only run when authenticated
+  const { data: rolesData } = useRoles({
+    enabled: isAuthenticated && !!tokens?.result?.access,
+  });
+  const { data: availableRolesData } = useAvailableRoles({
+    enabled: isAuthenticated && !!tokens?.result?.access,
+  });
 
   // Role helper functions
   /**
@@ -124,8 +130,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const hasRole = useCallback(
     (roleName: string): boolean => {
-      if (!rolesData?.result) return false;
-      return rolesData.result.some((role) => role.name === roleName);
+      if (!rolesData?.result?.roles) return false;
+      return rolesData.result?.roles.some((role) => role.name === roleName);
     },
     [rolesData]
   );
@@ -137,8 +143,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const hasAnyRole = useCallback(
     (roleNames: string[]): boolean => {
-      if (!rolesData?.result) return false;
-      return rolesData.result?.some((role) => roleNames.includes(role.name));
+      if (!rolesData?.result?.roles) return false;
+      return rolesData.result?.roles.some((role) => roleNames.includes(role.name));
     },
     [rolesData]
   );
@@ -150,9 +156,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const hasAllRoles = useCallback(
     (roleNames: string[]): boolean => {
-      if (!rolesData?.result) return false;
+      if (!rolesData?.result?.roles) return false;
       return roleNames.every((roleName) =>
-        rolesData.result?.some((role) => role.name === roleName)
+        rolesData.result?.roles?.some((role) => role.name === roleName)
       );
     },
     [rolesData]
@@ -246,7 +252,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const debouncedRouteCheck = () => {
       clearTimeout(timeoutId);
-      timeoutId = setTimeout(handleRouteCheck, 100);
+      timeoutId = setTimeout(handleRouteCheck, 600);
     };
 
     debouncedRouteCheck();
@@ -324,6 +330,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await logoutMutation.mutateAsync(tokens?.result?.refresh || "");
         logger.info("User logged out successfully", { userId: user?.id });
         analytics.trackUserAction("logout", "auth");
+        cookieService.clearAuth();
       } catch (error) {
         logger.error("Logout error", error);
         analytics.trackError(error as Error, { context: "logout" });
@@ -385,8 +392,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error("Failed to get nonce response");
       }
 
-      const { message_data, message, recap_data } =
-        nonceResponse.result as NonNullable<Web3RecapNonceResponse["result"]>;
+      const { message_data, message, recap_data } = nonceResponse.result;
 
       const signature = await handleSignMsg(message, address);
 
@@ -462,6 +468,92 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithWallet = async (address: `0x${string}`) => {
+    try {
+      logger.info("Attempting SIWE login", { address });
+      
+      // Get nonce from server
+      const nonceResponse = await web3NonceMutation.mutateAsync({ address });
+      
+      if (!nonceResponse.result) {
+        throw new Error("Failed to get nonce response");
+      }
+
+      const { message_data, message } = nonceResponse.result;
+
+      // Sign message with wallet
+      const signature = await handleSignMsg(message, address);
+
+      // Verify signature
+      const verifyResponse = await verifyWeb3SignatureMutation.mutateAsync({
+        message_data,
+        signature,
+      });
+
+      if (verifyResponse.result) {
+        const { tokens: newTokens, user: newUser } = verifyResponse.result;
+
+        setTokens(newTokens);
+        cookieService.setTokens(newTokens);
+
+        // Update user profile with wallet info
+        const walletUser: UserProfile = {
+          ...newUser,
+          primary_wallet: {
+            id: address,
+            address: address,
+            chain_id: chainId as number,
+            is_verified: true,
+            last_used: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          wallets: [
+            {
+              id: address,
+              address: address,
+              chain_id: chainId as number,
+              is_verified: true,
+              last_used: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ],
+        };
+
+        setUser(walletUser);
+        cookieService.setUser(walletUser);
+        setIsAuthenticated(true);
+
+        logger.info("SIWE login successful", {
+          userId: newUser.id,
+          address,
+        });
+        analytics.trackUserAction("login_completed", "auth", "wallet");
+
+        if (verifyResponse.result.requires_email) {
+          router.push(
+            `${ROUTES.DASHBOARD_SETTINGS}?tab=account&action=link-email`
+          );
+        } else {
+          toast.success("Signed in via Wallet");
+          router.push(ROUTES.DASHBOARD);
+        }
+
+        return true;
+      }
+
+      logger.warn("SIWE login failed", { address });
+      toast.error("Failed to authenticate wallet");
+      return false;
+    } catch (error) {
+      logger.error("SIWE login error", error);
+      analytics.trackError(error as Error, { context: "siwe_login" });
+      toast.error("Authentication failed");
+      return false;
+    }
+  };
+
   const linkWallet = async (address: `0x${string}`) => {
     try {
       if (!user || !getAccessToken()) {
@@ -474,9 +566,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         chain_id: Number(chainId),
       });
 
-      const { message_data, message } = linkResponse.result as NonNullable<
-        LinkWalletResponse["result"]
-      >;
+      if (!linkResponse.result) {
+        toast.error("Failed to get linking data");
+        return false;
+      }
+
+      const { message_data, message } = linkResponse.result;
 
       const signature = await handleSignMsg(message, address);
 
@@ -526,10 +621,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const verifyOtp = async (data: OTPVerificationRequest): Promise<boolean> => {
+  const completeOtpVerification = async (response: {
+    result: {
+      tokens: TokenResponse;
+      user: UserProfile;
+    }
+  }): Promise<boolean> => {
     try {
-      logger.info("Attempting OTP verification", { email: data.identifier });
-      const response = await verifyOtpMutation.mutateAsync(data);
 
       if (response.result) {
         const { tokens: newTokens, user: newUser } = response.result;
@@ -548,7 +646,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return true;
       }
 
-      logger.warn("OTP verification failed", { email: data.identifier });
+      logger.warn("OTP verification failed", { email: user?.email });
       toast.error("OTP verification failed");
       return false;
     } catch (error) {
@@ -591,12 +689,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        roles: rolesData?.result || null,
-        availableRoles: availableRolesData?.result || null,
+        roles: rolesData?.result?.roles || null,
+        availableRoles: availableRolesData?.result?.roles || null,
         isLoading,
         isAuthenticated: !!user,
         loginWithEmail,
-        verifyOtp,
+        completeOtpVerification,
         resendOtp,
         loginWithWallet,
         loginWithSIWEReCap,

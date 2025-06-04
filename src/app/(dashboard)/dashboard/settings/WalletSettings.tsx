@@ -14,18 +14,18 @@ import { useEffect, useState } from "react";
 import { AppKit } from "@/contexts/AppKit";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Wallet } from "@/utils/dataStructures";
+import { WalletInfo } from "@/types/user";
 import { WalletAddress } from "@/components/ui/wallet-address";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { useAppKitAccount } from "@reown/appkit/react";
-import { useAuth } from "@/oldContexts/oldAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function WalletSettings() {
   const { getAccessToken, linkWallet } = useAuth();
   const { address, isConnected } = useAppKitAccount();
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [primaryWallet, setPrimaryWallet] = useState<Wallet | null>(null);
+  const [wallets, setWallets] = useState<WalletInfo[]>([]);
+  const [primaryWallet, setPrimaryWallet] = useState<WalletInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [isWalletVerified, setIsWalletVerified] = useState(false);
 

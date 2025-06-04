@@ -44,8 +44,8 @@ import { Suspense } from "react";
 import { Switch } from "@/components/ui/switch";
 import WalletSettings from "./WalletSettings";
 import { motion } from "framer-motion";
-import { useAuth } from "@/contexts/AuthContext";
 import { useSearchParams } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function SettingsPage() {
   return (

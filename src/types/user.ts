@@ -48,17 +48,20 @@ export interface UserProfile extends BaseUserEntity {
   last_online_at: Nullable<string>;
   primary_wallet: Nullable<WalletInfo>;
   wallets: WalletInfo[];
+  walletAddress?: Nullable<string>;
   authType: "web2" | "web3";
 }
 
 /**
  * Wallet types
  */
-export interface WalletInfo extends BaseUserEntity {
+export interface WalletInfo {
+  last_used?: string;
+  is_primary?: boolean;
   address: string;
   chain_id: number;
-  is_verified: boolean;
-  last_used: string;
+  is_verified?: boolean;
+  created_at?: string;
 }
 
 export interface WalletLimitedInfo {
@@ -121,7 +124,7 @@ export interface Web3NonceRequest {
   chain_id?: number;
 }
 
-export interface Web3VerifyRequest
+export interface Web3NonceResponse
   extends SuccessResponse<{
     message_data: {
       domain: string;
@@ -133,8 +136,22 @@ export interface Web3VerifyRequest
       nonce: string;
       issued_at: string;
     };
-    signature: string;
+    message: string;
   }> {}
+
+export interface Web3VerifyRequest {
+  message_data: {
+    domain: string;
+    address: string;
+    statement: string;
+    uri: string;
+    version: string;
+    chain_id: number;
+    nonce: string;
+    issued_at: string;
+  };
+  signature: string;
+}
 
 export interface Web3RecapRequest extends Web3NonceRequest {
   capabilities: Record<string, any>;
@@ -199,6 +216,21 @@ export interface LinkWalletRequest {
   chain_id?: number;
 }
 
+export interface LinkWalletResponse
+  extends SuccessResponse<{
+    message_data: {
+      domain: string;
+      address: string;
+      statement: string;
+      uri: string;
+      version: string;
+      chain_id: number;
+      nonce: string;
+      issued_at: string;
+    };
+    message: string;
+  }> {}
+
 export interface VerifyLinkWalletRequest {
   message_data: {
     domain: string;
@@ -237,7 +269,9 @@ export interface UserAnalyticsResponse
     user_roles_distribution: Record<string, number>;
   }> {}
 
-export interface RolesResponse extends SuccessResponse<Role[]> {}
+export interface RolesResponse extends SuccessResponse<{
+  roles?: Role[];
+}> {}
 
 export interface WalletsResponse
   extends SuccessResponse<{

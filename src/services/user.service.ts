@@ -3,13 +3,13 @@ import {
   AuthResponse,
   DeleteAccountRequest,
   LinkWalletRequest,
+  LinkWalletResponse,
   LoginRequest,
   OTPVerificationRequest,
   ResendOtpRequest,
   RoleQueryParams,
   RolesResponse,
   TokenResponse,
-  UpdateProfileRequest,
   UserQueryParams,
   UserResponse,
   UsersResponse,
@@ -17,11 +17,15 @@ import {
   VerifyLinkWalletRequest,
   WalletsResponse,
   Web3NonceRequest,
+  Web3NonceResponse,
   Web3RecapRequest,
   Web3RecapVerifyRequest,
   Web3VerifyRequest,
+  Web3RecapNonceResponse,
+  Web3RecapVerifyResponse,
 } from "@/types/user";
 
+import { UpdateProfileRequest } from "@/types/preferences";
 import { apiClient } from "./api.service";
 
 /**
@@ -30,6 +34,7 @@ import { apiClient } from "./api.service";
 class UserService {
   private static instance: UserService;
   private readonly baseUrl = "/api/v1/accounts";
+  private readonly web3BaseUrl = "/api/v1/web3";
 
   private constructor() {}
 
@@ -89,46 +94,46 @@ class UserService {
   /**
    * Web3 authentication methods
    */
-  public async getWeb3Nonce(data: Web3NonceRequest): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(`${this.baseUrl}/web3/nonce`, data);
+  public async getWeb3Nonce(data: Web3NonceRequest): Promise<Web3NonceResponse> {
+    return apiClient.post<Web3NonceResponse>(`${this.web3BaseUrl}/nonce`, data);
   }
 
   public async verifyWeb3Signature(data: Web3VerifyRequest): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(`${this.baseUrl}/web3/verify`, data);
+    return apiClient.post<AuthResponse>(`${this.web3BaseUrl}/verify`, data);
   }
 
-  public async getWeb3RecapNonce(data: Web3RecapRequest): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(`${this.baseUrl}/web3/recap-nonce`, data);
+  public async getWeb3RecapNonce(data: Web3RecapRequest): Promise<Web3RecapNonceResponse> {
+    return apiClient.post<Web3RecapNonceResponse>(`${this.web3BaseUrl}/recap-nonce`, data);
   }
 
-  public async verifyWeb3Recap(data: Web3RecapVerifyRequest): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(`${this.baseUrl}/web3/verify-recap`, data);
+  public async verifyWeb3Recap(data: Web3RecapVerifyRequest): Promise<Web3RecapVerifyResponse> {
+    return apiClient.post<Web3RecapVerifyResponse>(`${this.web3BaseUrl}/verify-recap`, data);
   }
 
   /**
    * Wallet management methods
    */
-  public async linkWallet(data: LinkWalletRequest): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(`${this.baseUrl}/web3/link-wallet`, data);
+  public async linkWallet(data: LinkWalletRequest): Promise<LinkWalletResponse> {
+    return apiClient.post<LinkWalletResponse>(`${this.web3BaseUrl}/link-wallet`, data);
   }
 
   public async verifyLinkWallet(data: VerifyLinkWalletRequest): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(`${this.baseUrl}/web3/verify-link-wallet`, data);
+    return apiClient.post<AuthResponse>(`${this.web3BaseUrl}/verify-link-wallet`, data);
   }
 
   public async getWallets(): Promise<WalletsResponse> {
-    return apiClient.get<WalletsResponse>(`${this.baseUrl}/web3/wallets`);
+    return apiClient.get<WalletsResponse>(`${this.web3BaseUrl}/wallets`);
   }
 
   /**
    * Email verification methods
    */
   public async addEmail(data: AddEmailRequest): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(`${this.baseUrl}/web3/add-email`, data);
+    return apiClient.post<AuthResponse>(`${this.web3BaseUrl}/add-email`, data);
   }
 
   public async verifyEmail(data: VerifyEmailRequest): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(`${this.baseUrl}/web3/verify-email`, data);
+    return apiClient.post<AuthResponse>(`${this.web3BaseUrl}/verify-email`, data);
   }
 
   /**

@@ -10,6 +10,7 @@ import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProviders } from "@/providers/theme-providers";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -139,13 +140,13 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <LoggerProvider>
         <AnalyticsProvider>
-          {/* <AuthProvider> */}
+          <AuthProvider>
           <ThemeProviders>
             <FormProvider {...methods}>
               <SidebarProvider>{children}</SidebarProvider>
             </FormProvider>
           </ThemeProviders>
-          {/* </AuthProvider> */}
+          </AuthProvider>
           <ReactQueryDevtools initialIsOpen={false} />
         </AnalyticsProvider>
       </LoggerProvider>

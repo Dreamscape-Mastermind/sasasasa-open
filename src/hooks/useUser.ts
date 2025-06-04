@@ -74,17 +74,19 @@ export const useUser = () => {
     });
   };
 
-  const useRoles = () => {
+  const useRoles = (options?: { enabled?: boolean }) => {
     return useQuery({
       queryKey: ["roles"],
       queryFn: () => userService.getRoles(),
+      enabled: options?.enabled ?? true,
     });
   };
 
-  const useAvailableRoles = () => {
+  const useAvailableRoles = (options?: { enabled?: boolean }) => {
     return useQuery({
       queryKey: ["available-roles"],
       queryFn: () => userService.listAvailableRoles(),
+      enabled: options?.enabled ?? true,
     });
   };
 
@@ -109,6 +111,16 @@ export const useUser = () => {
     return useMutation({
       mutationFn: (data: Web3VerifyRequest) =>
         userService.verifyWeb3Signature(data),
+    });
+  };
+
+  const useLoginWithSIWE = () => {
+    return useMutation({
+      mutationFn: async (address: string) => {
+        // First get nonce
+        const nonceResponse = await userService.getWeb3Nonce({ address });
+        return { address, nonceResponse };
+      },
     });
   };
 
@@ -200,6 +212,7 @@ export const useUser = () => {
     // Web3 Authentication
     useWeb3Nonce,
     useVerifyWeb3Signature,
+    useLoginWithSIWE,
     useWeb3RecapNonce,
     useVerifyWeb3Recap,
     // Wallet Management

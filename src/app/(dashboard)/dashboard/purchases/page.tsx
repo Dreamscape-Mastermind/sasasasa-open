@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 
 import EnhancedTicketCard from "./enhanced-ticket-card";
 import EnhancedTicketShowcase from "./enhanced-ticket-showcase";
-import { Ticket } from "@/utils/dataStructures";
+import { Ticket, TicketEnhanced, TicketStatus } from "@/types/ticket";
 import { motion } from "framer-motion";
-import { useAuth } from "@/oldContexts/oldAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function PurchasesPage() {
   const { user, isAuthenticated } = useAuth();
@@ -27,13 +27,12 @@ export default function PurchasesPage() {
         // TODO: Implement API call to fetch tickets
         // This will be implemented once the API endpoint is available
         // For now, using mock data
-        const mockTickets: Ticket[] = [
+        const mockTickets: TicketEnhanced[] = [
           {
             id: "T-12345",
-            event_id: "E-001",
             user_id: "U-001",
             ticket_type: "VIP",
-            status: "valid",
+            status: TicketStatus.VALID,
             purchase_date: "2024-03-14",
             price: 150,
             eventName: "Future Music Festival",
@@ -64,10 +63,9 @@ export default function PurchasesPage() {
           },
           {
             id: "T-12346",
-            event_id: "E-002",
             user_id: "U-001",
             ticket_type: "General",
-            status: "valid",
+            status: TicketStatus.VALID,
             purchase_date: "2024-03-15",
             price: 75,
             eventName: "Rock Revolution",
@@ -98,10 +96,8 @@ export default function PurchasesPage() {
           },
           {
             id: "T-12347",
-            event_id: "E-003",
-            user_id: "U-001",
             ticket_type: "Premium",
-            status: "valid",
+            status: TicketStatus.VALID,
             purchase_date: "2024-03-16",
             price: 200,
             eventName: "EDM Night",

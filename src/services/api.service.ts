@@ -3,8 +3,7 @@ import axios, {
   AxiosInstance,
   InternalAxiosRequestConfig,
 } from "axios";
-
-import Cookies from "js-cookie";
+import { cookieService } from "./cookie.service";
 
 // Constants
 const API_URL =
@@ -37,24 +36,8 @@ class ApiError extends Error {
 
 // Token management
 const TokenManager = {
-  getAccessToken: () => Cookies.get("accessToken"),
-  getRefreshToken: () => Cookies.get("refreshToken"),
-  setTokens: (access: string, refresh: string) => {
-    Cookies.set("accessToken", access, {
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-    });
-    Cookies.set("refreshToken", refresh, {
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-    });
-  },
-  clearTokens: () => {
-    Cookies.remove("accessToken", { path: "/" });
-    Cookies.remove("refreshToken", { path: "/" });
-  },
+  getAccessToken: () => cookieService.getTokens()?.result?.access,
+  getRefreshToken: () => cookieService.getTokens()?.result?.refresh,
   redirectToLogin: () => {
     window.location.href = "/login";
   },
@@ -124,7 +107,7 @@ axiosInstance.interceptors.response.use(
         const refreshToken = TokenManager.getRefreshToken();
         if (!refreshToken) {
           serverLogger.warn("No refresh token available");
-          TokenManager.clearTokens();
+          cookieService.clearAuth();
           TokenManager.redirectToLogin();
           return Promise.reject(
             new ApiError(401, "No refresh token available")
@@ -139,7 +122,7 @@ axiosInstance.interceptors.response.use(
         );
 
         const { access, refresh } = response.data.result;
-        TokenManager.setTokens(access, refresh);
+        cookieService.setTokens({ status: "success", message: "Token Data", result: { access, refresh } });
 
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${access}`;
@@ -147,7 +130,7 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         serverLogger.error("Failed to refresh token", refreshError);
-        TokenManager.clearTokens();
+        cookieService.clearAuth();
         TokenManager.redirectToLogin();
         return Promise.reject(new ApiError(401, "Failed to refresh token"));
       }

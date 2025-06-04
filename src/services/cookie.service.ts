@@ -30,7 +30,7 @@ class CookieService {
 
   public getTokens(): TokenResponse | null {
     const tokens = Cookies.get(AUTH_STORAGE.KEYS.TOKENS);
-    return tokens ? JSON.parse(tokens) : null;
+    return tokens ? { status: "success", message: "Token Data", result: JSON.parse(tokens) } : null;
   }
 
   public clearAuth(): void {

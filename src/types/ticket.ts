@@ -70,6 +70,10 @@ export interface Ticket extends BaseTicketEntity {
   purchase_price: number;
 }
 
+export interface TicketEnhanced {
+  [key: string]: any;
+}
+
 /**
  * Ticket refund interface
  */

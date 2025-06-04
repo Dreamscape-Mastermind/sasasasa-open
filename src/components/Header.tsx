@@ -18,6 +18,11 @@ import ThemeSwitch from "@/components/ThemeSwitch";
 import siteMetadata from "@/config/siteMetadata";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserRole } from "@/types";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
+import { AvatarFallback } from "./ui/avatar";
 
 const notifications = [
   {
@@ -50,16 +55,23 @@ const Header = () => {
   const [unreadCount, setUnreadCount] = useState(
     notifications.filter((n) => !n.read).length
   );
-  const user = undefined;
-  // const { user, logout, isAuthenticated } = useAuth();
+  const { isAuthenticated, hasRole, user } = useAuth();
   const router = useRouter();
+
+  const getNavLinks = () => {
+    if (!isAuthenticated) return NAV_ITEMS.MAIN;
+    if (hasRole(UserRole.ADMIN)) return NAV_ITEMS.MAIN;
+    if (hasRole(UserRole.EVENT_ORGANIZER)) return NAV_ITEMS.MAIN;
+    if (hasRole(UserRole.EVENT_TEAM)) return NAV_ITEMS.MAIN;
+    if (hasRole(UserRole.CUSTOMER)) return NAV_ITEMS.MAIN;
+    return NAV_ITEMS.MAIN;
+  };
 
   const markAllAsRead = () => {
     setUnreadCount(0);
   };
 
   const handleLogout = async () => {
-    // await logout();
     router.push(ROUTES.HOME);
   };
 
@@ -96,7 +108,7 @@ const Header = () => {
       {renderHeaderLogo()}
       <div className="flex items-center space-x-4 leading-5 sm:space-x-6">
         <div className="no-scrollbar hidden max-w-40 items-center space-x-4 overflow-x-auto sm:flex sm:space-x-6 md:max-w-72 lg:max-w-96">
-          {NAV_ITEMS.MAIN.map((link) => (
+          {getNavLinks().map((link) => (
             <Link
               key={link.label}
               href={link.href}
@@ -106,7 +118,7 @@ const Header = () => {
             </Link>
           ))}
         </div>
-        {false ? (
+        {isAuthenticated ? (
           <>
             <Link href={ROUTES.DASHBOARD}>
               <Button size="icon" variant="ghost" className="sm:hidden">
@@ -166,10 +178,9 @@ const Header = () => {
               </PopoverContent>
             </Popover>
             <ThemeSwitch />
-            {/* <DropdownMenu>
+            <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  variant="ghost"
                   className="relative h-8 w-8 rounded-full"
                 >
                   <Avatar className="h-8 w-8">
@@ -212,7 +223,7 @@ const Header = () => {
                   Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu> */}
+            </DropdownMenu>
           </>
         ) : (
           <>

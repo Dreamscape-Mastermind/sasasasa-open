@@ -25,11 +25,11 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
-import { useEvent } from '@/contexts/event-context';
-import { Ticket, TicketResponse } from '@/utils/dataStructures';
+// import { useEvent } from '@/contexts/event-context';
+import { Ticket, TicketResponse } from '@/types/ticket';
 
 export default function AnalyticsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { currentEvent, tickets, loading, error, setCurrentEventId } = useEvent();
+  // const { currentEvent, tickets, loading, error, setCurrentEventId } = useEvent();
   
 
   useEffect(() => {

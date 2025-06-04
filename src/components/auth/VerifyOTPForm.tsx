@@ -65,7 +65,7 @@ export function VerifyOTPForm() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
-  const { login } = useAuth();
+  const { completeOtpVerification } = useAuth();
   const { useVerifyOtp, useResendOtp } = useUser();
   const verifyOtpMutation = useVerifyOtp();
   const resendOtpMutation = useResendOtp();
@@ -129,9 +129,15 @@ export function VerifyOTPForm() {
       };
 
       const response = await verifyOtpMutation.mutateAsync(data);
-      const { user, tokens } = response?.result || {};
+      // const { user, tokens } = response?.result || {};
 
-      login(user, tokens);
+      const verifiedOTP = await completeOtpVerification(response);
+
+      if (!verifiedOTP) {
+        // setError("Invalid OTP");
+        throw new Error("Invalid OTP");
+      }
+
       setSuccess("Email verified successfully!");
 
       if (searchParams?.get("type") === "waitlist") {
