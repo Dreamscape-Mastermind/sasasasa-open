@@ -41,7 +41,8 @@ export const useBlog = () => {
 
   const useUpdatePost = (slug: string) => {
     return useMutation({
-      mutationFn: (data: UpdatePostRequest) => blogService.updatePost(slug, data),
+      mutationFn: (data: UpdatePostRequest) =>
+        blogService.updatePost(slug, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["posts"] });
         queryClient.invalidateQueries({ queryKey: ["post", slug] });
@@ -93,7 +94,8 @@ export const useBlog = () => {
 
   const useCreateComment = () => {
     return useMutation({
-      mutationFn: (data: CreateCommentRequest) => blogService.createComment(data),
+      mutationFn: (data: CreateCommentRequest) =>
+        blogService.createComment(data),
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["comments"] });
         if (variables.post) {
@@ -105,7 +107,8 @@ export const useBlog = () => {
 
   const useUpdateComment = (id: string) => {
     return useMutation({
-      mutationFn: (data: UpdateCommentRequest) => blogService.updateComment(id, data),
+      mutationFn: (data: UpdateCommentRequest) =>
+        blogService.updateComment(id, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["comments"] });
         queryClient.invalidateQueries({ queryKey: ["comment", id] });
@@ -125,7 +128,8 @@ export const useBlog = () => {
   // Reactions
   const useCreateReaction = () => {
     return useMutation({
-      mutationFn: (data: CreateReactionRequest) => blogService.createReaction(data),
+      mutationFn: (data: CreateReactionRequest) =>
+        blogService.createReaction(data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["posts"] });
         queryClient.invalidateQueries({ queryKey: ["comments"] });
@@ -135,7 +139,8 @@ export const useBlog = () => {
 
   const useUpdateReaction = (id: string) => {
     return useMutation({
-      mutationFn: (data: UpdateReactionRequest) => blogService.updateReaction(id, data),
+      mutationFn: (data: UpdateReactionRequest) =>
+        blogService.updateReaction(id, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["posts"] });
         queryClient.invalidateQueries({ queryKey: ["comments"] });
@@ -149,6 +154,24 @@ export const useBlog = () => {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["posts"] });
         queryClient.invalidateQueries({ queryKey: ["comments"] });
+      },
+    });
+  };
+
+  const useIncrementViewCount = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+      mutationFn: (slug: string) => blogService.incrementViewCount(slug),
+      onSuccess: (viewCount, slug) => {
+        // Update the view count in the blog post cache
+        queryClient.setQueryData(["post", slug], (oldData: any) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            view_count: viewCount,
+          };
+        });
       },
     });
   };
@@ -172,5 +195,7 @@ export const useBlog = () => {
     useCreateReaction,
     useUpdateReaction,
     useDeleteReaction,
+    // Views
+    useIncrementViewCount,
   };
 };

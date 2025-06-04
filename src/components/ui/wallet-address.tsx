@@ -1,9 +1,12 @@
-import { useState } from 'react';
-import { Copy, Check, Wallet } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+"use client";
+
+import { Check, Copy, Wallet } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { useState } from "react";
 
 interface WalletAddressProps {
   address: string;
@@ -14,7 +17,7 @@ interface WalletAddressProps {
   showCopy?: boolean;
   showIcon?: boolean;
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
 }
 
 export function WalletAddress({
@@ -26,7 +29,7 @@ export function WalletAddress({
   showCopy = true,
   showIcon = true,
   className,
-  size = 'md',
+  size = "md",
 }: WalletAddressProps) {
   const [copied, setCopied] = useState(false);
 
@@ -36,18 +39,20 @@ export function WalletAddress({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const truncatedAddress = `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  const truncatedAddress = `${address.substring(0, 6)}...${address.substring(
+    address.length - 4
+  )}`;
 
   const containerSizes = {
-    sm: 'text-sm py-1 px-2',
-    md: 'text-base py-2 px-3',
-    lg: 'text-lg py-3 px-4',
+    sm: "text-sm py-1 px-2",
+    md: "text-base py-2 px-3",
+    lg: "text-lg py-3 px-4",
   };
 
   const iconSizes = {
-    sm: 'w-3 h-3',
-    md: 'w-4 h-4',
-    lg: 'w-5 h-5',
+    sm: "w-3 h-3",
+    md: "w-4 h-4",
+    lg: "w-5 h-5",
   };
 
   return (
@@ -55,7 +60,7 @@ export function WalletAddress({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        'flex items-center justify-between rounded-lg border bg-background',
+        "flex items-center justify-between rounded-lg border bg-background",
         containerSizes[size],
         className
       )}
@@ -90,8 +95,12 @@ export function WalletAddress({
             size="icon"
             onClick={handleCopy}
             className={cn(
-              'hover:bg-accent/10 transition-colors',
-              size === 'sm' ? 'h-6 w-6' : size === 'lg' ? 'h-10 w-10' : 'h-8 w-8'
+              "hover:bg-accent/10 transition-colors",
+              size === "sm"
+                ? "h-6 w-6"
+                : size === "lg"
+                ? "h-10 w-10"
+                : "h-8 w-8"
             )}
           >
             <motion.div
@@ -110,4 +119,4 @@ export function WalletAddress({
       </div>
     </motion.div>
   );
-} 
+}

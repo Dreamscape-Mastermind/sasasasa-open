@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Bell, Menu } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,13 +16,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import { Bell, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ThemeSwitch from "../ThemeSwitch";
-import { useState } from "react";
 import Link from "next/link";
-import { useSidebar } from "@/components/providers/SidebarContext";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import ThemeSwitch from "@/components/ThemeSwitch";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { useState } from "react";
 
 const notifications = [
   {

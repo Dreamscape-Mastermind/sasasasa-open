@@ -1,18 +1,22 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
   "aliases": {
-    "blocks": "src/components/blocks",
-    "components": "src/components",
-    "examples": "src/components/examples",
-    "ui": "src/components/ui",
-    "utils": "src/lib/utils"
+    "components": "@/components",
+    "contexts": "@/contexts",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "services": "@/services",
+    "styles": "@/styles",
+    "types": "@/types",
+    "ui": "@/components/ui",
+    "utils": "@/lib/utils"
   },
   "rsc": true,
   "style": "default",
   "tailwind": {
     "baseColor": "slate",
     "config": "tailwind.config.js",
-    "css": "css/tailwind.css",
+    "css": "@/app/globals.css",
     "cssVariables": true,
     "prefix": ""
   },

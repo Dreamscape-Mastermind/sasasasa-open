@@ -1,13 +1,13 @@
 import {
+  CommentListResponse,
   CommentQueryParams,
   CommentResponse,
-  CommentsResponse,
   CreateCommentRequest,
   CreatePostRequest,
   CreateReactionRequest,
+  PostListResponse,
   PostQueryParams,
   PostResponse,
-  PostsResponse,
   ReactionResponse,
   TagSearchQueryParams,
   TagSearchResponse,
@@ -37,8 +37,10 @@ class BlogService {
   /**
    * Post operations
    */
-  public async listPosts(params?: PostQueryParams): Promise<PostsResponse> {
-    return apiClient.get<PostsResponse>(`${this.baseUrl}/blog/posts`, { params });
+  public async listPosts(params?: PostQueryParams): Promise<PostListResponse> {
+    return apiClient.get<PostListResponse>(`${this.baseUrl}/blog/posts`, {
+      params,
+    });
   }
 
   public async getPost(slug: string): Promise<PostResponse> {
@@ -49,8 +51,14 @@ class BlogService {
     return apiClient.post<PostResponse>(`${this.baseUrl}/blog/posts`, data);
   }
 
-  public async updatePost(slug: string, data: UpdatePostRequest): Promise<PostResponse> {
-    return apiClient.patch<PostResponse>(`${this.baseUrl}/blog/posts/${slug}`, data);
+  public async updatePost(
+    slug: string,
+    data: UpdatePostRequest
+  ): Promise<PostResponse> {
+    return apiClient.patch<PostResponse>(
+      `${this.baseUrl}/blog/posts/${slug}`,
+      data
+    );
   }
 
   public async deletePost(slug: string): Promise<void> {
@@ -58,38 +66,66 @@ class BlogService {
   }
 
   public async publishPost(slug: string): Promise<PostResponse> {
-    return apiClient.post<PostResponse>(`${this.baseUrl}/blog/posts/${slug}/publish`);
+    return apiClient.post<PostResponse>(
+      `${this.baseUrl}/blog/posts/${slug}/publish`
+    );
   }
 
   public async archivePost(slug: string): Promise<PostResponse> {
-    return apiClient.post<PostResponse>(`${this.baseUrl}/blog/posts/${slug}/archive`);
+    return apiClient.post<PostResponse>(
+      `${this.baseUrl}/blog/posts/${slug}/archive`
+    );
   }
 
   public async incrementViewCount(slug: string): Promise<PostResponse> {
-    return apiClient.post<PostResponse>(`${this.baseUrl}/blog/posts/${slug}/increment_view_count`);
+    return apiClient.post<PostResponse>(
+      `${this.baseUrl}/blog/posts/${slug}/increment_view_count`
+    );
   }
 
-  public async searchTags(params: TagSearchQueryParams): Promise<TagSearchResponse> {
-    return apiClient.get<TagSearchResponse>(`${this.baseUrl}/blog/posts/search_tags`, { params });
+  public async searchTags(
+    params: TagSearchQueryParams
+  ): Promise<TagSearchResponse> {
+    return apiClient.get<TagSearchResponse>(
+      `${this.baseUrl}/blog/posts/search_tags`,
+      { params }
+    );
   }
 
   /**
    * Comment operations
    */
-  public async listComments(params?: CommentQueryParams): Promise<CommentsResponse> {
-    return apiClient.get<CommentsResponse>(`${this.baseUrl}/blog/comments`, { params });
+  public async listComments(
+    params?: CommentQueryParams
+  ): Promise<CommentListResponse> {
+    return apiClient.get<CommentListResponse>(`${this.baseUrl}/blog/comments`, {
+      params,
+    });
   }
 
   public async getComment(id: string): Promise<CommentResponse> {
-    return apiClient.get<CommentResponse>(`${this.baseUrl}/blog/comments/${id}`);
+    return apiClient.get<CommentResponse>(
+      `${this.baseUrl}/blog/comments/${id}`
+    );
   }
 
-  public async createComment(data: CreateCommentRequest): Promise<CommentResponse> {
-    return apiClient.post<CommentResponse>(`${this.baseUrl}/blog/comments`, data);
+  public async createComment(
+    data: CreateCommentRequest
+  ): Promise<CommentResponse> {
+    return apiClient.post<CommentResponse>(
+      `${this.baseUrl}/blog/comments`,
+      data
+    );
   }
 
-  public async updateComment(id: string, data: UpdateCommentRequest): Promise<CommentResponse> {
-    return apiClient.patch<CommentResponse>(`${this.baseUrl}/blog/comments/${id}`, data);
+  public async updateComment(
+    id: string,
+    data: UpdateCommentRequest
+  ): Promise<CommentResponse> {
+    return apiClient.patch<CommentResponse>(
+      `${this.baseUrl}/blog/comments/${id}`,
+      data
+    );
   }
 
   public async deleteComment(id: string): Promise<void> {
@@ -97,22 +133,37 @@ class BlogService {
   }
 
   public async approveComment(id: string): Promise<CommentResponse> {
-    return apiClient.post<CommentResponse>(`${this.baseUrl}/blog/comments/${id}/approve`);
+    return apiClient.post<CommentResponse>(
+      `${this.baseUrl}/blog/comments/${id}/approve`
+    );
   }
 
   public async denyComment(id: string): Promise<CommentResponse> {
-    return apiClient.post<CommentResponse>(`${this.baseUrl}/blog/comments/${id}/deny`);
+    return apiClient.post<CommentResponse>(
+      `${this.baseUrl}/blog/comments/${id}/deny`
+    );
   }
 
   /**
    * Reaction operations
    */
-  public async createReaction(data: CreateReactionRequest): Promise<ReactionResponse> {
-    return apiClient.post<ReactionResponse>(`${this.baseUrl}/blog/reactions`, data);
+  public async createReaction(
+    data: CreateReactionRequest
+  ): Promise<ReactionResponse> {
+    return apiClient.post<ReactionResponse>(
+      `${this.baseUrl}/blog/reactions`,
+      data
+    );
   }
 
-  public async updateReaction(id: string, data: UpdateReactionRequest): Promise<ReactionResponse> {
-    return apiClient.patch<ReactionResponse>(`${this.baseUrl}/blog/reactions/${id}`, data);
+  public async updateReaction(
+    id: string,
+    data: UpdateReactionRequest
+  ): Promise<ReactionResponse> {
+    return apiClient.patch<ReactionResponse>(
+      `${this.baseUrl}/blog/reactions/${id}`,
+      data
+    );
   }
 
   public async deleteReaction(id: string): Promise<void> {

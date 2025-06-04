@@ -6,25 +6,28 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../../ui/dialog";
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "../../ui/form";
-import { Suspense, useEffect, useState } from "react";
+} from "@/components/ui/form";
+import { OTPVerificationRequest, ResendOtpRequest } from "@/types/user";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { Button } from "../../ui/button";
+import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
 import Confetti from "react-confetti";
 import Image from "next/image";
-import { Input } from "../../ui/input";
+import { Input } from "@/components/ui/input";
+import { ROUTES } from "@/lib/constants";
 import { motion } from "framer-motion";
-import { useAuth } from "@/oldContexts/oldAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
+import { useUser } from "@/hooks/useUser";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -53,11 +56,9 @@ const checkmarkVariants = {
   },
 };
 
-function VerifyOTPContent() {
+export function VerifyOTPForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const email = searchParams?.get("email");
@@ -65,6 +66,9 @@ function VerifyOTPContent() {
   const [countdown, setCountdown] = useState(0);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const { login } = useAuth();
+  const { useVerifyOtp, useResendOtp } = useUser();
+  const verifyOtpMutation = useVerifyOtp();
+  const resendOtpMutation = useResendOtp();
 
   const form = useForm<z.infer<typeof otpSchema>>({
     resolver: zodResolver(otpSchema),
@@ -75,7 +79,7 @@ function VerifyOTPContent() {
 
   useEffect(() => {
     if (!email) {
-      router.push("/");
+      router.push(ROUTES.HOME);
     }
   }, [email, router]);
 
@@ -94,89 +98,54 @@ function VerifyOTPContent() {
   }, [showConfetti, showWelcomeDialog]);
 
   const handleResendOTP = async () => {
-    if (!email || resending || countdown > 0) return;
+    if (!email || resendOtpMutation.isPending || countdown > 0) return;
 
-    setResending(true);
     setError("");
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/accounts/resend-otp`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ identifier: email }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess(
-          "We sent another verification code. Please check your email."
-        );
-        setCountdown(60);
-      } else {
-        setError(
-          data.error ||
-            "Failed to resend verification code. Please try again shortly."
-        );
-      }
-    } catch (error) {
+      const data: ResendOtpRequest = { identifier: email };
+      await resendOtpMutation.mutateAsync(data);
+      setSuccess("We sent another verification code. Please check your email.");
+      setCountdown(60);
+    } catch (error: any) {
       console.error("Error:", error);
-      setError("Failed to resend verification code. Please try again shortly.");
-    } finally {
-      setResending(false);
+      setError(
+        error.message ||
+          "Failed to resend verification code. Please try again shortly."
+      );
     }
   };
 
   async function onSubmit(values: z.infer<typeof otpSchema>) {
     if (!email) return;
 
-    setLoading(true);
     setError("");
     setSuccess("");
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/accounts/verify-otp`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            identifier: email,
-            otp: values.otp,
-          }),
-        }
-      );
+      const data: OTPVerificationRequest = {
+        identifier: email,
+        otp: values.otp,
+      };
 
-      const data = await response.json();
-      if (response.ok) {
-        const { user, tokens } = data.result;
-        login(user, tokens);
-        setSuccess("Email verified successfully!");
-        // TODO only show confetti when verifying email for the waitlist
-        if (searchParams?.get("type") === "waitlist") {
-          setShowConfetti(true);
-          setShowWelcomeDialog(true);
-          setTimeout(() => {
-            setShowConfetti(false);
-          }, 5000);
-        } else {
-          router.push("/dashboard");
-        }
+      const response = await verifyOtpMutation.mutateAsync(data);
+      const { user, tokens } = response?.result || {};
+
+      login(user, tokens);
+      setSuccess("Email verified successfully!");
+
+      if (searchParams?.get("type") === "waitlist") {
+        setShowConfetti(true);
+        setShowWelcomeDialog(true);
+        setTimeout(() => {
+          setShowConfetti(false);
+        }, 5000);
       } else {
-        setError(data.error || "Invalid verification code");
+        router.push(ROUTES.DASHBOARD);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error:", error);
-      setError("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
+      setError(error.message || "An error occurred. Please try again.");
     }
   }
 
@@ -241,9 +210,9 @@ function VerifyOTPContent() {
               <Button
                 type="submit"
                 className="w-full h-12 sm:h-14 text-base sm:text-lg"
-                disabled={loading}
+                disabled={verifyOtpMutation.isPending}
               >
-                {loading ? "Verifying..." : "Verify Email"}
+                {verifyOtpMutation.isPending ? "Verifying..." : "Verify Email"}
               </Button>
 
               <Button
@@ -251,9 +220,9 @@ function VerifyOTPContent() {
                 variant="outline"
                 className="w-full h-12 sm:h-14 text-base sm:text-lg"
                 onClick={handleResendOTP}
-                disabled={resending || countdown > 0}
+                disabled={resendOtpMutation.isPending || countdown > 0}
               >
-                {resending
+                {resendOtpMutation.isPending
                   ? "Sending..."
                   : countdown > 0
                   ? `Resend (${countdown}s)`
@@ -281,7 +250,6 @@ function VerifyOTPContent() {
                   animate="visible"
                   className="flex items-center justify-center w-16 h-16"
                 >
-                  {/* <CheckCircle2 className="w-full h-full text-green-500" /> */}
                   <Image
                     src="/images/sasasasaLogo.png"
                     alt="Sasasasa Logo"
@@ -369,13 +337,5 @@ function VerifyOTPContent() {
         </DialogContent>
       </Dialog>
     </div>
-  );
-}
-
-export default function VerifyOTP() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <VerifyOTPContent />
-    </Suspense>
   );
 }

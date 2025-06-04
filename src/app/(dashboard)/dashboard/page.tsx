@@ -16,24 +16,50 @@ import {
   Video,
   X,
 } from "lucide-react";
-import {
-  ApiResponse,
-  SasasasaEvent,
-  sampleReferralCodes,
-} from "@/utils/dataStructures";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Event } from "@/types/event";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Overview } from "@/components/dashboard/overview";
+import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { fetchEvents } from "services/events/api";
-import { redirect } from "next/navigation";
-import { useAuth } from "@/oldContexts/oldAuthContext";
+import { useEvent } from "@/hooks/useEvent";
 import { useQuery } from "@tanstack/react-query";
+
+// Sample data for UI development
+const sampleReferralCodes = [
+  {
+    id: "1",
+    code: "WELCOME20",
+    discount: 20,
+    usedCount: 5,
+    usageLimit: 100,
+    expiryDate: "2024-12-31",
+    status: "active",
+  },
+  {
+    id: "2",
+    code: "SUMMER50",
+    discount: 50,
+    usedCount: 100,
+    usageLimit: 100,
+    expiryDate: "2024-08-31",
+    status: "depleted",
+  },
+  {
+    id: "3",
+    code: "EARLYBIRD30",
+    discount: 30,
+    usedCount: 0,
+    usageLimit: 50,
+    expiryDate: "2024-06-30",
+    status: "expired",
+  },
+];
 
 const shimmerClass =
   "animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent";
@@ -103,19 +129,16 @@ const socialLinks = [
 export default function DashboardPage() {
   // Keep track of selected event
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const { isAuthenticated, isLoading: isLoadingAuth } = useAuth();
+  const { useEvents } = useEvent();
 
   // Fetch events data
-  const { data: eventsData, isLoading } = useQuery<ApiResponse<SasasasaEvent>>({
-    queryKey: ["events"],
-    queryFn: fetchEvents,
-  });
+  const { data: eventsData, isLoading } = useEvents();
 
   // Get the currently selected event
-  const selectedEvent: SasasasaEvent | undefined = useMemo(() => {
-    if (!eventsData?.result.results || !selectedEventId) {
+  const selectedEvent: Event | undefined = useMemo(() => {
+    if (!eventsData?.result?.results || !selectedEventId) {
       // Default to first event if none selected
-      return eventsData?.result.results[0];
+      return eventsData?.result?.results[0];
     }
     return eventsData.result.results.find(
       (event) => event.id === selectedEventId
@@ -127,12 +150,12 @@ export default function DashboardPage() {
     if (!selectedEvent) return null;
 
     const totalTickets =
-      selectedEvent.other_tickets?.reduce(
+      selectedEvent.available_tickets?.reduce(
         (sum, ticket) => sum + ticket.quantity,
         0
       ) ?? 0;
     const soldTickets =
-      selectedEvent.other_tickets?.reduce(
+      selectedEvent.available_tickets?.reduce(
         (sum, ticket) => sum + (ticket.quantity - ticket.remaining_tickets),
         0
       ) ?? 0;
@@ -152,13 +175,7 @@ export default function DashboardPage() {
     enabled: !!selectedEventId,
   });
 
-  useEffect(() => {
-    if (!isAuthenticated && !isLoadingAuth) {
-      redirect("/login");
-    }
-  }, [isAuthenticated, isLoadingAuth]);
-
-  if (isLoading || isLoadingAuth) {
+  if (isLoading) {
     return (
       <div className="space-y-8 animate-in">
         {/* Event Selector Skeleton */}
@@ -209,15 +226,10 @@ export default function DashboardPage() {
     );
   }
 
-  if (!isAuthenticated && !isLoadingAuth) {
-    redirect("/login");
-  }
-
   return (
     <div className="space-y-8 animate-in">
       {/* Event Selector */}
       <div className="flex justify-between items-center">
-        {/* Keep your existing search and create event buttons */}
         <div className="relative w-96">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
@@ -225,7 +237,7 @@ export default function DashboardPage() {
             className="pl-10"
           />
         </div>
-        <Link href="/dashboard/events/new">
+        <Link href={ROUTES.DASHBOARD_EVENT_DETAILS("new")}>
           <Button className="gap-2">
             <PlusCircle className="h-4 w-4" />
             Create Event

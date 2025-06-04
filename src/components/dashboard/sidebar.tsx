@@ -17,16 +17,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { usePathname, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchEvents } from "services/events/api";
-import { ScrollArea } from "../ui/scroll-area";
-import { useSidebar } from "@/components/providers/SidebarContext";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+import { Event } from "@/types/event";
+import Link from "next/link";
+import { ScrollArea } from "../../../components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { useEvent } from "@/hooks/useEvent";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 // Borrow the interfaces from dashboard page
 interface ApiResponse {
@@ -36,12 +37,6 @@ interface ApiResponse {
     count: number;
     results: Event[];
   };
-}
-
-interface Event {
-  id: string;
-  title: string;
-  status: "PUBLISHED" | "DRAFT";
 }
 
 const eventMenus = [
@@ -110,20 +105,20 @@ export function Sidebar() {
   const router = useRouter();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const { isOpen, toggleSidebar } = useSidebar();
+  const { useEvents } = useEvent();
 
   // Fetch events data
-  const { data: eventsData, isLoading } = useQuery<ApiResponse>({
-    queryKey: ["events"],
-    queryFn: fetchEvents,
-  });
+  const { data: eventsData, isLoading } = useEvents();
 
   // Get the currently selected event
   const selectedEvent = useMemo(() => {
-    if (!eventsData?.result.results || !selectedEventId) {
+    if (!eventsData?.result?.results || !selectedEventId) {
       // Default to first event if none selected
-      return eventsData?.result.results[0];
+      return eventsData?.result?.results[0];
     }
-    return eventsData.result.results.find(event => event.id === selectedEventId);
+    return eventsData?.result?.results.find(
+      (event) => event.id === selectedEventId
+    );
   }, [eventsData, selectedEventId]);
 
   const sidebarContent = (
@@ -144,7 +139,7 @@ export function Sidebar() {
           {/* Event Dropdown */}
           <div className="px-3 py-2">
             <Select
-              value={selectedEventId || eventsData?.result.results[0]?.id}
+              value={selectedEventId || eventsData?.result?.results[0]?.id}
               onValueChange={(value) => {
                 setSelectedEventId(value);
                 router.push(`/dashboard/events/${value}/analytics`);
@@ -159,7 +154,7 @@ export function Sidebar() {
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {eventsData?.result.results.map((event) => (
+                {eventsData?.result?.results.map((event) => (
                   <SelectItem key={event.id} value={event.id}>
                     {event.title}
                   </SelectItem>
@@ -171,14 +166,18 @@ export function Sidebar() {
           {/* Event Menus Section */}
           <div className="px-3">
             <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
-              <h3 className="font-bold text-lg text-foreground">Event Management</h3>
+              <h3 className="font-bold text-lg text-foreground">
+                Event Management
+              </h3>
               <div className="space-y-1">
                 {eventMenus.map((menu) => (
                   <Link
                     key={menu.href}
                     href={menu.href.replace(
                       "{eventId}",
-                      selectedEventId || eventsData?.result.results[0]?.id || ""
+                      selectedEventId ||
+                        eventsData?.result?.results[0]?.id ||
+                        ""
                     )}
                     onClick={() => {
                       if (window.innerWidth < 1024) {
@@ -191,7 +190,9 @@ export function Sidebar() {
                         pathname.includes(
                           menu.href.replace(
                             "{eventId}",
-                            selectedEventId || eventsData?.result.results[0]?.id || ""
+                            selectedEventId ||
+                              eventsData?.result?.results[0]?.id ||
+                              ""
                           )
                         )
                           ? "secondary"
@@ -202,7 +203,9 @@ export function Sidebar() {
                         pathname.includes(
                           menu.href.replace(
                             "{eventId}",
-                            selectedEventId || eventsData?.result.results[0]?.id || ""
+                            selectedEventId ||
+                              eventsData?.result?.results[0]?.id ||
+                              ""
                           )
                         ) && "bg-primary text-primary-foreground font-medium"
                       )}
@@ -219,7 +222,9 @@ export function Sidebar() {
           {/* User Menus Section */}
           <div className="px-3">
             <div className="p-4 rounded-lg bg-muted/50 border border-border">
-              <h3 className="font-bold text-lg text-foreground">User Settings</h3>
+              <h3 className="font-bold text-lg text-foreground">
+                User Settings
+              </h3>
               <div className="space-y-1">
                 {userMenus.map((menu) => (
                   <Link

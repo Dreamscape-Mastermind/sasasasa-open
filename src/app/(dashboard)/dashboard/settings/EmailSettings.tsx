@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
-import { useAuth } from "@/oldContexts/oldAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useCreateQueryString } from "@/lib/utils";
 
 export default function EmailSettings() {
