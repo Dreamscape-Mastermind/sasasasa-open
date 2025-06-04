@@ -56,6 +56,7 @@ export interface UserProfile extends BaseUserEntity {
  * Wallet types
  */
 export interface WalletInfo {
+  id?: string;
   last_used?: string;
   is_primary?: boolean;
   address: string;
