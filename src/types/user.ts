@@ -48,6 +48,7 @@ export interface UserProfile extends BaseUserEntity {
   last_online_at: Nullable<string>;
   primary_wallet: Nullable<WalletInfo>;
   wallets: WalletInfo[];
+  authType: "web2" | "web3";
 }
 
 /**

@@ -6,7 +6,6 @@ import type {
   OTPVerificationRequest,
   ResendOtpRequest,
   RoleQueryParams,
-  UpdateProfileRequest,
   UserQueryParams,
   VerifyEmailRequest,
   VerifyLinkWalletRequest,
@@ -17,6 +16,7 @@ import type {
 } from "@/types/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { UpdateProfileRequest } from "@/types/preferences";
 import { userService } from "@/services/user.service";
 
 export const useUser = () => {
@@ -66,7 +66,8 @@ export const useUser = () => {
 
   const useUpdateProfile = () => {
     return useMutation({
-      mutationFn: (data: UpdateProfileRequest) => userService.updateProfile(data),
+      mutationFn: (data: UpdateProfileRequest) =>
+        userService.updateProfile(data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["profile"] });
       },
@@ -89,7 +90,8 @@ export const useUser = () => {
 
   const useDeleteAccount = () => {
     return useMutation({
-      mutationFn: (data: DeleteAccountRequest) => userService.deleteAccount(data),
+      mutationFn: (data: DeleteAccountRequest) =>
+        userService.deleteAccount(data),
       onSuccess: () => {
         queryClient.clear();
       },
@@ -105,19 +107,22 @@ export const useUser = () => {
 
   const useVerifyWeb3Signature = () => {
     return useMutation({
-      mutationFn: (data: Web3VerifyRequest) => userService.verifyWeb3Signature(data),
+      mutationFn: (data: Web3VerifyRequest) =>
+        userService.verifyWeb3Signature(data),
     });
   };
 
   const useWeb3RecapNonce = () => {
     return useMutation({
-      mutationFn: (data: Web3RecapRequest) => userService.getWeb3RecapNonce(data),
+      mutationFn: (data: Web3RecapRequest) =>
+        userService.getWeb3RecapNonce(data),
     });
   };
 
   const useVerifyWeb3Recap = () => {
     return useMutation({
-      mutationFn: (data: Web3RecapVerifyRequest) => userService.verifyWeb3Recap(data),
+      mutationFn: (data: Web3RecapVerifyRequest) =>
+        userService.verifyWeb3Recap(data),
     });
   };
 
@@ -133,7 +138,8 @@ export const useUser = () => {
 
   const useVerifyLinkWallet = () => {
     return useMutation({
-      mutationFn: (data: VerifyLinkWalletRequest) => userService.verifyLinkWallet(data),
+      mutationFn: (data: VerifyLinkWalletRequest) =>
+        userService.verifyLinkWallet(data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["profile"] });
       },
