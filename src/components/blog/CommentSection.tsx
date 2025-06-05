@@ -1,15 +1,15 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useBlogComments, useCreateComment } from "@/lib/hooks/useBlog";
 
 import { Button } from "@/components/ui/button";
 import { Comment } from "@/types/blog";
 import { ReactionButtons } from "./ReactionButtons";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/utils";
-import { useAuth } from "@/context/auth-context";
-import { useReactions } from "@/lib/hooks/useReactions";
+import { useAuth } from "@/contexts/AuthContext";
+import { useBlog } from "@/hooks/useBlog";
+import { useReactions } from "@/hooks/useReactions";
 import { useState } from "react";
 
 interface CommentSectionProps {
@@ -18,7 +18,8 @@ interface CommentSectionProps {
 
 export function CommentSection({ postId }: CommentSectionProps) {
   const [content, setContent] = useState("");
-  const { data: comments = [], isLoading } = useBlogComments({ post: postId });
+  const { useComments, useCreateComment } = useBlog();
+  const { data: commentsResponse, isLoading } = useComments({ post: postId });
   const { mutate: createComment, isPending: isSubmitting } = useCreateComment();
   const { user, isAuthenticated } = useAuth();
   const {
@@ -27,9 +28,11 @@ export function CommentSection({ postId }: CommentSectionProps) {
     handleReactionRemove,
     getReactionsRecord,
   } = useReactions({
-    queryKey: ["blog-comments", postId.toString()],
+    queryKey: ["comments", postId.toString()],
     id: postId.toString(),
   });
+
+  const comments = commentsResponse?.result?.results || [];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

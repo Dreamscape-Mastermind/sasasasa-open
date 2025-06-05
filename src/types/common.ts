@@ -43,8 +43,8 @@ export enum WalletAuthStatus {
 
 // Common interfaces
 export interface TimeStamp {
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Common utility types

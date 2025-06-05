@@ -3,40 +3,46 @@
 import {
   BarChart2,
   Calendar,
+  Check,
+  ChevronsUpDown,
   CreditCard,
   Layout,
+  LucideIcon,
   Settings,
   Ticket,
   Users,
   X,
 } from "lucide-react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Event } from "@/types/event";
 import Link from "next/link";
-import { ScrollArea } from "../../../components/ui/scroll-area";
+import { NAV_ITEMS } from "@/lib/constants";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useEvent } from "@/hooks/useEvent";
 import { useSidebar } from "@/contexts/SidebarContext";
 
-// Borrow the interfaces from dashboard page
-interface ApiResponse {
-  status: string;
-  message: string;
-  result: {
-    count: number;
-    results: Event[];
-  };
+interface MenuItem {
+  label: string;
+  href: string;
+  icon?: LucideIcon;
 }
 
 const eventMenus = [
@@ -103,23 +109,23 @@ const userMenus = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const { isOpen, toggleSidebar } = useSidebar();
-  const { useEvents } = useEvent();
+  const [open, setOpen] = useState(false);
+  const { useMyEvents } = useEvent();
+  const { data: eventsData, isLoading: isLoadingEvents } = useMyEvents({
+    page: 1,
+  });
+  const events = eventsData?.result?.results || [];
 
-  // Fetch events data
-  const { data: eventsData, isLoading } = useEvents();
-
-  // Get the currently selected event
-  const selectedEvent = useMemo(() => {
-    if (!eventsData?.result?.results || !selectedEventId) {
-      // Default to first event if none selected
-      return eventsData?.result?.results[0];
+  useEffect(() => {
+    if (
+      events.length > 0 &&
+      (!selectedEvent || !events.find((e) => e.id === selectedEvent.id))
+    ) {
+      setSelectedEvent(events[0]);
     }
-    return eventsData?.result?.results.find(
-      (event) => event.id === selectedEventId
-    );
-  }, [eventsData, selectedEventId]);
+  }, [events]);
 
   const sidebarContent = (
     <div className="flex h-full flex-col gap-4">
@@ -138,84 +144,150 @@ export function Sidebar() {
         <div className="space-y-4 py-4">
           {/* Event Dropdown */}
           <div className="px-3 py-2">
-            <Select
-              value={selectedEventId || eventsData?.result?.results[0]?.id}
-              onValueChange={(value) => {
-                setSelectedEventId(value);
-                router.push(`/dashboard/events/${value}/analytics`);
-                if (window.innerWidth < 1024) {
-                  toggleSidebar();
-                }
-              }}
-            >
-              <SelectTrigger className="mb-4 w-full">
-                <SelectValue placeholder="Select an event">
-                  {selectedEvent?.title || "Select an event"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {eventsData?.result?.results.map((event) => (
-                  <SelectItem key={event.id} value={event.id}>
-                    {event.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between rounded bg-[#CC322D] px-4 py-2 text-sm font-medium text-white hover:bg-[#CC322D]/4 hover:font-extrabold hover:text-white"
+                  disabled={isLoadingEvents || events.length === 0}
+                >
+                  {isLoadingEvents
+                    ? "Loading..."
+                    : selectedEvent
+                    ? selectedEvent.title
+                    : "No Events"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="end"
+                className="w-full p-0 rounded-xl shadow-lg border-none bg-[#CC322D] px-4 text-sm font-medium text-white animate-fade-in-scale"
+                sideOffset={8}
+              >
+                <Command className="rounded-xl bg-[#CC322D] text-white">
+                  <CommandInput
+                    placeholder="Search events..."
+                    className="bg-[#CC322D] text-white placeholder:text-white/60 focus:ring-0 focus:outline-none [&_svg]:text-white [&_svg]:opacity-100"
+                  />
+                  <CommandList>
+                    <CommandEmpty className="text-white">
+                      {isLoadingEvents ? "Loading..." : "No event found."}
+                    </CommandEmpty>
+                    <CommandGroup>
+                      {events &&
+                        events.map((event) => (
+                          <CommandItem
+                            key={event.id}
+                            value={event.title}
+                            onSelect={() => {
+                              setSelectedEvent(event);
+                              setOpen(false);
+                              router.push(
+                                `/dashboard/events/${event.id}/analytics`
+                              );
+                            }}
+                            className={cn(
+                              "hover:bg-white/10 focus:bg-white/20 text-white font-medium rounded-lg transition-all cursor-pointer",
+                              selectedEvent &&
+                                selectedEvent.id === event.id &&
+                                "bg-white/10 font-bold"
+                            )}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedEvent && selectedEvent.id === event.id
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            {event.title}
+                          </CommandItem>
+                        ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Event Menus Section */}
+          {selectedEvent && (
+            <div className="px-3">
+              <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
+                <h3 className="font-bold text-lg text-white">
+                  Event Management
+                </h3>
+                <div className="space-y-1">
+                  {NAV_ITEMS.DASHBOARD_EVENT_ORGANIZER.map((menu: MenuItem) => (
+                    <Link
+                      key={menu.href}
+                      href={menu.href.replace(
+                        "{eventId}",
+                        selectedEvent.id.toString()
+                      )}
+                      className="hover:opacity-80 transition-opacity"
+                    >
+                      <Button
+                        variant={
+                          (pathname ?? "").includes(
+                            menu.href.replace(
+                              "{eventId}",
+                              selectedEvent.id.toString()
+                            )
+                          )
+                            ? "secondary"
+                            : "ghost"
+                        }
+                        className={cn(
+                          "w-full justify-start gap-2",
+                          (pathname ?? "").includes(
+                            menu.href.replace(
+                              "{eventId}",
+                              selectedEvent.id.toString()
+                            )
+                          ) && "bg-primary text-primary-foreground font-medium"
+                        )}
+                      >
+                        {menu.icon && (
+                          <menu.icon className="h-4 w-4 text-white" />
+                        )}
+                        <span className="text-white">{menu.label}</span>
+                      </Button>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Blog Menus Section */}
           <div className="px-3">
             <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
-              <h3 className="font-bold text-lg text-foreground">
-                Event Management
-              </h3>
-              <div className="space-y-1">
-                {eventMenus.map((menu) => (
-                  <Link
-                    key={menu.href}
-                    href={menu.href.replace(
-                      "{eventId}",
-                      selectedEventId ||
-                        eventsData?.result?.results[0]?.id ||
-                        ""
-                    )}
-                    onClick={() => {
-                      if (window.innerWidth < 1024) {
-                        toggleSidebar();
-                      }
-                    }}
-                  >
-                    <Button
-                      variant={
-                        pathname.includes(
-                          menu.href.replace(
-                            "{eventId}",
-                            selectedEventId ||
-                              eventsData?.result?.results[0]?.id ||
-                              ""
-                          )
-                        )
-                          ? "secondary"
-                          : "ghost"
-                      }
-                      className={cn(
-                        "w-full justify-start gap-2",
-                        pathname.includes(
-                          menu.href.replace(
-                            "{eventId}",
-                            selectedEventId ||
-                              eventsData?.result?.results[0]?.id ||
-                              ""
-                          )
-                        ) && "bg-primary text-primary-foreground font-medium"
-                      )}
-                    >
-                      <menu.icon className="h-4 w-4" />
-                      <span>{menu.label}</span>
-                    </Button>
-                  </Link>
-                ))}
-              </div>
+              <h3 className="font-bold text-lg text-white">Blog Management</h3>
+              <ScrollArea className="flex-1">
+                <div className="p-3 space-y-1">
+                  {NAV_ITEMS.DASHBOARD_BLOG_ADMIN.map((menu: MenuItem) => (
+                    <Link key={menu.href} href={menu.href}>
+                      <Button
+                        variant={pathname === menu.href ? "secondary" : "ghost"}
+                        className={cn(
+                          "w-full justify-start gap-2",
+                          pathname === menu.href &&
+                            "bg-primary text-primary-foreground font-medium"
+                        )}
+                      >
+                        {menu.icon && (
+                          <menu.icon className="h-4 w-4 text-white" />
+                        )}
+                        <span className="text-white">{menu.label}</span>
+                      </Button>
+                    </Link>
+                  ))}
+                </div>
+              </ScrollArea>
             </div>
           </div>
 
@@ -226,7 +298,7 @@ export function Sidebar() {
                 User Settings
               </h3>
               <div className="space-y-1">
-                {userMenus.map((menu) => (
+                {NAV_ITEMS.DASHBOARD_ADMIN.map((menu) => (
                   <Link
                     key={menu.href}
                     href={menu.href}

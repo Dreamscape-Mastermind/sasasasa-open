@@ -1,4 +1,9 @@
-import { Nullable, PaginatedResponse, SuccessResponse, TimeStamp } from "./common";
+import {
+  Nullable,
+  PaginatedResponse,
+  SuccessResponse,
+  TimeStamp,
+} from "./common";
 
 /**
  * Enum representing the possible statuses of a blog post
@@ -45,7 +50,7 @@ export interface Reaction extends BaseReactionEntity {
   comment?: string;
 }
 
-export interface Comment extends BaseBlogEntity {
+export interface Comment extends BaseContentEntity {
   post: string;
   author: string;
   author_name: string;
@@ -56,10 +61,9 @@ export interface Comment extends BaseBlogEntity {
   reaction_count: Record<ReactionType, number>;
 }
 
-export interface Post extends BaseBlogEntity {
+export interface Post extends BaseContentEntity {
   title: string;
   slug: string;
-  content: string;
   excerpt: string;
   featured_image: Nullable<string>;
   author: string;
@@ -138,15 +142,18 @@ export interface UpdateReactionRequest {
  */
 export interface PostResponse extends SuccessResponse<Post> {}
 
-export interface PostListResponse extends SuccessResponse<PaginatedResponse<PostListItem>> {}
+export interface PostListResponse
+  extends SuccessResponse<PaginatedResponse<PostListItem>> {}
 
 export interface CommentResponse extends SuccessResponse<Comment> {}
 
-export interface CommentListResponse extends SuccessResponse<PaginatedResponse<Comment>> {}
+export interface CommentListResponse
+  extends SuccessResponse<PaginatedResponse<Comment>> {}
 
 export interface ReactionResponse extends SuccessResponse<Reaction> {}
 
-export interface TagSearchResponse extends SuccessResponse<{ tags: string[] }> {}
+export interface TagSearchResponse
+  extends SuccessResponse<{ tags: string[] }> {}
 
 /**
  * Query parameter interfaces

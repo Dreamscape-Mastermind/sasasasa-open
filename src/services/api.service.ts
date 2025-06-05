@@ -70,17 +70,26 @@ axiosInstance.interceptors.request.use(
 const serverLogger = {
   error: (message: string, error?: any) => {
     if (process.env.NODE_ENV === "development") {
-      console.error(`[API Error] ${message}`, error);
+      const errorDetails = error
+        ? {
+            message: error.message,
+            status: error.status,
+            data: error.data,
+            stack: error.stack,
+            config: error.config,
+          }
+        : {};
+      console.error(`[API Error] ${message}`, errorDetails);
     }
   },
-  warn: (message: string) => {
+  warn: (message: string, details?: any) => {
     if (process.env.NODE_ENV === "development") {
-      console.warn(`[API Warning] ${message}`);
+      console.warn(`[API Warning] ${message}`, details);
     }
   },
-  info: (message: string) => {
+  info: (message: string, details?: any) => {
     if (process.env.NODE_ENV === "development") {
-      console.info(`[API Info] ${message}`);
+      console.info(`[API Info] ${message}`, details);
     }
   },
 };
@@ -95,7 +104,11 @@ axiosInstance.interceptors.response.use(
 
     // Handle network errors
     if (!error.response) {
-      serverLogger.error("Network error occurred", error);
+      serverLogger.error("Network error occurred", {
+        message: error.message,
+        code: error.code,
+        stack: error.stack,
+      });
       return Promise.reject(new ApiError(0, "Network error occurred"));
     }
 
@@ -106,7 +119,10 @@ axiosInstance.interceptors.response.use(
       try {
         const refreshToken = TokenManager.getRefreshToken();
         if (!refreshToken) {
-          serverLogger.warn("No refresh token available");
+          serverLogger.warn("No refresh token available", {
+            url: originalRequest.url,
+            method: originalRequest.method,
+          });
           cookieService.clearAuth();
           TokenManager.redirectToLogin();
           return Promise.reject(
@@ -122,14 +138,24 @@ axiosInstance.interceptors.response.use(
         );
 
         const { access, refresh } = response.data.result;
-        cookieService.setTokens({ status: "success", message: "Token Data", result: { access, refresh } });
+        cookieService.setTokens({
+          status: "success",
+          message: "Token Data",
+          result: { access, refresh },
+        });
 
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${access}`;
         }
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        serverLogger.error("Failed to refresh token", refreshError);
+        serverLogger.error("Failed to refresh token", {
+          error: refreshError,
+          originalRequest: {
+            url: originalRequest.url,
+            method: originalRequest.method,
+          },
+        });
         cookieService.clearAuth();
         TokenManager.redirectToLogin();
         return Promise.reject(new ApiError(401, "Failed to refresh token"));
@@ -138,11 +164,16 @@ axiosInstance.interceptors.response.use(
 
     // Handle other errors
     const errorMessage = error.response.data?.message || "An error occurred";
-    serverLogger.error("API error occurred", {
+    const errorDetails = {
       status: error.response.status,
       message: errorMessage,
       data: error.response.data,
-    });
+      url: originalRequest.url,
+      method: originalRequest.method,
+      headers: originalRequest.headers,
+    };
+
+    serverLogger.error("API error occurred", errorDetails);
     return Promise.reject(
       new ApiError(error.response.status, errorMessage, error.response.data)
     );
@@ -161,12 +192,20 @@ const handleApiError = (error: unknown): never => {
   }
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<ErrorResponse>;
+    const errorDetails = {
+      status: axiosError.response?.status,
+      message: axiosError.response?.data?.message || "An error occurred",
+      data: axiosError.response?.data,
+      config: axiosError.config,
+    };
+    serverLogger.error("API request failed", errorDetails);
     throw new ApiError(
       axiosError.response?.status || 0,
       axiosError.response?.data?.message || "An error occurred",
       axiosError.response?.data
     );
   }
+  serverLogger.error("Unexpected error occurred", error);
   throw new ApiError(500, "An unexpected error occurred");
 };
 

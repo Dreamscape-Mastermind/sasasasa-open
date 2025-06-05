@@ -1,9 +1,10 @@
 "use client";
 
 import {
-  BlogPost,
-  CreateBlogPostRequest,
-  UpdateBlogPostRequest,
+  CreatePostRequest,
+  Post,
+  PostStatus,
+  UpdatePostRequest,
 } from "@/types/blog";
 import {
   Dialog,
@@ -29,30 +30,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  useBlogPost,
-  useCreateBlogPost,
-  useSearchTags,
-  useUpdateBlogPost,
-} from "@/lib/hooks/useBlog";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ReactTags } from "react-tag-autocomplete";
 import { Save } from "lucide-react";
 import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "react-hot-toast";
+import { useBlog } from "@/hooks/useBlog";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-type Tag = {
-  id: string;
-  text: string;
-};
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -68,7 +58,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface BlogPostFormProps {
-  post?: BlogPost;
+  post?: Post;
   mode: "create" | "edit";
   slug?: string;
 }
@@ -124,29 +114,14 @@ export default function BlogPostForm({
   slug,
 }: BlogPostFormProps) {
   const router = useRouter();
-  const { data: fetchedPost, isLoading } = useBlogPost(slug || "");
-  const { mutate: createPost, isPending: isCreating } = useCreateBlogPost();
-  const { mutate: updatePost, isPending: isUpdating } = useUpdateBlogPost();
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [inputValue, setInputValue] = useState("");
-  const { data: suggestions = [], isLoading: isLoadingSuggestions } =
-    useSearchTags(inputValue);
+  const { usePost, useCreatePost, useUpdatePost } = useBlog();
+  const { data: fetchedPost, isLoading } = usePost(slug || "");
+  const { mutate: createPost, isPending: isCreating } = useCreatePost();
+  const { mutate: updatePost, isPending: isUpdating } = useUpdatePost(
+    slug || ""
+  );
 
-  const post = initialPost || fetchedPost;
-
-  // Initialize tags when post data is available
-  useEffect(() => {
-    if (post?.tag_list) {
-      setTags(
-        post.tag_list.map((tag) => ({
-          id: tag,
-          text: tag,
-          className:
-            "bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1",
-        }))
-      );
-    }
-  }, [post?.tag_list]);
+  const post = initialPost || (slug ? fetchedPost?.result : null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -157,7 +132,7 @@ export default function BlogPostForm({
       status: post?.status || "DRAFT",
       meta_title: post?.meta_title || "",
       meta_description: post?.meta_description || "",
-      tags: post?.tag_list?.join(",") || "",
+      tags: post?.tags?.join(", ") || "",
       featured_image: post?.featured_image || "",
     },
   });
@@ -170,39 +145,33 @@ export default function BlogPostForm({
         content: post.content,
         excerpt: post.excerpt,
         status: post.status,
-        meta_title: post.meta_title,
-        meta_description: post.meta_description,
-        tags: post.tag_list?.join(",") || "",
+        meta_title: post.meta_title || "",
+        meta_description: post.meta_description || "",
+        tags: post.tags?.join(", ") || "",
         featured_image: post.featured_image || "",
       });
     }
   }, [post, form]);
-
-  const handleAddTag = (tag: Tag) => {
-    setTags([...tags, tag]);
-    form.setValue("tags", [...tags, tag].map((t) => t.text).join(","));
-  };
-
-  const handleDeleteTag = (i: number) => {
-    const newTags = tags.filter((tag, index) => index !== i);
-    setTags(newTags);
-    form.setValue("tags", newTags.map((t) => t.text).join(","));
-  };
 
   const onSubmit = (values: FormValues) => {
     if (mode === "create") {
       createPost(
         {
           ...values,
-          tags: values.tags,
-        } as CreateBlogPostRequest,
+          tags: values.tags.split(",").map((tag) => tag.trim()),
+          status: values.status as PostStatus,
+        } as CreatePostRequest,
         {
           onSuccess: () => {
             toast.success("Blog post created successfully");
             router.push("/dashboard/blog/posts");
           },
-          onError: (error) => {
-            toast.error(error.message || "Failed to create blog post");
+          onError: (error: unknown) => {
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "Failed to create blog post";
+            toast.error(errorMessage);
           },
         }
       );
@@ -210,14 +179,15 @@ export default function BlogPostForm({
       if (!post?.slug) return;
 
       // Compare current values with initial values to find changed fields
-      const changedFields: Partial<UpdateBlogPostRequest> = {};
+      const changedFields: Partial<UpdatePostRequest> = {};
 
       if (values.title !== post.title) changedFields.title = values.title;
       if (values.content !== post.content)
         changedFields.content = values.content;
       if (values.excerpt !== post.excerpt)
         changedFields.excerpt = values.excerpt;
-      if (values.status !== post.status) changedFields.status = values.status;
+      if (values.status !== post.status)
+        changedFields.status = values.status as PostStatus;
       if (values.meta_title !== post.meta_title)
         changedFields.meta_title = values.meta_title;
       if (values.meta_description !== post.meta_description)
@@ -225,9 +195,9 @@ export default function BlogPostForm({
 
       // Compare tags
       const currentTags = values.tags;
-      const originalTags = (post.tag_list || []).join(",");
+      const originalTags = (post.tags || []).join(", ");
       if (currentTags !== originalTags) {
-        changedFields.tags = values.tags;
+        changedFields.tags = values.tags.split(",").map((tag) => tag.trim());
       }
 
       // Check if featured_image is a File (new upload) or different from original
@@ -235,7 +205,10 @@ export default function BlogPostForm({
         values.featured_image instanceof File ||
         values.featured_image !== post.featured_image
       ) {
-        changedFields.featured_image = values.featured_image;
+        changedFields.featured_image =
+          values.featured_image instanceof File
+            ? values.featured_image.name
+            : values.featured_image;
       }
 
       // Only proceed if there are changes
@@ -244,18 +217,19 @@ export default function BlogPostForm({
         return;
       }
 
-      updatePost(
-        { slug: post.slug, data: changedFields },
-        {
-          onSuccess: () => {
-            toast.success("Blog post updated successfully");
-            router.push("/dashboard/blog/posts");
-          },
-          onError: (error) => {
-            toast.error(error.message || "Failed to update blog post");
-          },
-        }
-      );
+      updatePost(changedFields as UpdatePostRequest, {
+        onSuccess: () => {
+          toast.success("Blog post updated successfully");
+          router.push("/dashboard/blog/posts");
+        },
+        onError: (error: unknown) => {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to update blog post";
+          toast.error(errorMessage);
+        },
+      });
     }
   };
 
@@ -382,59 +356,14 @@ export default function BlogPostForm({
         <FormField
           control={form.control}
           name="tags"
-          render={() => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Tags</FormLabel>
               <FormControl>
-                <div className="space-y-2">
-                  <ReactTags
-                    selected={tags.map((tag) => ({
-                      value: tag.id || tag.text,
-                      label: tag.text,
-                    }))}
-                    isDisabled={true}
-                    suggestions={suggestions.map((tag) => ({
-                      value: tag,
-                      label: tag,
-                    }))}
-                    onAdd={(tag) =>
-                      handleAddTag({
-                        id: tag.value as string,
-                        text: tag.label as string,
-                      })
-                    }
-                    onDelete={(index) => handleDeleteTag(index)}
-                    onInput={setInputValue}
-                    placeholderText="Type to search tags..."
-                    allowNew
-                    allowBackspace
-                    allowResize
-                    classNames={{
-                      root: "flex flex-wrap gap-2",
-                      rootIsActive: "is-active",
-                      rootIsDisabled: "is-disabled",
-                      rootIsInvalid: "is-invalid",
-                      label: "react-tags__label",
-                      tagList: "flex flex-wrap gap-2",
-                      tagListItem: "react-tags__list-item",
-                      tag: "bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1",
-                      tagName: "react-tags__tag-name",
-                      comboBox: "flex-1",
-                      input:
-                        "w-full bg-transparent border-none focus:outline-none focus:ring-0 p-0",
-                      listBox:
-                        "absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-popover-foreground shadow-md",
-                      option: "react-tags__listbox-option",
-                      optionIsActive: "bg-accent text-accent-foreground",
-                      highlight: "react-tags__listbox-option-highlight",
-                    }}
-                  />
-                  {isLoadingSuggestions && inputValue && (
-                    <div className="text-sm text-muted-foreground">
-                      Searching tags...
-                    </div>
-                  )}
-                </div>
+                <Input
+                  placeholder="Enter tags separated by commas (e.g., technology, web development, react)"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

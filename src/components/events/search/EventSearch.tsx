@@ -14,7 +14,7 @@ export function EventSearch({ onSearch, className }: EventSearchProps) {
 
   const debouncedSearch = useDebounce((value: string) => {
     onSearch(value);
-  }, 300);
+  }, 100);
 
   const handleSearch = useCallback(
     (value: string) => {

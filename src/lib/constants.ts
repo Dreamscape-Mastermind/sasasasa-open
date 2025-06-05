@@ -7,6 +7,8 @@ import {
   MessageSquare,
   Percent,
   Settings,
+  Ticket,
+  Users,
 } from "lucide-react";
 
 import Cookies from "js-cookie";
@@ -34,6 +36,7 @@ export const ROUTES = {
   // Dashboard routes
   DASHBOARD: "/dashboard",
   DASHBOARD_SETTINGS: "/dashboard/settings",
+  DASHBOARD_PURCHASES: "/dashboard/purchases",
 
   // Dashboard Blog routes
   DASHBOARD_BLOG: "/dashboard/blog",
@@ -94,6 +97,7 @@ export const ROUTE_PROTECTION = {
     ROUTES.DASHBOARD_EVENT_PAYMENTS("*"),
     ROUTES.DASHBOARD_EVENT_PROMOTIONS("*"),
     ROUTES.DASHBOARD_EVENT_TICKETS("*"),
+    ROUTES.DASHBOARD_PURCHASES,
   ],
 } as const;
 
@@ -120,6 +124,11 @@ export const NAV_ITEMS = {
     { label: "Dashboard", href: ROUTES.DASHBOARD, icon: Layout },
     { label: "Events", href: ROUTES.EVENTS, icon: Calendar },
     { label: "Settings", href: ROUTES.DASHBOARD_SETTINGS, icon: Settings },
+    {
+      label: "My Purchases",
+      icon: Ticket,
+      href: "/dashboard/purchases",
+    },
   ],
   DASHBOARD_EVENT_ORGANIZER: [
     {
@@ -133,6 +142,16 @@ export const NAV_ITEMS = {
       icon: Calendar,
     },
     {
+      label: "Event Tickets",
+      href: ROUTES.DASHBOARD_EVENT_TICKETS("{eventId}"),
+      icon: CreditCard,
+    },
+    {
+      label: "Event Attendees",
+      href: ROUTES.DASHBOARD_EVENT_ATTENDEES("{eventId}"),
+      icon: Users,
+    },
+    {
       label: "Event Payments",
       href: ROUTES.DASHBOARD_EVENT_PAYMENTS("{eventId}"),
       icon: CreditCard,
@@ -141,11 +160,6 @@ export const NAV_ITEMS = {
       label: "Event Promotions",
       href: ROUTES.DASHBOARD_EVENT_PROMOTIONS("{eventId}"),
       icon: Percent,
-    },
-    {
-      label: "Event Tickets",
-      href: ROUTES.DASHBOARD_EVENT_TICKETS("{eventId}"),
-      icon: CreditCard,
     },
   ],
   DASHBOARD_BLOG_ADMIN: [

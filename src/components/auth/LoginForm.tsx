@@ -13,16 +13,17 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs2";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { AppKit } from "@/contexts/AppKit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ROUTES } from "@/lib/constants";
 import { WalletAddress } from "@/components/ui/wallet-address";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,10 +37,19 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"email" | "wallet">("email");
-  const { loginWithWallet } = useAuth();
+  const { loginWithWallet, isAuthenticated } = useAuth();
   const { isConnected, address } = useAppKitAccount();
   const { useLogin } = useUser();
   const loginMutation = useLogin();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace(redirectTo);
+    }
+  }, [isAuthenticated, redirectTo, router]);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -75,7 +85,7 @@ export function LoginForm() {
 
     setLoading(true);
     try {
-      await loginWithWallet(address);
+      await loginWithWallet(address as `0x${string}`);
     } catch (error) {
       console.error("Login error:", error);
       setError("Failed to login with wallet");

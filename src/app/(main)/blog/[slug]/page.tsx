@@ -1,8 +1,8 @@
 import { BlogPostContent } from "@/components/blog/BlogPostContent";
 import { Metadata } from "next";
-import Spinner from "@/components/ui/spiner";
+import Spinner from "@/components/ui/spinner";
 import { Suspense } from "react";
-import { blogApi } from "@/lib/api/blogApiService";
+import { blogService } from "@/services/blog.service";
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -16,7 +16,9 @@ export async function generateMetadata({
   const { slug } = await params;
 
   try {
-    const post = await blogApi.getPost(slug);
+    const postResponse = await blogService.getPost(slug);
+
+    const post = postResponse.result;
 
     if (!post) {
       return {

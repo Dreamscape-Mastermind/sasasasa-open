@@ -4,12 +4,10 @@ import { ACCESS_LEVELS, ROUTES } from "@/lib/constants";
 import { BrowserProvider, Eip1193Provider, JsonRpcSigner } from "ethers";
 import {
   LoginRequest,
-  OTPVerificationRequest,
   ResendOtpRequest,
   TokenResponse,
   UserProfile,
   UserRole,
-  Web3RecapNonceResponse,
   Web3RecapRequest,
   Web3RecapVerifyRequest,
   Web3RecapVerifyResponse,
@@ -144,7 +142,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const hasAnyRole = useCallback(
     (roleNames: string[]): boolean => {
       if (!rolesData?.result?.roles) return false;
-      return rolesData.result?.roles.some((role) => roleNames.includes(role.name));
+      return rolesData.result?.roles.some((role) =>
+        roleNames.includes(role.name)
+      );
     },
     [rolesData]
   );
@@ -219,7 +219,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Route protection with access levels
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    // let timeoutId: NodeJS.Timeout;
 
     const handleRouteCheck = () => {
       const path = window.location.pathname;
@@ -250,17 +250,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    const debouncedRouteCheck = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(handleRouteCheck, 600);
-    };
+    // const debouncedRouteCheck = () => {
+    //   clearTimeout(timeoutId);
+    //   timeoutId = setTimeout(handleRouteCheck, 100);
+    // };
 
-    debouncedRouteCheck();
-    window.addEventListener("popstate", debouncedRouteCheck);
+    handleRouteCheck();
+    window.addEventListener("popstate", handleRouteCheck);
 
     return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener("popstate", debouncedRouteCheck);
+      // clearTimeout(timeoutId);
+      window.removeEventListener("popstate", handleRouteCheck);
     };
   }, [isAuthenticated, isLoading, router, hasAccessLevel, hasAnyAccessLevel]);
 
@@ -471,10 +471,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithWallet = async (address: `0x${string}`) => {
     try {
       logger.info("Attempting SIWE login", { address });
-      
+
       // Get nonce from server
       const nonceResponse = await web3NonceMutation.mutateAsync({ address });
-      
+
       if (!nonceResponse.result) {
         throw new Error("Failed to get nonce response");
       }
@@ -625,10 +625,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     result: {
       tokens: TokenResponse;
       user: UserProfile;
-    }
+    };
   }): Promise<boolean> => {
     try {
-
       if (response.result) {
         const { tokens: newTokens, user: newUser } = response.result;
 

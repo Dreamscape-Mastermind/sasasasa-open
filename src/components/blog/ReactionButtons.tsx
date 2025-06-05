@@ -7,15 +7,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  useAddReaction,
-  useRemoveReaction,
-  useUpdateReaction,
-} from "@/lib/hooks/useBlog";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ReactionType } from "@/types/blog";
+import { useBlog } from "@/hooks/useBlog";
 
 interface ReactionButtonsProps {
   postSlug?: string;
@@ -54,9 +50,10 @@ export function ReactionButtons({
     string | undefined
   >(userReactionId);
 
-  const { mutate: addReaction } = useAddReaction();
-  const { mutate: updateReaction } = useUpdateReaction();
-  const { mutate: removeReaction } = useRemoveReaction();
+  const { useCreateReaction, useUpdateReaction, useDeleteReaction } = useBlog();
+  const { mutate: addReaction } = useCreateReaction();
+  const { mutate: updateReaction } = useUpdateReaction(userReactionId || "");
+  const { mutate: removeReaction } = useDeleteReaction();
 
   // Update local state when props change
   useEffect(() => {
@@ -79,10 +76,7 @@ export function ReactionButtons({
     } else if (currentReactionId) {
       // Update existing reaction
       updateReaction(
-        {
-          id: currentReactionId,
-          data: { reaction_type: type },
-        },
+        { reaction_type: type },
         {
           onSuccess: () => {
             setSelectedReaction(type);
@@ -99,9 +93,9 @@ export function ReactionButtons({
           reaction_type: type,
         },
         {
-          onSuccess: (reaction) => {
+          onSuccess: (reaction: ReactionResponse) => {
             setSelectedReaction(type);
-            setCurrentReactionId(reaction.id);
+            setCurrentReactionId(reaction.result.id);
             onReactionSuccess?.(reaction);
           },
         }

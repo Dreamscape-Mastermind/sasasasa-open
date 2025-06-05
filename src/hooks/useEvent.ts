@@ -161,10 +161,10 @@ export const useEvent = () => {
   };
 
   // User's Events
-  const useMyEvents = () => {
+  const useMyEvents = (params?: EventQueryParams) => {
     return useQuery({
-      queryKey: ["my-events"],
-      queryFn: () => eventService.getMyEvents(),
+      queryKey: ["my-events", params],
+      queryFn: () => eventService.getMyEvents(params),
     });
   };
 

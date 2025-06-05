@@ -14,10 +14,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
-import { useBlogPosts } from "@/lib/hooks/useBlog";
+import { useBlog } from "@/hooks/useBlog";
 
 export default function BlogPosts() {
-  const { data: posts, isLoading } = useBlogPosts();
+  const { usePosts } = useBlog();
+  const { data: posts, isLoading } = usePosts();
 
   return (
     <div className="space-y-6">
@@ -57,7 +58,7 @@ export default function BlogPosts() {
                 </TableCell>
               </TableRow>
             ) : (
-              posts?.results.map((post) => (
+              posts?.result?.results?.map((post) => (
                 <TableRow key={post.id}>
                   <TableCell className="font-medium">
                     <Link

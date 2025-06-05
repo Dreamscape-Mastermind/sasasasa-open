@@ -1,6 +1,5 @@
 "use client";
 
-import { useBlogPosts } from "@/lib/hooks/useBlog";
 import {
   Card,
   CardContent,
@@ -8,7 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+import { Skeleton } from "@/components/ui/skeleton";
 import dynamic from "next/dynamic";
+import { useBlog } from "@/hooks/useBlog";
 
 const BlogAnalyticsChart = dynamic(
   () => import("@/components/blog/BlogAnalyticsChart"),
@@ -16,29 +18,69 @@ const BlogAnalyticsChart = dynamic(
 );
 
 export default function BlogAnalytics() {
-  const { data: posts, isLoading } = useBlogPosts();
+  const { usePosts } = useBlog();
+  const { data: posts, isLoading } = usePosts();
 
   if (isLoading) {
-    return <div>Loading analytics...</div>;
+    return (
+      <div className="space-y-6">
+        <div>
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-72 mt-2" />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-3 w-32 mt-2" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-64 mt-2" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[400px] w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
-  const totalPosts = posts?.results.length || 0;
+  const totalPosts = posts?.result?.results?.length || 0;
   const totalViews =
-    posts?.results.reduce((sum, post) => sum + post.view_count, 0) || 0;
+    posts?.result?.results?.reduce((sum, post) => sum + post.view_count, 0) ||
+    0;
   const totalComments =
-    posts?.results.reduce((sum, post) => sum + post.comment_count, 0) || 0;
+    posts?.result?.results?.reduce(
+      (sum, post) => sum + post.comment_count,
+      0
+    ) || 0;
   const totalReactions =
-    posts?.results.reduce((sum, post) => sum + post.reaction_count, 0) || 0;
+    posts?.result?.results?.reduce(
+      (sum, post) => sum + post.reaction_count,
+      0
+    ) || 0;
 
-  const postsByStatus = posts?.results.reduce((acc, post) => {
+  const postsByStatus = posts?.result?.results?.reduce((acc, post) => {
     acc[post.status] = (acc[post.status] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  const chartData = posts?.results
+  const chartData = posts?.result?.results
     .sort(
       (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        new Date(b.created_at || "").getTime() -
+        new Date(a.created_at || "").getTime()
     )
     .slice(0, 10)
     .map((post) => ({

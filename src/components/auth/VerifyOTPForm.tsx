@@ -65,10 +65,18 @@ export function VerifyOTPForm() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
-  const { completeOtpVerification } = useAuth();
+  const { completeOtpVerification, isAuthenticated } = useAuth();
   const { useVerifyOtp, useResendOtp } = useUser();
   const verifyOtpMutation = useVerifyOtp();
   const resendOtpMutation = useResendOtp();
+  const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace(redirectTo);
+    }
+  }, [isAuthenticated, redirectTo, router]);
 
   const form = useForm<z.infer<typeof otpSchema>>({
     resolver: zodResolver(otpSchema),
@@ -76,12 +84,6 @@ export function VerifyOTPForm() {
       otp: "",
     },
   });
-
-  useEffect(() => {
-    if (!email) {
-      router.push(ROUTES.HOME);
-    }
-  }, [email, router]);
 
   useEffect(() => {
     if (countdown > 0) {

@@ -55,14 +55,12 @@ export interface UserProfile extends BaseUserEntity {
 /**
  * Wallet types
  */
-export interface WalletInfo {
-  id?: string;
+export interface WalletInfo extends BaseUserEntity {
   last_used?: string;
   is_primary?: boolean;
   address: string;
   chain_id: number;
   is_verified?: boolean;
-  created_at?: string;
 }
 
 export interface WalletLimitedInfo {
@@ -270,9 +268,10 @@ export interface UserAnalyticsResponse
     user_roles_distribution: Record<string, number>;
   }> {}
 
-export interface RolesResponse extends SuccessResponse<{
-  roles?: Role[];
-}> {}
+export interface RolesResponse
+  extends SuccessResponse<{
+    roles?: Role[];
+  }> {}
 
 export interface WalletsResponse
   extends SuccessResponse<{

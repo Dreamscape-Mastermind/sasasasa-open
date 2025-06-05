@@ -48,16 +48,63 @@ class BlogService {
   }
 
   public async createPost(data: CreatePostRequest): Promise<PostResponse> {
-    return apiClient.post<PostResponse>(`${this.baseUrl}/blog/posts`, data);
+    const formData = new FormData();
+
+    // Handle file upload
+    if (data.featured_image && typeof data.featured_image !== "string") {
+      formData.append("featured_image", data.featured_image);
+    }
+
+    // Add other fields
+    Object.entries(data).forEach(([key, value]) => {
+      if (key !== "featured_image") {
+        formData.append(
+          key,
+          typeof value === "string" ? value : JSON.stringify(value)
+        );
+      }
+    });
+
+    return apiClient.post<PostResponse>(
+      `${this.baseUrl}/blog/posts`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
   }
 
   public async updatePost(
     slug: string,
     data: UpdatePostRequest
   ): Promise<PostResponse> {
+    const formData = new FormData();
+
+    // Handle file upload
+    if (data.featured_image && typeof data.featured_image !== "string") {
+      formData.append("featured_image", data.featured_image);
+    }
+
+    // Add other fields
+    Object.entries(data).forEach(([key, value]) => {
+      if (key !== "featured_image") {
+        formData.append(
+          key,
+          typeof value === "string" ? value : JSON.stringify(value)
+        );
+      }
+    });
+
     return apiClient.patch<PostResponse>(
       `${this.baseUrl}/blog/posts/${slug}`,
-      data
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
   }
 
