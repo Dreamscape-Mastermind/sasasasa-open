@@ -1,5 +1,18 @@
 "use client";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  AlertCircle,
+  Bell,
+  ChevronRight,
+  CreditCard,
+  Globe,
+  Loader2,
+  Mail,
+  Settings,
+  Shield,
+  User,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Suspense, useEffect, useState } from "react";
 import {
   Tabs,
   TabsContent,
@@ -23,34 +37,25 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import EmailSettings from "./EmailSettings";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import EmailSettings from "./EmailSettings";
 import WalletSettings from "./WalletSettings";
-import { motion } from 'framer-motion';
-import { 
-  Settings, 
-  Mail, 
-  Wallet, 
-  Bell, 
-  CreditCard, 
-  Shield, 
-  User, 
-  Globe,
-  ChevronRight,
-  AlertCircle
-} from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useAuth } from "contexts/AuthContext";
-import { useEffect, useState } from "react";
-import { Suspense } from 'react';
+import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSearchParams } from "next/navigation";
 
 export default function SettingsPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+        </div>
+      }
+    >
       <SettingsContent />
     </Suspense>
   );
@@ -59,17 +64,17 @@ export default function SettingsPage() {
 function SettingsContent() {
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0 },
   };
-  
+
   const searchParams = useSearchParams();
-  const initTab = searchParams.get('tab') || 'account';
+  const initTab = searchParams.get("tab") || "account";
   const [tab, setTab] = useState(initTab);
-  const action = searchParams.get('action');
+  const action = searchParams.get("action");
   const { user } = useAuth();
 
   useEffect(() => {
-    const currentTab = searchParams.get('tab');
+    const currentTab = searchParams.get("tab");
     if (currentTab) {
       setTab(currentTab);
     }
@@ -80,54 +85,50 @@ function SettingsContent() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
-
 
   const itemVariants = {
     hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 }
+    visible: { opacity: 1, x: 0 },
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="space-y-6 animate-in"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
-      {(action === 'link-email' || user?.is_verified == false) && (
-        <Alert variant="warning" className="bg-yellow-500/10 border-yellow-500/50">
+      {(action === "link-email" || user?.is_verified == false) && (
+        <Alert
+          variant="warning"
+          className="bg-yellow-500/10 border-yellow-500/50"
+        >
           <AlertCircle className="h-4 w-4 text-yellow-500" />
           <AlertTitle>Email Verification Required</AlertTitle>
           <AlertDescription>
-            Please link your email address to enable all features. Add your email below to get a verification code.
+            Please link your email address to enable all features. Add your
+            email below to get a verification code.
           </AlertDescription>
         </Alert>
       )}
       <div>
-        <motion.div 
+        <motion.div
           className="flex items-center gap-2 mb-2"
           variants={itemVariants}
         >
           <Settings className="w-8 h-8" />
           <h1 className="text-3xl font-bold">Settings</h1>
         </motion.div>
-        <motion.p 
-          className="text-muted-foreground"
-          variants={itemVariants}
-        >
+        <motion.p className="text-muted-foreground" variants={itemVariants}>
           Manage your account settings and preferences
         </motion.p>
       </div>
 
-      <Tabs 
-        value={tab} 
-        onValueChange={setTab}
-        className="space-y-6"
-      >
+      <Tabs value={tab} onValueChange={setTab} className="space-y-6">
         <TabsList className="bg-background border">
           <TabsTrigger value="account" className="flex items-center gap-2">
             <Mail className="w-4 h-4" />
@@ -137,7 +138,10 @@ function SettingsContent() {
             <User className="w-4 h-4" />
             General
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
+          <TabsTrigger
+            value="notifications"
+            className="flex items-center gap-2"
+          >
             <Bell className="w-4 h-4" />
             Notifications
           </TabsTrigger>
@@ -184,34 +188,36 @@ function SettingsContent() {
                   <User className="w-5 h-5" />
                   Profile Information
                 </CardTitle>
-                <CardDescription>
-                  View your profile information
-                </CardDescription>
+                <CardDescription>View your profile information</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="grid gap-2">
                     <Label>Name</Label>
-                    <Input 
-                      value={user?.first_name ? `${user.first_name} ${user.last_name}` : 'Not set'} 
-                      className="bg-muted" 
-                      disabled 
+                    <Input
+                      value={
+                        user?.first_name
+                          ? `${user.first_name} ${user.last_name}`
+                          : "Not set"
+                      }
+                      className="bg-muted"
+                      disabled
                     />
                   </div>
                   <div className="grid gap-2">
                     <Label>Email</Label>
                     <Input
-                      value={user?.email || 'Not set'}
+                      value={user?.email || "Not set"}
                       className="bg-muted"
                       disabled
                     />
                   </div>
                   <div className="grid gap-2">
                     <Label>Bio</Label>
-                    <Input 
-                      value={user?.bio || 'Not set'} 
-                      className="bg-muted" 
-                      disabled 
+                    <Input
+                      value={user?.bio || "Not set"}
+                      className="bg-muted"
+                      disabled
                     />
                   </div>
                 </div>
@@ -224,9 +230,7 @@ function SettingsContent() {
                   <Globe className="w-5 h-5" />
                   Preferences
                 </CardTitle>
-                <CardDescription>
-                  View your preferences
-                </CardDescription>
+                <CardDescription>View your preferences</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
@@ -242,7 +246,9 @@ function SettingsContent() {
                         <SelectValue placeholder="Select timezone" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="eat">East Africa Time (EAT)</SelectItem>
+                        <SelectItem value="eat">
+                          East Africa Time (EAT)
+                        </SelectItem>
                         <SelectItem value="pst">Pacific Time (PST)</SelectItem>
                         <SelectItem value="mst">Mountain Time (MST)</SelectItem>
                         <SelectItem value="cst">Central Time (CST)</SelectItem>
@@ -295,7 +301,7 @@ function SettingsContent() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <motion.div 
+                  <motion.div
                     className="flex items-center justify-between"
                     variants={itemVariants}
                   >
@@ -308,7 +314,7 @@ function SettingsContent() {
                     <Switch disabled defaultChecked />
                   </motion.div>
                   <Separator />
-                  <motion.div 
+                  <motion.div
                     className="flex items-center justify-between"
                     variants={itemVariants}
                   >
@@ -321,7 +327,7 @@ function SettingsContent() {
                     <Switch disabled defaultChecked />
                   </motion.div>
                   <Separator />
-                  <motion.div 
+                  <motion.div
                     className="flex items-center justify-between"
                     variants={itemVariants}
                   >
@@ -357,10 +363,7 @@ function SettingsContent() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <motion.div 
-                    className="grid gap-2"
-                    variants={itemVariants}
-                  >
+                  <motion.div className="grid gap-2" variants={itemVariants}>
                     <Label>Current Plan</Label>
                     <div className="flex items-center justify-between p-4 border rounded-lg bg-accent/5">
                       <div>
@@ -376,17 +379,16 @@ function SettingsContent() {
                     </div>
                   </motion.div>
                   <Separator />
-                  <motion.div 
-                    className="grid gap-2"
-                    variants={itemVariants}
-                  >
+                  <motion.div className="grid gap-2" variants={itemVariants}>
                     <Label>Payment Method</Label>
                     <div className="flex items-center justify-between p-4 border rounded-lg bg-accent/5">
                       <div className="flex items-center gap-4">
                         <div className="font-medium">•••• XXXX</div>
                         <Badge variant="outline">Default</Badge>
                       </div>
-                      <Button variant="ghost" disabled>Edit</Button>
+                      <Button variant="ghost" disabled>
+                        Edit
+                      </Button>
                     </div>
                   </motion.div>
                 </div>
@@ -407,13 +409,11 @@ function SettingsContent() {
                   <Shield className="w-5 h-5" />
                   Security Settings
                 </CardTitle>
-                <CardDescription>
-                  View your security settings
-                </CardDescription>
+                <CardDescription>View your security settings</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <motion.div 
+                  <motion.div
                     className="flex items-center justify-between"
                     variants={itemVariants}
                   >
@@ -423,13 +423,12 @@ function SettingsContent() {
                         Add an extra layer of security to your account
                       </p>
                     </div>
-                    <Button variant="outline" disabled>Enable</Button>
+                    <Button variant="outline" disabled>
+                      Enable
+                    </Button>
                   </motion.div>
                   <Separator />
-                  <motion.div 
-                    className="space-y-4"
-                    variants={itemVariants}
-                  >
+                  <motion.div className="space-y-4" variants={itemVariants}>
                     <Label>Password</Label>
                     <Button variant="outline" className="w-full" disabled>
                       Change Password

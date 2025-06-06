@@ -1,72 +1,76 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { Calendar, Clock, MapPin, Share2, Ticket, Users } from "lucide-react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  Share2,
-  Ticket,
-  Users,
-} from 'lucide-react';
-import { useEvent } from '@/contexts/event-context';
-import { Ticket as TicketType } from '@/utils/dataStructures';
-import moment from 'moment-timezone';
+} from "@/components/ui/card";
 
-export default function EventDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { currentEvent, loading, error, setCurrentEventId } = useEvent();
+import { Button } from "@/components/ui/button";
+import { Suspense } from "react";
+import { TicketType } from "@/types/ticket";
+import moment from "moment-timezone";
+import { useEvent } from "@/hooks/useEvent";
+import { useSearchParams } from "next/navigation";
 
-  useEffect(() => {
-    const loadParams = async () => {
-      const { id } = await params;
-      setCurrentEventId(id);
-    }
-    loadParams();
-  }, []);
+function EventDetailsContent() {
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get("id");
 
-  useEffect(() => {
-    const loadParams = async () => {
-      const { id } = await params;
-      if (id !== currentEvent?.id) {
-        setCurrentEventId(id);
-      }
-    }
-    loadParams();
-  }, [params, currentEvent]);
+  const { useEvent: useEventQuery } = useEvent();
+  const { data: eventData, isLoading, error } = useEventQuery(eventId || "");
+  const currentEvent = eventData?.result;
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (!currentEvent) return <div>Event not found</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-cyan-400">Loading event details...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">Error: {error.message}</div>
+      </div>
+    );
+  }
+
+  if (!currentEvent) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-yellow-500">Event not found</div>
+      </div>
+    );
+  }
 
   // Format dates using moment-timezone with proper timezone handling
-  const timezone = currentEvent.timezone || 'UTC';
-  const startDate = currentEvent.start_date 
-    ? moment.tz(currentEvent.start_date, timezone).format('MMM D, YYYY') 
-    : 'TBA';
-  const startTime = currentEvent.start_date 
-    ? moment.tz(currentEvent.start_date, timezone).format('h:mm A') 
-    : 'TBA';
+  const timezone = currentEvent.timezone || "UTC";
+  const startDate = currentEvent.start_date
+    ? moment.tz(currentEvent.start_date, timezone).format("MMM D, YYYY")
+    : "TBA";
+  const startTime = currentEvent.start_date
+    ? moment.tz(currentEvent.start_date, timezone).format("h:mm A")
+    : "TBA";
 
   // Calculate tickets sold correctly based on the data structure
-  const ticketsSold = currentEvent.other_tickets?.reduce((total, ticket) => 
-    total + (Number(ticket.quantity) - Number(ticket.remaining_tickets)), 0
-  ) || 0;
+  const ticketsSold =
+    currentEvent.available_tickets?.reduce(
+      (total, ticket) =>
+        total + (Number(ticket.quantity) - Number(ticket.remaining_tickets)),
+      0
+    ) || 0;
 
-  console.log(currentEvent);
   return (
     <div className="space-y-6 animate-in pb-8">
       <div className="relative h-[300px] -mx-6 -mt-6">
         <div className="absolute inset-0">
           <img
-            src={currentEvent.cover_image || 'https://placehold.co/1200x400/'}
+            src={currentEvent.cover_image || "https://placehold.co/1200x400/"}
             alt={currentEvent.title}
             className="object-cover w-full h-full"
           />
@@ -126,7 +130,7 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
               <CardDescription>Select your ticket type</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {currentEvent.other_tickets?.map((ticket: TicketType) => (
+              {currentEvent.available_tickets?.map((ticket: TicketType) => (
                 <div
                   key={ticket.id}
                   className="flex items-center justify-between p-4 border rounded-lg"
@@ -173,5 +177,19 @@ export default function EventDetailsPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
     </div>
+  );
+}
+
+export default function EventDetailsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-cyan-400">Loading event details...</div>
+        </div>
+      }
+    >
+      <EventDetailsContent />
+    </Suspense>
   );
 }

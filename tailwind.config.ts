@@ -4,7 +4,16 @@ import { fontFamily } from "tailwindcss/defaultTheme";
 
 const config: Config = {
   darkMode: ["class"],
-  content: ["src/app/**/*.{js,ts,jsx,tsx}", "components/**/*.{js,ts,jsx,tsx}"],
+  content: [
+    "src/app/**/*.{js,ts,jsx,tsx}",
+    "src/components/**/*.{js,ts,jsx,tsx}",
+    "src/hooks/**/*.{js,ts,jsx,tsx}",
+    "src/lib/**/*.{js,ts,jsx,tsx}",
+    "src/utils/**/*.{js,ts,jsx,tsx}",
+    "src/styles/**/*.{js,ts,jsx,tsx}",
+    "src/contexts/**/*.{js,ts,jsx,tsx}",
+    "src/providers/**/*.{js,ts,jsx,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {

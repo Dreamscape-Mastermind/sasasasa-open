@@ -1,10 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import EnhancedTicketCard from "./enhanced-ticket-card"
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import EnhancedTicketCard from "./enhanced-ticket-card";
+import { useState } from "react";
 
 const tickets = [
   {
@@ -36,7 +37,7 @@ const tickets = [
       "/placeholder.svg?height=200&width=400&text=Music+Festival+1",
       "/placeholder.svg?height=200&width=400&text=Music+Festival+2",
       "/placeholder.svg?height=200&width=400&text=Music+Festival+3",
-    ]
+    ],
   },
   {
     id: "T-67890",
@@ -67,7 +68,7 @@ const tickets = [
       "/placeholder.svg?height=200&width=400&text=Digital+Art+1",
       "/placeholder.svg?height=200&width=400&text=Digital+Art+2",
       "/placeholder.svg?height=200&width=400&text=Digital+Art+3",
-    ]
+    ],
   },
   {
     id: "T-24680",
@@ -98,38 +99,40 @@ const tickets = [
       "/placeholder.svg?height=200&width=400&text=Blockchain+Summit+1",
       "/placeholder.svg?height=200&width=400&text=Blockchain+Summit+2",
       "/placeholder.svg?height=200&width=400&text=Blockchain+Summit+3",
-    ]
-  }
-]
+    ],
+  },
+];
 
 export default function EnhancedTicketShowcase() {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isAnimating, setIsAnimating] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const nextTicket = () => {
-    if (isAnimating) return
-    setIsAnimating(true)
-    setCurrentIndex((prev) => (prev + 1) % tickets.length)
-    setTimeout(() => setIsAnimating(false), 500)
-  }
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setCurrentIndex((prev) => (prev + 1) % tickets.length);
+    setTimeout(() => setIsAnimating(false), 500);
+  };
 
   const prevTicket = () => {
-    if (isAnimating) return
-    setIsAnimating(true)
-    setCurrentIndex((prev) => (prev - 1 + tickets.length) % tickets.length)
-    setTimeout(() => setIsAnimating(false), 500)
-  }
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setCurrentIndex((prev) => (prev - 1 + tickets.length) % tickets.length);
+    setTimeout(() => setIsAnimating(false), 500);
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              <span className="text-primary">
-                Your Collection 
-              </span>
+              <span className="text-primary">Your Collection</span>
             </h1>
             <p className="text-muted-foreground max-w-md mx-auto">
               Secure, transferable digital tickets with anti-scalping protection
@@ -158,7 +161,25 @@ export default function EnhancedTicketShowcase() {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.5 }}
             >
-              <EnhancedTicketCard {...tickets[currentIndex]} />
+              <EnhancedTicketCard
+                key={tickets[currentIndex].id}
+                id={tickets[currentIndex].id}
+                eventName={tickets[currentIndex].eventName}
+                date={tickets[currentIndex].date}
+                time={tickets[currentIndex].time}
+                venue={tickets[currentIndex].venue}
+                price={tickets[currentIndex].price}
+                section={tickets[currentIndex].section}
+                row={tickets[currentIndex].row}
+                seat={tickets[currentIndex].seat}
+                isBlockchainVerified={
+                  tickets[currentIndex].isBlockchainVerified ?? true
+                }
+                transferLimit={tickets[currentIndex].transferLimit}
+                transfersUsed={tickets[currentIndex].transfersUsed}
+                tokenId={tickets[currentIndex].tokenId}
+                images={tickets[currentIndex].images}
+              />
             </motion.div>
           </AnimatePresence>
 
@@ -181,9 +202,9 @@ export default function EnhancedTicketShowcase() {
               key={index}
               onClick={() => {
                 if (!isAnimating) {
-                  setIsAnimating(true)
-                  setCurrentIndex(index)
-                  setTimeout(() => setIsAnimating(false), 500)
+                  setIsAnimating(true);
+                  setCurrentIndex(index);
+                  setTimeout(() => setIsAnimating(false), 500);
                 }
               }}
               className={`w-2 h-2 rounded-full transition-all duration-300 ${
@@ -198,6 +219,5 @@ export default function EnhancedTicketShowcase() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

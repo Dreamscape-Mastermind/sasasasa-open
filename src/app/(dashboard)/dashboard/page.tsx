@@ -1,8 +1,8 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Calendar,
+  AlertCircle,
+  Check,
   Copy,
   Facebook,
   Instagram,
@@ -10,32 +10,59 @@ import {
   Music2,
   PlusCircle,
   Search,
-  Share2,
-  Ticket,
   Trophy,
   Twitter,
   Users2,
   Video,
-  Check,
-  AlertCircle,
   X,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Event } from "@/types/event";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Overview } from "@/components/dashboard/overview";
-import { Progress } from "@/components/ui/progress";
-import { useState, useMemo, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchEvents } from "services/events/api";
-import { ApiResponse, sampleReferralCodes, SasasasaEvent } from "@/utils/dataStructures";
-import { useAuth } from "contexts/AuthContext";
-import { redirect } from "next/navigation";
+import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { useEvent } from "@/hooks/useEvent";
+import { useQuery } from "@tanstack/react-query";
 
-const shimmerClass = "animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent";
+// Sample data for UI development
+const sampleReferralCodes = [
+  {
+    id: "1",
+    code: "WELCOME20",
+    discount: 20,
+    usedCount: 5,
+    usageLimit: 100,
+    expiryDate: "2024-12-31",
+    status: "active",
+  },
+  {
+    id: "2",
+    code: "SUMMER50",
+    discount: 50,
+    usedCount: 100,
+    usageLimit: 100,
+    expiryDate: "2024-08-31",
+    status: "depleted",
+  },
+  {
+    id: "3",
+    code: "EARLYBIRD30",
+    discount: 30,
+    usedCount: 0,
+    usageLimit: 50,
+    expiryDate: "2024-06-30",
+    status: "expired",
+  },
+];
+
+const shimmerClass =
+  "animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent";
 
 const eventCategories = [
   {
@@ -99,64 +126,56 @@ const socialLinks = [
   { icon: Linkedin, color: "bg-blue-700" },
 ];
 
-
-
 export default function DashboardPage() {
   // Keep track of selected event
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const { isAuthenticated, isLoading: isLoadingAuth } = useAuth();
+  const { useEvents } = useEvent();
 
   // Fetch events data
-  const { data: eventsData, isLoading } = useQuery<ApiResponse<SasasasaEvent>>({
-    queryKey: ["events"],
-    queryFn: fetchEvents,
-  });
+  const { data: eventsData, isLoading } = useEvents();
 
   // Get the currently selected event
-  const selectedEvent: SasasasaEvent | undefined = useMemo(() => {
-    if (!eventsData?.result.results || !selectedEventId) {
+  const selectedEvent: Event | undefined = useMemo(() => {
+    if (!eventsData?.result?.results || !selectedEventId) {
       // Default to first event if none selected
-      return eventsData?.result.results[0];
+      return eventsData?.result?.results[0];
     }
-    return eventsData.result.results.find(event => event.id === selectedEventId);
+    return eventsData.result.results.find(
+      (event) => event.id === selectedEventId
+    );
   }, [eventsData, selectedEventId]);
 
   // Calculate ticket statistics for the selected event
   const ticketStats = useMemo(() => {
     if (!selectedEvent) return null;
 
-    const totalTickets = selectedEvent.other_tickets?.reduce(
-      (sum, ticket) => sum + ticket.quantity, 
-      0
-    ) ?? 0;
-    const soldTickets = selectedEvent.other_tickets?.reduce(
-      (sum, ticket) => sum + (ticket.quantity - ticket.remaining_tickets), 
-      0
-    ) ?? 0;
+    const totalTickets =
+      selectedEvent.available_tickets?.reduce(
+        (sum, ticket) => sum + ticket.quantity,
+        0
+      ) ?? 0;
+    const soldTickets =
+      selectedEvent.available_tickets?.reduce(
+        (sum, ticket) => sum + (ticket.quantity - ticket.remaining_tickets),
+        0
+      ) ?? 0;
 
     return {
       totalTickets,
       soldTickets,
-      soldPercentage: Math.round((soldTickets / totalTickets) * 100 * 100) / 100
+      soldPercentage:
+        Math.round((soldTickets / totalTickets) * 100 * 100) / 100,
     };
   }, [selectedEvent]);
 
   // TODO: Replace with actual API call when endpoint is ready
   const { data: referralCodes = sampleReferralCodes } = useQuery({
-    queryKey: ['referralCodes', selectedEventId],
+    queryKey: ["referralCodes", selectedEventId],
     queryFn: () => Promise.resolve(sampleReferralCodes),
     enabled: !!selectedEventId,
   });
 
-  
-  useEffect(() => {
-    if(!isAuthenticated && !isLoadingAuth) {
-      redirect("/login");
-    }
-  }, [isAuthenticated, isLoadingAuth])
-
-
-  if (isLoading || isLoadingAuth) {
+  if (isLoading) {
     return (
       <div className="space-y-8 animate-in">
         {/* Event Selector Skeleton */}
@@ -169,39 +188,48 @@ export default function DashboardPage() {
 
         {/* Ticket Sales Overview Skeleton */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <div className={cn("col-span-2 h-[350px] rounded-xl bg-muted/10", shimmerClass)} />
-          <div className={cn("h-[350px] rounded-xl bg-muted/10", shimmerClass)} />
+          <div
+            className={cn(
+              "col-span-2 h-[350px] rounded-xl bg-muted/10",
+              shimmerClass
+            )}
+          />
+          <div
+            className={cn("h-[350px] rounded-xl bg-muted/10", shimmerClass)}
+          />
         </div>
 
         {/* Event Categories Skeleton */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {Array(4).fill(0).map((_, i) => (
-            <div key={i} className={cn("h-[120px] rounded-xl bg-muted/10", shimmerClass)} />
-          ))}
+          {Array(4)
+            .fill(0)
+            .map((_, i) => (
+              <div
+                key={i}
+                className={cn("h-[120px] rounded-xl bg-muted/10", shimmerClass)}
+              />
+            ))}
         </div>
 
         {/* Recent Attendees and Referral Skeleton */}
         <div className="grid gap-6 md:grid-cols-2">
-          {Array(2).fill(0).map((_, i) => (
-            <div key={i} className={cn("h-[400px] rounded-xl bg-muted/10", shimmerClass)} />
-          ))}
+          {Array(2)
+            .fill(0)
+            .map((_, i) => (
+              <div
+                key={i}
+                className={cn("h-[400px] rounded-xl bg-muted/10", shimmerClass)}
+              />
+            ))}
         </div>
       </div>
     );
-  }
-
-  
-  if(!isAuthenticated && !isLoadingAuth) {
-    redirect("/login");
   }
 
   return (
     <div className="space-y-8 animate-in">
       {/* Event Selector */}
       <div className="flex justify-between items-center">
-        
-
-        {/* Keep your existing search and create event buttons */}
         <div className="relative w-96">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
@@ -209,7 +237,7 @@ export default function DashboardPage() {
             className="pl-10"
           />
         </div>
-        <Link href="/dashboard/events/new">
+        <Link href={ROUTES.DASHBOARD_EVENT_DETAILS("new")}>
           <Button className="gap-2">
             <PlusCircle className="h-4 w-4" />
             Create Event
@@ -239,7 +267,9 @@ export default function DashboardPage() {
                 <div className="relative w-32 h-32">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-3xl font-bold">{ticketStats.soldPercentage}%</div>
+                      <div className="text-3xl font-bold">
+                        {ticketStats.soldPercentage}%
+                      </div>
                       <div className="text-sm text-muted-foreground">Sold</div>
                     </div>
                   </div>
@@ -255,7 +285,9 @@ export default function DashboardPage() {
                       cy="64"
                       r="56"
                       className="stroke-primary stroke-2 fill-none"
-                      strokeDasharray={`${ticketStats.soldPercentage * 3.51} 351`}
+                      strokeDasharray={`${
+                        ticketStats.soldPercentage * 3.51
+                      } 351`}
                     />
                   </svg>
                 </div>
@@ -341,8 +373,8 @@ export default function DashboardPage() {
             {/* Referral Codes List */}
             <div className="space-y-4">
               {referralCodes.map((code) => (
-                <div 
-                  key={code.id} 
+                <div
+                  key={code.id}
                   className="flex items-center justify-between p-3 border rounded-lg bg-background"
                 >
                   <div className="flex items-center gap-4">
@@ -363,8 +395,8 @@ export default function DashboardPage() {
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="icon"
                         onClick={() => {
                           navigator.clipboard.writeText(code.code);
@@ -372,20 +404,20 @@ export default function DashboardPage() {
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="icon"
                         className={
-                          code.status === 'active' 
-                            ? 'text-green-500' 
-                            : code.status === 'depleted'
-                            ? 'text-orange-500'
-                            : 'text-red-500'
+                          code.status === "active"
+                            ? "text-green-500"
+                            : code.status === "depleted"
+                            ? "text-orange-500"
+                            : "text-red-500"
                         }
                       >
-                        {code.status === 'active' ? (
+                        {code.status === "active" ? (
                           <Check className="h-4 w-4" />
-                        ) : code.status === 'depleted' ? (
+                        ) : code.status === "depleted" ? (
                           <AlertCircle className="h-4 w-4" />
                         ) : (
                           <X className="h-4 w-4" />

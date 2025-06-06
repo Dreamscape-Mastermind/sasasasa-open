@@ -1,7 +1,6 @@
 // File: src/app/(dashboard)/dashboard/settings/WalletSettings.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -9,22 +8,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Wallet as WalletIcon, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { AppKit } from "@/contexts/AppKit";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useAuth } from 'contexts/AuthContext';
+import { WalletInfo } from "@/types/user";
+import { WalletAddress } from "@/components/ui/wallet-address";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 import { useAppKitAccount } from "@reown/appkit/react";
-import { AppKit } from 'contexts/AppKit';
-import toast from 'react-hot-toast';
-import { Badge } from '@/components/ui/badge';
-import { Wallet } from '@/utils/dataStructures';
-import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, Wallet as WalletIcon } from 'lucide-react';
-import { WalletAddress } from '@/components/ui/wallet-address';
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function WalletSettings() {
   const { getAccessToken, linkWallet } = useAuth();
   const { address, isConnected } = useAppKitAccount();
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [primaryWallet, setPrimaryWallet] = useState<Wallet | null>(null);
+  const [wallets, setWallets] = useState<WalletInfo[]>([]);
+  const [primaryWallet, setPrimaryWallet] = useState<WalletInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [isWalletVerified, setIsWalletVerified] = useState(false);
 
@@ -36,7 +37,9 @@ export default function WalletSettings() {
     // Check if the connected wallet is already verified
     if (address && wallets.length > 0) {
       const isVerified = wallets.some(
-        wallet => wallet.address.toLowerCase() === address.toLowerCase() && wallet.is_verified
+        (wallet) =>
+          wallet.address.toLowerCase() === address.toLowerCase() &&
+          wallet.is_verified
       );
       setIsWalletVerified(isVerified);
     }
@@ -47,11 +50,14 @@ export default function WalletSettings() {
     if (!token) return;
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/web3/wallets`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SASASASA_API_URL}api/v1/web3/wallets`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -59,19 +65,19 @@ export default function WalletSettings() {
         setPrimaryWallet(data.result.primary_wallet);
       }
     } catch (error) {
-      console.error('Error fetching wallets:', error);
-      toast.error('Failed to fetch wallets');
+      console.error("Error fetching wallets:", error);
+      toast.error("Failed to fetch wallets");
     }
   };
 
   const handleLinkWallet = async () => {
     if (!address || !isConnected) {
-      toast.error('Please connect your wallet first');
+      toast.error("Please connect your wallet first");
       return;
     }
 
     if (isWalletVerified) {
-      toast.error('This wallet is already verified and linked');
+      toast.error("This wallet is already verified and linked");
       return;
     }
 
@@ -80,7 +86,7 @@ export default function WalletSettings() {
       const success = await linkWallet(address as `0x${string}`);
       if (success) {
         await fetchWallets();
-        toast.success('Wallet linked successfully');
+        toast.success("Wallet linked successfully");
       }
     } finally {
       setLoading(false);
@@ -89,12 +95,12 @@ export default function WalletSettings() {
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0 },
   };
 
   const listItemVariants = {
     hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 }
+    visible: { opacity: 1, x: 0 },
   };
 
   return (
@@ -137,21 +143,25 @@ export default function WalletSettings() {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-4">No wallets linked yet</p>
+            <p className="text-muted-foreground text-center py-4">
+              No wallets linked yet
+            </p>
           )}
 
           <div className="pt-4 border-t">
             <h3 className="font-medium mb-2">Link a New Wallet</h3>
             {!isConnected ? (
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">Connect your wallet to link it to your account</p>
+                <p className="text-sm text-muted-foreground">
+                  Connect your wallet to link it to your account
+                </p>
                 <AppKit />
               </div>
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <WalletAddress
-                    address={address || ''}
+                    address={address || ""}
                     isVerified={isWalletVerified}
                     showChainId={false}
                     size="md"
@@ -163,7 +173,7 @@ export default function WalletSettings() {
                     </Badge>
                   )}
                 </div>
-                <Button 
+                <Button
                   className="w-full group"
                   onClick={handleLinkWallet}
                   disabled={loading || isWalletVerified}
@@ -172,15 +182,19 @@ export default function WalletSettings() {
                     <span className="flex items-center gap-2">
                       <motion.div
                         animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
                         className="w-4 h-4 border-2 border-current border-t-transparent rounded-full"
                       />
                       Linking...
                     </span>
                   ) : isWalletVerified ? (
-                    'Wallet Already Verified'
+                    "Wallet Already Verified"
                   ) : (
-                    'Link This Wallet'
+                    "Link This Wallet"
                   )}
                 </Button>
               </div>

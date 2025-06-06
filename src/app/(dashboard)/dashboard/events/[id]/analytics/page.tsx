@@ -1,22 +1,5 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Overview } from '@/components/dashboard/overview';
 import {
   BarChart2,
   Calendar,
@@ -24,95 +7,115 @@ import {
   Download,
   TrendingUp,
   Users,
-} from 'lucide-react';
-import { useEvent } from '@/contexts/event-context';
-import { Ticket, TicketResponse } from '@/utils/dataStructures';
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export default function AnalyticsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { currentEvent, tickets, loading, error, setCurrentEventId } = useEvent();
-  
+import { Button } from "@/components/ui/button";
+import { Overview } from "@/components/dashboard/overview";
+import { Suspense } from "react";
+import { useEvent } from "@/hooks/useEvent";
+import { useSearchParams } from "next/navigation";
+import { useTicket } from "@/hooks/useTicket";
 
-  useEffect(() => {
-    const loadParams = async () => {
-      const { id } = await params;
-      setCurrentEventId(id);
-    }
-    loadParams();
+function AnalyticsContent() {
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get("id");
 
-  }, []);
+  const { useEvent: useEventQuery } = useEvent();
+  const { useTickets } = useTicket();
 
-  useEffect(() => {
-    const loadParams = async () => {
-      const { id } = await params;
-      if (id !== currentEvent?.id) {
-        setCurrentEventId(id);
-      }
-    }
-    loadParams();
-  }, [params])
+  const {
+    data: eventData,
+    isLoading: isLoadingEvent,
+    error: eventError,
+  } = useEventQuery(eventId || "");
+  const { data: ticketsData, isLoading: isLoadingTickets } = useTickets(
+    eventId || ""
+  );
 
-  if (loading) {
-    return <div>Loading...</div>;
+  const currentEvent = eventData?.result;
+  const tickets = ticketsData?.result?.results || [];
+
+  if (isLoadingEvent || isLoadingTickets) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-cyan-400">Loading analytics...</div>
+      </div>
+    );
   }
 
-  if (error) {
-    return <div>Error: {error.message}</div>;
+  if (eventError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">Error: {eventError.message}</div>
+      </div>
+    );
   }
 
   if (!currentEvent) {
-    return <div>Event not found</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-yellow-500">Event not found</div>
+      </div>
+    );
   }
 
-  const ticketsArray: Ticket[] = Array.isArray(tickets) ? tickets : 
-    (tickets as TicketResponse)?.result?.results || [];
+  const totalRevenue = tickets.reduce((acc, ticket) => {
+    return acc + (ticket.purchase_price || 0);
+  }, 0);
+
+  const totalSales = tickets.length;
 
   const metrics = [
     {
-      title: 'Total Revenue',
-      value: `$${ticketsArray.reduce((acc, ticket) => {
-        const price = typeof ticket.price === 'string' ? parseFloat(ticket.price) : ticket.price;
-        return acc + (price || 0);
-      }, 0).toLocaleString()}`,
-      change: '+20.1%',
-      trend: 'up',
-      description: 'Compared to last month',
+      title: "Total Revenue",
+      value: `$${totalRevenue.toLocaleString()}`,
+      change: "+20.1%",
+      trend: "up",
+      description: "Compared to last month",
     },
     {
-      title: 'Ticket Sales',
-      value: ticketsArray.length.toString(),
-      change: '+15.3%',
-      trend: 'up',
-      description: 'Compared to last month',
+      title: "Ticket Sales",
+      value: totalSales.toString(),
+      change: "+15.3%",
+      trend: "up",
+      description: "Compared to last month",
     },
     {
-      title: 'Active Events',
-      value: '1',
-      change: '0',
-      trend: 'up',
-      description: 'Current event',
+      title: "Active Events",
+      value: "1",
+      change: "0",
+      trend: "up",
+      description: "Current event",
     },
     {
-      title: 'Attendees',
-      value: ticketsArray.length.toString(),
-      change: '+12.5%',
-      trend: 'up',
-      description: 'Compared to last month',
+      title: "Attendees",
+      value: totalSales.toString(),
+      change: "+12.5%",
+      trend: "up",
+      description: "Compared to last month",
     },
   ];
-
-  const totalRevenue = ticketsArray.reduce((acc, ticket) => {
-    const price = typeof ticket.price === 'string' ? parseFloat(ticket.price) : ticket.price;
-    return acc + (price || 0);
-  }, 0);
-  
-  const totalSales = ticketsArray.length;
 
   const topEvents = [
     {
       name: currentEvent.title,
       sales: totalSales,
       revenue: totalRevenue,
-      conversion: Math.round((totalSales / (totalSales + 10)) * 100), // Example conversion calculation
+      conversion: Math.round((totalSales / (totalSales + 10)) * 100),
     },
   ];
 
@@ -151,16 +154,16 @@ export default function AnalyticsPage({ params }: { params: Promise<{ id: string
               <CardTitle className="text-sm font-medium">
                 {metric.title}
               </CardTitle>
-              {metric.title === 'Total Revenue' && (
+              {metric.title === "Total Revenue" && (
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               )}
-              {metric.title === 'Ticket Sales' && (
+              {metric.title === "Ticket Sales" && (
                 <BarChart2 className="h-4 w-4 text-muted-foreground" />
               )}
-              {metric.title === 'Active Events' && (
+              {metric.title === "Active Events" && (
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               )}
-              {metric.title === 'Attendees' && (
+              {metric.title === "Attendees" && (
                 <Users className="h-4 w-4 text-muted-foreground" />
               )}
             </CardHeader>
@@ -169,9 +172,7 @@ export default function AnalyticsPage({ params }: { params: Promise<{ id: string
               <div className="flex items-center text-xs">
                 <span
                   className={`flex items-center ${
-                    metric.trend === 'up'
-                      ? 'text-green-500'
-                      : 'text-red-500'
+                    metric.trend === "up" ? "text-green-500" : "text-red-500"
                   }`}
                 >
                   <TrendingUp className="h-3 w-3 mr-1" />
@@ -190,9 +191,7 @@ export default function AnalyticsPage({ params }: { params: Promise<{ id: string
         <Card className="col-span-2">
           <CardHeader>
             <CardTitle>Revenue Overview</CardTitle>
-            <CardDescription>
-              Monthly revenue from ticket sales
-            </CardDescription>
+            <CardDescription>Monthly revenue from ticket sales</CardDescription>
           </CardHeader>
           <CardContent>
             <Overview />
@@ -219,7 +218,7 @@ export default function AnalyticsPage({ params }: { params: Promise<{ id: string
                 </tr>
               </thead>
               <tbody>
-                {topEvents.map((event, index) => (
+                {topEvents.map((event) => (
                   <tr key={event.name} className="border-t">
                     <td className="py-4">
                       <div className="font-medium">{event.name}</div>
@@ -235,5 +234,19 @@ export default function AnalyticsPage({ params }: { params: Promise<{ id: string
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function AnalyticsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-cyan-400">Loading analytics...</div>
+        </div>
+      }
+    >
+      <AnalyticsContent />
+    </Suspense>
   );
 }

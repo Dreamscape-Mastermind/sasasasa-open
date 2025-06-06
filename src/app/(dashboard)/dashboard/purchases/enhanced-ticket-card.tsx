@@ -1,30 +1,46 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { ArrowRight, Calendar, Clock, Shield, Tag, Ticket as TicketIcon, Users, ExternalLink, Sparkles, QrCode } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import TicketMediaCarousel from "./ticket-media-carousel"
-import { Ticket as TicketType } from "@/utils/dataStructures"
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowRight,
+  Calendar,
+  Clock,
+  ExternalLink,
+  QrCode,
+  Shield,
+  Sparkles,
+  Tag,
+  Ticket as TicketIcon,
+  Users,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useEffect, useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import TicketMediaCarousel from "./ticket-media-carousel";
 
 interface TicketCardProps {
-  id: string
-  eventName: string
-  date: string
-  time: string
-  venue: string
-  price: number
-  section: string
-  row: string
-  seat: string
-  isBlockchainVerified: boolean
-  transferLimit: number
-  transfersUsed: number
-  tokenId?: string
-  images?: string[]
+  id: string;
+  eventName: string;
+  date: string;
+  time: string;
+  venue: string;
+  price: number;
+  section: string;
+  row: string;
+  seat: string;
+  isBlockchainVerified: boolean;
+  transferLimit: number;
+  transfersUsed: number;
+  tokenId?: string;
+  images?: string[];
 }
 
 export default function EnhancedTicketCard({
@@ -46,23 +62,23 @@ export default function EnhancedTicketCard({
     "/placeholder.svg?height=200&width=400&text=Event+Image+2",
     "/placeholder.svg?height=200&width=400&text=Event+Image+3",
   ],
-}: TicketType) {
-  const [expanded, setExpanded] = useState(false)
-  const [showQrCode, setShowQrCode] = useState(false)
-  const [isHovering, setIsHovering] = useState(false)
+}: TicketCardProps) {
+  const [expanded, setExpanded] = useState(false);
+  const [showQrCode, setShowQrCode] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
 
   // Micro-animation for ticket ID
-  const [ticketIdPulse, setTicketIdPulse] = useState(false)
+  const [ticketIdPulse, setTicketIdPulse] = useState(false);
 
   useEffect(() => {
-    // Pulse the ticket ID every 30 seconds 
+    // Pulse the ticket ID every 30 seconds
     const interval = setInterval(() => {
-      setTicketIdPulse(true)
-      setTimeout(() => setTicketIdPulse(false), 1000)
-    }, 30000)
+      setTicketIdPulse(true);
+      setTimeout(() => setTicketIdPulse(false), 1000);
+    }, 30000);
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <TooltipProvider>
@@ -77,7 +93,9 @@ export default function EnhancedTicketCard({
       >
         <Card
           className={`overflow-hidden border border-border bg-background text-foreground transition-all duration-300 ${
-            expanded ? "shadow-lg shadow-primary/20" : "shadow-md hover:shadow-primary/10"
+            expanded
+              ? "shadow-lg shadow-primary/20"
+              : "shadow-md hover:shadow-primary/10"
           }`}
         >
           <CardContent className="p-0 flex flex-col min-h-[600px]">
@@ -91,8 +109,12 @@ export default function EnhancedTicketCard({
               {/* Header with blockchain verification */}
               <div className="relative p-4 pb-2 sm:p-6 sm:pb-3 flex-shrink-0">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <h3 className="text-base sm:text-xl font-medium text-foreground line-clamp-1">{eventName}</h3>
-                  {isBlockchainVerified && <BlockchainBadge tokenId={tokenId} />}
+                  <h3 className="text-base sm:text-xl font-medium text-foreground line-clamp-1">
+                    {eventName}
+                  </h3>
+                  {isBlockchainVerified && (
+                    <BlockchainBadge tokenId={tokenId} />
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2 mt-2">
@@ -101,7 +123,9 @@ export default function EnhancedTicketCard({
                     animate={{
                       opacity: 1,
                       scale: ticketIdPulse ? 1.05 : 1,
-                      backgroundColor: ticketIdPulse ? "var(--primary)" : "var(--muted)",
+                      backgroundColor: ticketIdPulse
+                        ? "var(--primary)"
+                        : "var(--muted)",
                     }}
                     transition={{ duration: 0.3 }}
                     className="text-sm font-mono bg-muted text-foreground px-2 py-1 rounded-full"
@@ -117,34 +141,49 @@ export default function EnhancedTicketCard({
                   <Clock className="h-4 w-4 flex-shrink-0" />
                   <span className="line-clamp-1">{time}</span>
                 </div>
-                <p className="mt-2 text-sm text-muted-foreground line-clamp-1">{venue}</p>
+                <p className="mt-2 text-sm text-muted-foreground line-clamp-1">
+                  {venue}
+                </p>
               </div>
 
               {/* Main ticket info */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 pt-2 pb-4 border-b border-slate-800 gap-4 flex-shrink-0">
                 <div className="grid grid-cols-3 sm:flex sm:items-center gap-4 sm:gap-8">
                   <div className="flex flex-col">
-                    <span className="text-xs text-muted-foreground">Section</span>
-                    <span className="text-base sm:text-lg font-medium text-foreground">{section}</span>
+                    <span className="text-xs text-muted-foreground">
+                      Section
+                    </span>
+                    <span className="text-base sm:text-lg font-medium text-foreground">
+                      {section}
+                    </span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs text-muted-foreground">Row</span>
-                    <span className="text-base sm:text-lg font-medium text-foreground">{row}</span>
+                    <span className="text-base sm:text-lg font-medium text-foreground">
+                      {row}
+                    </span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs text-muted-foreground">Seat</span>
-                    <span className="text-base sm:text-lg font-medium text-foreground">{seat}</span>
+                    <span className="text-base sm:text-lg font-medium text-foreground">
+                      {seat}
+                    </span>
                   </div>
                 </div>
                 <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 sm:gap-0">
                   <span className="text-xs text-muted-foreground">Price</span>
-                  <span className="text-xl sm:text-2xl font-semibold text-foreground">${price}</span>
+                  <span className="text-xl sm:text-2xl font-semibold text-foreground">
+                    ${price}
+                  </span>
                 </div>
               </div>
 
               {/* Blockchain features preview */}
               <div className="p-6 sm:p-6 pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-auto">
-                <TransferLimitIndicator limit={transferLimit} used={transfersUsed} />
+                <TransferLimitIndicator
+                  limit={transferLimit}
+                  used={transfersUsed}
+                />
                 <div className="flex gap-2 w-full sm:w-auto">
                   <Button
                     variant="outline"
@@ -153,7 +192,9 @@ export default function EnhancedTicketCard({
                     onClick={() => setShowQrCode(!showQrCode)}
                   >
                     <QrCode className="h-3.5 w-3.5 mr-1" />
-                    <span className="text-muted-foreground">{showQrCode ? "Hide" : "QR"}</span>
+                    <span className="text-muted-foreground">
+                      {showQrCode ? "Hide" : "QR"}
+                    </span>
                   </Button>
 
                   <Button
@@ -162,8 +203,13 @@ export default function EnhancedTicketCard({
                     className="flex-1 sm:flex-initial text-primary2 hover:text-primary hover:bg-muted/50 p-0 h-8 px-3 rounded-full"
                     onClick={() => setExpanded(!expanded)}
                   >
-                    <span className="mr-1 text-muted-foreground">{expanded ? "Less" : "Details"}</span>
-                    <motion.div animate={{ rotate: expanded ? 90 : 0 }} transition={{ duration: 0.2 }}>
+                    <span className="mr-1 text-muted-foreground">
+                      {expanded ? "Less" : "Details"}
+                    </span>
+                    <motion.div
+                      animate={{ rotate: expanded ? 90 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
                       <ArrowRight className="h-4 w-4" />
                     </motion.div>
                   </Button>
@@ -225,7 +271,7 @@ export default function EnhancedTicketCard({
         </Card>
       </motion.div>
     </TooltipProvider>
-  )
+  );
 }
 
 function BlockchainBadge({ tokenId }: { tokenId?: string }) {
@@ -267,17 +313,28 @@ function BlockchainBadge({ tokenId }: { tokenId?: string }) {
           </Badge>
         </div>
       </TooltipTrigger>
-      <TooltipContent side="top" className="bg-background border-border text-foreground">
+      <TooltipContent
+        side="top"
+        className="bg-background border-border text-foreground"
+      >
         <p className="text-xs">Blockchain Verified Ticket</p>
-        {tokenId && <p className="text-xs text-muted-foreground mt-1">Token: {tokenId}</p>}
+        {tokenId && (
+          <p className="text-xs text-muted-foreground mt-1">Token: {tokenId}</p>
+        )}
       </TooltipContent>
     </Tooltip>
-  )
+  );
 }
 
-function TransferLimitIndicator({ limit, used }: { limit: number; used: number }) {
-  const remaining = limit - used
-  const percentage = (used / limit) * 100
+function TransferLimitIndicator({
+  limit,
+  used,
+}: {
+  limit: number;
+  used: number;
+}) {
+  const remaining = limit - used;
+  const percentage = (used / limit) * 100;
 
   return (
     <Tooltip>
@@ -286,9 +343,10 @@ function TransferLimitIndicator({ limit, used }: { limit: number; used: number }
           <Shield className="h-4 w-4 text-primary" />
           <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
             <motion.div
-              className="h-full" 
+              className="h-full"
               style={{
-                background: "linear-gradient(to right, var(--primary) 0%, hsl(var(--primary)) 50%, var(--primary) 100%)"
+                background:
+                  "linear-gradient(to right, var(--primary) 0%, hsl(var(--primary)) 50%, var(--primary) 100%)",
               }}
               initial={{ width: 0 }}
               animate={{ width: `${percentage}%` }}
@@ -300,12 +358,17 @@ function TransferLimitIndicator({ limit, used }: { limit: number; used: number }
           </span>
         </div>
       </TooltipTrigger>
-      <TooltipContent side="top" className="bg-background border-border text-foreground">
+      <TooltipContent
+        side="top"
+        className="bg-background border-border text-foreground"
+      >
         <p className="text-xs">Transfer Protection</p>
-        <p className="text-xs text-muted-foreground mt-1">{remaining} transfers remaining</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {remaining} transfers remaining
+        </p>
       </TooltipContent>
     </Tooltip>
-  )
+  );
 }
 
 function TicketDetails({
@@ -314,10 +377,10 @@ function TicketDetails({
   transferLimit,
   transfersUsed,
 }: {
-  tokenId?: string
-  isBlockchainVerified: boolean
-  transferLimit: number
-  transfersUsed: number
+  tokenId?: string;
+  isBlockchainVerified: boolean;
+  transferLimit: number;
+  transfersUsed: number;
 }) {
   return (
     <div className="p-4 space-y-4">
@@ -328,18 +391,27 @@ function TicketDetails({
           </h4>
           <div className="bg-muted/30 rounded-md p-3">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-xs text-muted-foreground">Transfer Limit</span>
-              <span className="text-sm font-medium text-foreground">{transferLimit}</span>
+              <span className="text-xs text-muted-foreground">
+                Transfer Limit
+              </span>
+              <span className="text-sm font-medium text-foreground">
+                {transferLimit}
+              </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Transfers Used</span>
-              <span className="text-sm font-medium text-foreground">{transfersUsed}</span>
+              <span className="text-xs text-muted-foreground">
+                Transfers Used
+              </span>
+              <span className="text-sm font-medium text-foreground">
+                {transfersUsed}
+              </span>
             </div>
             <div className="mt-3 w-full h-1.5 bg-muted rounded-full overflow-hidden">
               <motion.div
                 className="h-full"
                 style={{
-                  background: "linear-gradient(to right, var(--primary) 0%, hsl(var(--primary)) 50%, var(--primary) 100%)"
+                  background:
+                    "linear-gradient(to right, var(--primary) 0%, hsl(var(--primary)) 50%, var(--primary) 100%)",
                 }}
                 initial={{ width: 0 }}
                 animate={{ width: `${(transfersUsed / transferLimit) * 100}%` }}
@@ -366,11 +438,11 @@ function TicketDetails({
             {tokenId && (
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Token ID</span>
-                <motion.span 
-                  className="text-xs font-mono text-foreground" 
-                  whileHover={{ 
+                <motion.span
+                  className="text-xs font-mono text-foreground"
+                  whileHover={{
                     color: "var(--primary)",
-                    x: 2 
+                    x: 2,
                   }}
                 >
                   {tokenId}
@@ -409,7 +481,9 @@ function TicketDetails({
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-muted"></div>
-                <span className="text-xs text-muted-foreground">Previous Transfer</span>
+                <span className="text-xs text-muted-foreground">
+                  Previous Transfer
+                </span>
               </div>
               <motion.span
                 className="text-xs font-mono text-muted-foreground"
@@ -424,7 +498,9 @@ function TicketDetails({
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-muted"></div>
-                <span className="text-xs text-muted-foreground">Original Mint</span>
+                <span className="text-xs text-muted-foreground">
+                  Original Mint
+                </span>
               </div>
               <motion.span
                 className="text-xs font-mono text-muted-foreground"
@@ -443,7 +519,9 @@ function TicketDetails({
       <div className="pt-2 space-y-2">
         <Button
           className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-0 rounded-full flex items-center justify-center gap-1"
-          onClick={() => window.open(`https://etherscan.io/token/${tokenId}`, "_blank")}
+          onClick={() =>
+            window.open(`https://etherscan.io/token/${tokenId}`, "_blank")
+          }
         >
           <Sparkles className="h-4 w-4 mr-1" />
           View on Blockchain
@@ -455,7 +533,12 @@ function TicketDetails({
             variant="outline"
             size="sm"
             className="flex-1 text-xs border-border text-foreground hover:bg-muted/20 rounded-full"
-            onClick={() => window.open(`https://opensea.io/assets/ethereum/${tokenId}`, "_blank")}
+            onClick={() =>
+              window.open(
+                `https://opensea.io/assets/ethereum/${tokenId}`,
+                "_blank"
+              )
+            }
           >
             <span>OpenSea</span>
             <ExternalLink className="h-3 w-3 ml-1" />
@@ -464,7 +547,12 @@ function TicketDetails({
             variant="outline"
             size="sm"
             className="flex-1 text-xs border-border text-foreground hover:bg-muted/20 rounded-full"
-            onClick={() => window.open(`https://rarible.com/token/ethereum/${tokenId}`, "_blank")}
+            onClick={() =>
+              window.open(
+                `https://rarible.com/token/ethereum/${tokenId}`,
+                "_blank"
+              )
+            }
           >
             <span>Rarible</span>
             <ExternalLink className="h-3 w-3 ml-1" />
@@ -472,6 +560,5 @@ function TicketDetails({
         </div>
       </div>
     </div>
-  )
+  );
 }
-
