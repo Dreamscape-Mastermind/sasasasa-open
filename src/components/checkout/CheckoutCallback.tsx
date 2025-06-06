@@ -7,10 +7,10 @@ import { PaymentStatusDialog } from "./PaymentStatusDialog";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { usePaymentVerification } from "@/hooks/usePaymentVerification";
 import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
 
 export function CheckoutCallback() {
-  const searchParams = useSearchParams();
+  const { searchParams } = useSearchParamsContext();
   const analytics = useAnalytics();
   const { trackEvent } = analytics;
   const router = useRouter();

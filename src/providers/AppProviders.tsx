@@ -6,6 +6,7 @@ import { ReactNode, useEffect } from "react";
 
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { SearchParamsProvider } from "@/providers/SearchParamsProvider";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProviders } from "@/providers/theme-providers";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -119,13 +120,15 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <LoggerProvider>
         <AnalyticsProvider>
-          <AuthProvider>
-            <ThemeProviders>
-              <FormProvider {...methods}>
-                <SidebarProvider>{children}</SidebarProvider>
-              </FormProvider>
-            </ThemeProviders>
-          </AuthProvider>
+          <SearchParamsProvider>
+            <AuthProvider>
+              <ThemeProviders>
+                <FormProvider {...methods}>
+                  <SidebarProvider>{children}</SidebarProvider>
+                </FormProvider>
+              </ThemeProviders>
+            </AuthProvider>
+          </SearchParamsProvider>
           <ReactQueryDevtools initialIsOpen={false} />
         </AnalyticsProvider>
       </LoggerProvider>

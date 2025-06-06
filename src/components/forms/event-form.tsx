@@ -53,7 +53,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { useEvent } from "@/hooks/useEvent";
-import { useSearchParams } from "next/navigation";
+import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const formSchema = z
@@ -188,7 +188,7 @@ const CustomTimezoneSelect = ({ onChange, value }) => {
 };
 
 export default function EventForm() {
-  const searchParams = useSearchParams();
+  const { searchParams } = useSearchParamsContext();
   const eventId = searchParams.get("eventId");
 
   // State to track if we are editing an event

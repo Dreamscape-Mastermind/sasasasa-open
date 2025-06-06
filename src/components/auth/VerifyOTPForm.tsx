@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/form";
 import { OTPVerificationRequest, ResendOtpRequest } from "@/types/user";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
@@ -27,6 +26,8 @@ import { ROUTES } from "@/lib/constants";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
 import { useUser } from "@/hooks/useUser";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -57,7 +58,7 @@ const checkmarkVariants = {
 };
 
 export function VerifyOTPForm() {
-  const searchParams = useSearchParams();
+  const { searchParams } = useSearchParamsContext();
   const router = useRouter();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");

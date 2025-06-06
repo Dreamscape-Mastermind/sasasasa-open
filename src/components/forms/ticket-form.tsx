@@ -51,10 +51,11 @@ import { Button } from "@/components/ui/button";
 import DatePicker from "react-datepicker";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
+import { Suspense } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useSearchParams } from "next/navigation";
+import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
 import { useTicket } from "@/hooks/useTicket";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -150,7 +151,21 @@ const ticketSchema = z
   );
 
 export default function TicketForm() {
-  const searchParams = useSearchParams();
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[200px]">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      }
+    >
+      <TicketFormContent />
+    </Suspense>
+  );
+}
+
+function TicketFormContent() {
+  const { searchParams } = useSearchParamsContext();
   const eventId = searchParams.get("eventId") || "";
   const {
     useTicketTypes,

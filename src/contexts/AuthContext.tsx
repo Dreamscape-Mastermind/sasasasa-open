@@ -25,7 +25,6 @@ import {
   useAppKitProvider,
   useDisconnect,
 } from "@reown/appkit/react";
-import { useRouter, useSearchParams } from "next/navigation";
 
 import type { Role } from "../types";
 import { cookieService } from "@/services/cookie.service";
@@ -34,6 +33,8 @@ import toast from "react-hot-toast";
 import { tokenService } from "@/services/token.service";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
+import { useRouter } from "next/navigation";
+import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
 import { useUser } from "@/hooks/useUser";
 
 type AccessLevel = (typeof ACCESS_LEVELS)[keyof typeof ACCESS_LEVELS];
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { searchParams } = useSearchParamsContext();
   const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
   const { address, isConnected } = useAppKitAccount();
   const { chainId } = useAppKitNetworkCore();

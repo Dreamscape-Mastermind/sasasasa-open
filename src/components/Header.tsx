@@ -13,11 +13,11 @@ import { ProfileDropdown } from "./profile/ProfileDropdown";
 import ThemeSwitch from "@/components/ThemeSwitch";
 import siteMetadata from "@/config/siteMetadata";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSearchParams } from "next/navigation";
+import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
 
 const Header = () => {
   const { isAuthenticated, user, isLoading } = useAuth();
-  const searchParams = useSearchParams();
+  const { searchParams } = useSearchParamsContext();
   const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
 
   let headerClass =

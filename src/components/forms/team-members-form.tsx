@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { TeamMemberRole } from "@/types/event";
 import { useEvent } from "@/hooks/useEvent";
 import { useForm } from "react-hook-form";
-import { useSearchParams } from "next/navigation";
+import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 // Define the schema
@@ -49,7 +49,7 @@ export default function TeamMembersForm() {
     },
   });
 
-  const searchParams = useSearchParams();
+  const { searchParams } = useSearchParamsContext();
   const eventId = searchParams.get("eventId");
 
   // Get hooks from useEvent

@@ -1,7 +1,7 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
 import { TicketEnhanced, TicketStatus } from "@/types/ticket";
-import { useEffect, useState } from "react";
 
 import EnhancedTicketCard from "./enhanced-ticket-card";
 import EnhancedTicketShowcase from "./enhanced-ticket-showcase";
@@ -9,6 +9,20 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function PurchasesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen bg-background">
+          <div className="text-primary">Loading your tickets...</div>
+        </div>
+      }
+    >
+      <PurchasesContent />
+    </Suspense>
+  );
+}
+
+function PurchasesContent() {
   const { user, isAuthenticated } = useAuth();
   const [tickets, setTickets] = useState<TicketEnhanced[]>([]);
   const [loading, setLoading] = useState(true);
