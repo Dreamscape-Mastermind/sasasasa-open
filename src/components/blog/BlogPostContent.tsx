@@ -70,9 +70,9 @@ export function BlogPostContent({ slug }: BlogPostContentProps) {
         <div className="mt-4 flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
           <span>By {postData.author_name}</span>
           <span>•</span>
-          <time dateTime={postData.publish_date || postData.created_at}>
+          <time dateTime={postData.publish_date || postData.created_at || ""}>
             {new Date(
-              postData.publish_date || postData.created_at
+              postData.publish_date || postData.created_at || ""
             ).toLocaleDateString()}
           </time>
           <span>•</span>

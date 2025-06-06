@@ -4,13 +4,12 @@ import { FormProvider, useForm } from "react-hook-form";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
 
+import { AuthProvider } from "@/contexts/AuthContext";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-// import { AuthProvider } from "@/contexts/AuthContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProviders } from "@/providers/theme-providers";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
-import { AuthProvider } from "@/contexts/AuthContext";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -45,9 +44,6 @@ const queryClient = new QueryClient({
 
       // Network behavior
       networkMode: "online", // Only run queries when online
-
-      // Suspense mode
-      suspense: false, // Disable suspense mode by default
     },
     mutations: {
       // Retry configuration
@@ -66,23 +62,6 @@ const queryClient = new QueryClient({
 
       // Network behavior
       networkMode: "online", // Only run mutations when online
-    },
-  },
-  // Global query client settings
-  logger: {
-    log: (...args) => {
-      if (process.env.NODE_ENV === "development") {
-        console.log(...args);
-      }
-    },
-    warn: (...args) => {
-      if (process.env.NODE_ENV === "development") {
-        console.warn(...args);
-      }
-    },
-    error: (...args) => {
-      // Always log errors in both development and production
-      console.error(...args);
     },
   },
 });
@@ -141,11 +120,11 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <LoggerProvider>
         <AnalyticsProvider>
           <AuthProvider>
-          <ThemeProviders>
-            <FormProvider {...methods}>
-              <SidebarProvider>{children}</SidebarProvider>
-            </FormProvider>
-          </ThemeProviders>
+            <ThemeProviders>
+              <FormProvider {...methods}>
+                <SidebarProvider>{children}</SidebarProvider>
+              </FormProvider>
+            </ThemeProviders>
           </AuthProvider>
           <ReactQueryDevtools initialIsOpen={false} />
         </AnalyticsProvider>

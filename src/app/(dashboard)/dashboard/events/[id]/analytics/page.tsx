@@ -25,10 +25,15 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Overview } from "@/components/dashboard/overview";
+import { Suspense } from "react";
 import { useEvent } from "@/hooks/useEvent";
+import { useSearchParams } from "next/navigation";
 import { useTicket } from "@/hooks/useTicket";
 
-export default function AnalyticsPage({ params }: { params: { id: string } }) {
+function AnalyticsContent() {
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get("id");
+
   const { useEvent: useEventQuery } = useEvent();
   const { useTickets } = useTicket();
 
@@ -36,41 +41,55 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
     data: eventData,
     isLoading: isLoadingEvent,
     error: eventError,
-  } = useEventQuery(params.id);
+  } = useEventQuery(eventId || "");
   const { data: ticketsData, isLoading: isLoadingTickets } = useTickets(
-    params.id
+    eventId || ""
   );
 
   const currentEvent = eventData?.result;
   const tickets = ticketsData?.result?.results || [];
 
   if (isLoadingEvent || isLoadingTickets) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-cyan-400">Loading analytics...</div>
+      </div>
+    );
   }
 
   if (eventError) {
-    return <div>Error: {eventError.message}</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">Error: {eventError.message}</div>
+      </div>
+    );
   }
 
   if (!currentEvent) {
-    return <div>Event not found</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-yellow-500">Event not found</div>
+      </div>
+    );
   }
+
+  const totalRevenue = tickets.reduce((acc, ticket) => {
+    return acc + (ticket.purchase_price || 0);
+  }, 0);
+
+  const totalSales = tickets.length;
 
   const metrics = [
     {
       title: "Total Revenue",
-      value: `$${tickets
-        .reduce((acc, ticket) => {
-          return acc + (ticket.purchase_price || 0);
-        }, 0)
-        .toLocaleString()}`,
+      value: `$${totalRevenue.toLocaleString()}`,
       change: "+20.1%",
       trend: "up",
       description: "Compared to last month",
     },
     {
       title: "Ticket Sales",
-      value: tickets.length.toString(),
+      value: totalSales.toString(),
       change: "+15.3%",
       trend: "up",
       description: "Compared to last month",
@@ -84,25 +103,19 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
     },
     {
       title: "Attendees",
-      value: tickets.length.toString(),
+      value: totalSales.toString(),
       change: "+12.5%",
       trend: "up",
       description: "Compared to last month",
     },
   ];
 
-  const totalRevenue = tickets.reduce((acc, ticket) => {
-    return acc + (ticket.purchase_price || 0);
-  }, 0);
-
-  const totalSales = tickets.length;
-
   const topEvents = [
     {
       name: currentEvent.title,
       sales: totalSales,
       revenue: totalRevenue,
-      conversion: Math.round((totalSales / (totalSales + 10)) * 100), // Example conversion calculation
+      conversion: Math.round((totalSales / (totalSales + 10)) * 100),
     },
   ];
 
@@ -205,7 +218,7 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
                 </tr>
               </thead>
               <tbody>
-                {topEvents.map((event, index) => (
+                {topEvents.map((event) => (
                   <tr key={event.name} className="border-t">
                     <td className="py-4">
                       <div className="font-medium">{event.name}</div>
@@ -221,5 +234,19 @@ export default function AnalyticsPage({ params }: { params: { id: string } }) {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function AnalyticsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-cyan-400">Loading analytics...</div>
+        </div>
+      }
+    >
+      <AnalyticsContent />
+    </Suspense>
   );
 }

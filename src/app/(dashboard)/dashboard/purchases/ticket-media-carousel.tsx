@@ -1,14 +1,15 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
 
 interface TicketMediaCarouselProps {
-  images: string[]
-  autoPlay?: boolean
-  interval?: number
+  images: string[];
+  autoPlay?: boolean;
+  interval?: number;
 }
 
 export default function TicketMediaCarousel({
@@ -20,25 +21,27 @@ export default function TicketMediaCarousel({
   autoPlay = true,
   interval = 5000,
 }: TicketMediaCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isHovering, setIsHovering] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
 
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length)
-  }
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length)
-  }
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + images.length) % images.length
+    );
+  };
 
   useEffect(() => {
     if (autoPlay && !isHovering) {
       const timer = setTimeout(() => {
-        nextSlide()
-      }, interval)
-      return () => clearTimeout(timer)
+        nextSlide();
+      }, interval);
+      return () => clearTimeout(timer);
     }
-  }, [currentIndex, autoPlay, interval, isHovering])
+  }, [currentIndex, autoPlay, interval, isHovering]);
 
   return (
     <div
@@ -55,7 +58,10 @@ export default function TicketMediaCarousel({
           transition={{ duration: 0.5 }}
           className="absolute inset-0"
         >
-          <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${images[currentIndex]})` }}>
+          <div
+            className="w-full h-full bg-cover bg-center"
+            style={{ backgroundImage: `url(${images[currentIndex]})` }}
+          >
             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-70" />
           </div>
         </motion.div>
@@ -115,6 +121,5 @@ export default function TicketMediaCarousel({
         ))}
       </div>
     </div>
-  )
+  );
 }
-

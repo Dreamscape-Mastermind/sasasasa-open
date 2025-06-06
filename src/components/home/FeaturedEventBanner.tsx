@@ -11,7 +11,7 @@ import { useLogger } from "@/hooks/useLogger";
 import { useRouter } from "next/navigation";
 
 interface FeaturedEventBannerProps {
-  event?: Event;
+  event: Event;
 }
 
 const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
@@ -20,7 +20,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
   const logger = useLogger({ context: "FeaturedEventBanner" });
   const [isFlashSaleActive, setIsFlashSaleActive] = useState(false);
 
-  const activeFlashSale = event?.available_tickets?.[0]?.flash_sale;
+  const activeFlashSale = event.available_tickets?.[0]?.flash_sale;
 
   const checkTimeWindow = useCallback(() => {
     const now = Date.now();

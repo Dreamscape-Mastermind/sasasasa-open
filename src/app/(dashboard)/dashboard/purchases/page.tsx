@@ -1,16 +1,16 @@
 "use client";
 
+import { TicketEnhanced, TicketStatus } from "@/types/ticket";
 import { useEffect, useState } from "react";
 
 import EnhancedTicketCard from "./enhanced-ticket-card";
 import EnhancedTicketShowcase from "./enhanced-ticket-showcase";
-import { Ticket, TicketEnhanced, TicketStatus } from "@/types/ticket";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function PurchasesPage() {
   const { user, isAuthenticated } = useAuth();
-  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [tickets, setTickets] = useState<TicketEnhanced[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "showcase">("grid");
@@ -204,7 +204,27 @@ export default function PurchasesPage() {
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 md:gap-6"
           >
             {tickets.map((ticket) => (
-              <EnhancedTicketCard key={ticket.id} {...ticket} />
+              <EnhancedTicketCard
+                key={ticket.id}
+                id={ticket.id}
+                eventName={ticket.event_title}
+                date={ticket.created_at || ""}
+                time={ticket.created_at || ""}
+                venue={ticket.event_title}
+                price={ticket.purchase_price}
+                section={ticket.ticket_type_name}
+                row={ticket.ticket_number}
+                seat={ticket.ticket_number}
+                isBlockchainVerified={true}
+                transferLimit={2}
+                transfersUsed={1}
+                tokenId={ticket.id}
+                images={[
+                  "/placeholder.svg?height=200&width=400&text=Music+Festival+1",
+                  "/placeholder.svg?height=200&width=400&text=Music+Festival+2",
+                  "/placeholder.svg?height=200&width=400&text=Music+Festival+3",
+                ]}
+              />
             ))}
           </motion.div>
         )}

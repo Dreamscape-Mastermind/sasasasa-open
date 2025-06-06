@@ -2,7 +2,6 @@
 
 import EnhancedTicketCard from "../purchases/enhanced-ticket-card";
 import EnhancedTicketShowcase from "../purchases/enhanced-ticket-showcase";
-import { TicketStatus } from "@/types/ticket";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useTicket } from "@/hooks/useTicket";
@@ -87,16 +86,11 @@ export default function TicketsPage() {
               <EnhancedTicketCard
                 key={ticket.id}
                 id={ticket.id}
-                event_id={ticket.event}
-                user_id={ticket.owner || ""}
-                ticket_type={ticket.ticket_type_name}
-                status={ticket.status}
-                purchase_date={ticket.created_at}
-                price={ticket.purchase_price}
                 eventName={ticket.event_title}
-                date={ticket.created_at}
-                time={ticket.created_at}
+                date={ticket.created_at || ""}
+                time={ticket.created_at || ""}
                 venue={ticket.event_title}
+                price={ticket.purchase_price}
                 section={ticket.ticket_type_name}
                 row={ticket.ticket_number}
                 seat={ticket.ticket_number}
@@ -109,15 +103,6 @@ export default function TicketsPage() {
                   "/placeholder.svg?height=200&width=400&text=Music+Festival+2",
                   "/placeholder.svg?height=200&width=400&text=Music+Festival+3",
                 ]}
-                name={ticket.event_title}
-                quantity={1}
-                remaining_tickets={1}
-                sale_start_date={ticket.created_at}
-                sale_end_date={ticket.created_at}
-                event={ticket.event}
-                is_active={ticket.status === TicketStatus.VALID}
-                flash_sale={null}
-                created_at={ticket.created_at}
               />
             ))}
           </motion.div>

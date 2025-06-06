@@ -22,7 +22,7 @@ export function BlogCard({ post }: BlogCardProps) {
       <Link href={ROUTES.BLOG_POST(post.slug)}>
         <div className="relative h-48 w-full">
           <Image
-            src={post.featured_image}
+            src={post.featured_image || "/placeholder.png"}
             alt={post.title}
             fill
             className="object-cover"

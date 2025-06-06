@@ -7,6 +7,7 @@ import {
   ChevronRight,
   CreditCard,
   Globe,
+  Loader2,
   Mail,
   Settings,
   Shield,
@@ -26,13 +27,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Suspense, useEffect, useState } from "react";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs2";
-import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,16 +41,21 @@ import EmailSettings from "./EmailSettings";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Suspense } from "react";
 import { Switch } from "@/components/ui/switch";
 import WalletSettings from "./WalletSettings";
 import { motion } from "framer-motion";
-import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSearchParams } from "next/navigation";
 
 export default function SettingsPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+        </div>
+      }
+    >
       <SettingsContent />
     </Suspense>
   );

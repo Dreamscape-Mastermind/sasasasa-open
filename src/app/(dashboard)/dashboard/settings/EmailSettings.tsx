@@ -20,7 +20,13 @@ import { useCreateQueryString } from "@/lib/utils";
 
 export default function EmailSettings() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center p-4">
+          <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+        </div>
+      }
+    >
       <EmailSettingsContent />
     </Suspense>
   );

@@ -1,43 +1,51 @@
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+"use client";
+
+import { Calendar, MapPin, Plus, Search } from "lucide-react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Calendar, MapPin, Plus, Search } from 'lucide-react';
-import Link from 'next/link';
+} from "@/components/ui/card";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { Suspense } from "react";
 
 const events = [
   {
     id: 1,
-    title: 'Tech Conference 2025',
-    date: 'March 15, 2025',
-    location: 'San Francisco, CA',
-    description: 'Join us for the biggest tech conference of the year.',
-    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=400&fit=crop',
+    title: "Tech Conference 2025",
+    date: "March 15, 2025",
+    location: "San Francisco, CA",
+    description: "Join us for the biggest tech conference of the year.",
+    image:
+      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=400&fit=crop",
   },
   {
     id: 2,
-    title: 'Music Festival',
-    date: 'April 20, 2025',
-    location: 'Austin, TX',
-    description: 'A three-day music festival featuring top artists.',
-    image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800&h=400&fit=crop',
+    title: "Music Festival",
+    date: "April 20, 2025",
+    location: "Austin, TX",
+    description: "A three-day music festival featuring top artists.",
+    image:
+      "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800&h=400&fit=crop",
   },
   {
     id: 3,
-    title: 'Food & Wine Expo',
-    date: 'May 10, 2025',
-    location: 'New York, NY',
-    description: 'Experience the finest cuisine and wines from around the world.',
-    image: 'https://images.unsplash.com/photo-1510924199351-4e9d94df18a6?w=800&h=400&fit=crop',
+    title: "Food & Wine Expo",
+    date: "May 10, 2025",
+    location: "New York, NY",
+    description:
+      "Experience the finest cuisine and wines from around the world.",
+    image:
+      "https://images.unsplash.com/photo-1510924199351-4e9d94df18a6?w=800&h=400&fit=crop",
   },
 ];
 
-export default function EventsPage() {
+function EventsContent() {
   return (
     <div className="space-y-6 animate-in">
       <div className="flex justify-between items-center">
@@ -96,5 +104,13 @@ export default function EventsPage() {
         ))}
       </div>
     </div>
+  );
+}
+
+export default function EventsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <EventsContent />
+    </Suspense>
   );
 }

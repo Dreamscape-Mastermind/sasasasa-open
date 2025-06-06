@@ -10,22 +10,43 @@ import {
 } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
+import { Suspense } from "react";
 import { TicketType } from "@/types/ticket";
 import moment from "moment-timezone";
 import { useEvent } from "@/hooks/useEvent";
+import { useSearchParams } from "next/navigation";
 
-export default function EventDetailsPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+function EventDetailsContent() {
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get("id");
+
   const { useEvent: useEventQuery } = useEvent();
-  const { data: eventData, isLoading, error } = useEventQuery(params.id);
+  const { data: eventData, isLoading, error } = useEventQuery(eventId || "");
   const currentEvent = eventData?.result;
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (!currentEvent) return <div>Event not found</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-cyan-400">Loading event details...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">Error: {error.message}</div>
+      </div>
+    );
+  }
+
+  if (!currentEvent) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-yellow-500">Event not found</div>
+      </div>
+    );
+  }
 
   // Format dates using moment-timezone with proper timezone handling
   const timezone = currentEvent.timezone || "UTC";
@@ -156,5 +177,19 @@ export default function EventDetailsPage({
         </div>
       </div>
     </div>
+  );
+}
+
+export default function EventDetailsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-cyan-400">Loading event details...</div>
+        </div>
+      }
+    >
+      <EventDetailsContent />
+    </Suspense>
   );
 }

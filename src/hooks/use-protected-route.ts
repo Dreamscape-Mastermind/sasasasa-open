@@ -2,8 +2,8 @@
 
 import { ROUTES } from "@/lib/constants";
 import { UserRole } from "@/types";
-import { hasRole } from "@/lib/auth";
-import { useAuth } from "@/context/auth-context";
+import { hasRole } from "@/lib/constants";
+import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 

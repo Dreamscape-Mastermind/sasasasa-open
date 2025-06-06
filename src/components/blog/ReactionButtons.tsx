@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { ReactionResponse } from "@/types/blog";
 import { ReactionType } from "@/types/blog";
 import { useBlog } from "@/hooks/useBlog";
 
@@ -95,7 +96,7 @@ export function ReactionButtons({
         {
           onSuccess: (reaction: ReactionResponse) => {
             setSelectedReaction(type);
-            setCurrentReactionId(reaction.result.id);
+            setCurrentReactionId(reaction.result?.id || "");
             onReactionSuccess?.(reaction);
           },
         }
