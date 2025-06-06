@@ -1,22 +1,5 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Overview } from '@/components/dashboard/overview';
 import {
   BarChart2,
   Calendar,
@@ -24,88 +7,95 @@ import {
   Download,
   TrendingUp,
   Users,
-} from 'lucide-react';
-// import { useEvent } from '@/contexts/event-context';
-import { Ticket, TicketResponse } from '@/types/ticket';
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export default function AnalyticsPage({ params }: { params: Promise<{ id: string }> }) {
-  // const { currentEvent, tickets, loading, error, setCurrentEventId } = useEvent();
-  
+import { Button } from "@/components/ui/button";
+import { Overview } from "@/components/dashboard/overview";
+import { useEvent } from "@/hooks/useEvent";
+import { useTicket } from "@/hooks/useTicket";
 
-  useEffect(() => {
-    const loadParams = async () => {
-      const { id } = await params;
-      setCurrentEventId(id);
-    }
-    loadParams();
+export default function AnalyticsPage({ params }: { params: { id: string } }) {
+  const { useEvent: useEventQuery } = useEvent();
+  const { useTickets } = useTicket();
 
-  }, []);
+  const {
+    data: eventData,
+    isLoading: isLoadingEvent,
+    error: eventError,
+  } = useEventQuery(params.id);
+  const { data: ticketsData, isLoading: isLoadingTickets } = useTickets(
+    params.id
+  );
 
-  useEffect(() => {
-    const loadParams = async () => {
-      const { id } = await params;
-      if (id !== currentEvent?.id) {
-        setCurrentEventId(id);
-      }
-    }
-    loadParams();
-  }, [params])
+  const currentEvent = eventData?.result;
+  const tickets = ticketsData?.result?.results || [];
 
-  if (loading) {
+  if (isLoadingEvent || isLoadingTickets) {
     return <div>Loading...</div>;
   }
 
-  if (error) {
-    return <div>Error: {error.message}</div>;
+  if (eventError) {
+    return <div>Error: {eventError.message}</div>;
   }
 
   if (!currentEvent) {
     return <div>Event not found</div>;
   }
 
-  const ticketsArray: Ticket[] = Array.isArray(tickets) ? tickets : 
-    (tickets as TicketResponse)?.result?.results || [];
-
   const metrics = [
     {
-      title: 'Total Revenue',
-      value: `$${ticketsArray.reduce((acc, ticket) => {
-        const price = typeof ticket.price === 'string' ? parseFloat(ticket.price) : ticket.price;
-        return acc + (price || 0);
-      }, 0).toLocaleString()}`,
-      change: '+20.1%',
-      trend: 'up',
-      description: 'Compared to last month',
+      title: "Total Revenue",
+      value: `$${tickets
+        .reduce((acc, ticket) => {
+          return acc + (ticket.purchase_price || 0);
+        }, 0)
+        .toLocaleString()}`,
+      change: "+20.1%",
+      trend: "up",
+      description: "Compared to last month",
     },
     {
-      title: 'Ticket Sales',
-      value: ticketsArray.length.toString(),
-      change: '+15.3%',
-      trend: 'up',
-      description: 'Compared to last month',
+      title: "Ticket Sales",
+      value: tickets.length.toString(),
+      change: "+15.3%",
+      trend: "up",
+      description: "Compared to last month",
     },
     {
-      title: 'Active Events',
-      value: '1',
-      change: '0',
-      trend: 'up',
-      description: 'Current event',
+      title: "Active Events",
+      value: "1",
+      change: "0",
+      trend: "up",
+      description: "Current event",
     },
     {
-      title: 'Attendees',
-      value: ticketsArray.length.toString(),
-      change: '+12.5%',
-      trend: 'up',
-      description: 'Compared to last month',
+      title: "Attendees",
+      value: tickets.length.toString(),
+      change: "+12.5%",
+      trend: "up",
+      description: "Compared to last month",
     },
   ];
 
-  const totalRevenue = ticketsArray.reduce((acc, ticket) => {
-    const price = typeof ticket.price === 'string' ? parseFloat(ticket.price) : ticket.price;
-    return acc + (price || 0);
+  const totalRevenue = tickets.reduce((acc, ticket) => {
+    return acc + (ticket.purchase_price || 0);
   }, 0);
-  
-  const totalSales = ticketsArray.length;
+
+  const totalSales = tickets.length;
 
   const topEvents = [
     {
@@ -151,16 +141,16 @@ export default function AnalyticsPage({ params }: { params: Promise<{ id: string
               <CardTitle className="text-sm font-medium">
                 {metric.title}
               </CardTitle>
-              {metric.title === 'Total Revenue' && (
+              {metric.title === "Total Revenue" && (
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               )}
-              {metric.title === 'Ticket Sales' && (
+              {metric.title === "Ticket Sales" && (
                 <BarChart2 className="h-4 w-4 text-muted-foreground" />
               )}
-              {metric.title === 'Active Events' && (
+              {metric.title === "Active Events" && (
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               )}
-              {metric.title === 'Attendees' && (
+              {metric.title === "Attendees" && (
                 <Users className="h-4 w-4 text-muted-foreground" />
               )}
             </CardHeader>
@@ -169,9 +159,7 @@ export default function AnalyticsPage({ params }: { params: Promise<{ id: string
               <div className="flex items-center text-xs">
                 <span
                   className={`flex items-center ${
-                    metric.trend === 'up'
-                      ? 'text-green-500'
-                      : 'text-red-500'
+                    metric.trend === "up" ? "text-green-500" : "text-red-500"
                   }`}
                 >
                   <TrendingUp className="h-3 w-3 mr-1" />
@@ -190,9 +178,7 @@ export default function AnalyticsPage({ params }: { params: Promise<{ id: string
         <Card className="col-span-2">
           <CardHeader>
             <CardTitle>Revenue Overview</CardTitle>
-            <CardDescription>
-              Monthly revenue from ticket sales
-            </CardDescription>
+            <CardDescription>Monthly revenue from ticket sales</CardDescription>
           </CardHeader>
           <CardContent>
             <Overview />

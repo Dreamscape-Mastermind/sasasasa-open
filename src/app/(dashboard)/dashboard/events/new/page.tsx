@@ -16,8 +16,8 @@ import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
 import TeamMembersForm from "@/components/forms/team-members-form";
 import TicketForm from "@/components/forms/ticket-form";
-import { VenueSearchResult } from "utils/dataStructures";
-import { useAuth } from "@/oldContexts/oldAuthContext";
+// import { VenueSearchResult } from "@/types/venue";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -56,12 +56,12 @@ export default function NewEventPage() {
 function NewEventContent() {
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
-  const [venueSearchResults, setVenueSearchResults] = useState<
-    VenueSearchResult[]
-  >([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState(1);
+  // const [venueSearchResults, setVenueSearchResults] = useState<
+  //   VenueSearchResult[]
+  // >([]);
+  // const [isSearching, setIsSearching] = useState(false);
+  // const [imagePreview, setImagePreview] = useState<string | null>(null);
+  // const [currentStep, setCurrentStep] = useState(1);
   const searchParams = useSearchParams();
   const eventId = searchParams.get("eventId");
 

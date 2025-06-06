@@ -1,6 +1,13 @@
-'use client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+"use client";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Download, Search, UserPlus } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -8,47 +15,40 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Download, Search, UserPlus } from 'lucide-react';
-import { useEvent } from '@/contexts/event-context';
+} from "@/components/ui/table";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const attendees = [
   {
     id: 1,
-    name: 'Sarah Davis',
-    email: 'sarah@example.com',
-    phone: '+1 (555) 123-4567',
+    name: "Sarah Davis",
+    email: "sarah@example.com",
+    phone: "+1 (555) 123-4567",
     events: 3,
-    status: 'active',
+    status: "active",
   },
   {
     id: 2,
-    name: 'Michael Johnson',
-    email: 'michael@example.com',
-    phone: '+1 (555) 234-5678',
+    name: "Michael Johnson",
+    email: "michael@example.com",
+    phone: "+1 (555) 234-5678",
     events: 1,
-    status: 'active',
+    status: "active",
   },
   {
     id: 3,
-    name: 'Emily Brown',
-    email: 'emily@example.com',
-    phone: '+1 (555) 345-6789',
+    name: "Emily Brown",
+    email: "emily@example.com",
+    phone: "+1 (555) 345-6789",
     events: 2,
-    status: 'inactive',
+    status: "inactive",
   },
 ];
 
 export default function AttendeesPage() {
-  const { currentEvent } = useEvent();
   // TODO get all ticket types for the event
 
   // TODO get all attendees for the event from all the ticket types
@@ -123,7 +123,9 @@ export default function AttendeesPage() {
                     <TableCell>{attendee.events}</TableCell>
                     <TableCell>
                       <Badge
-                        variant={attendee.status === 'active' ? 'default' : 'secondary'}
+                        variant={
+                          attendee.status === "active" ? "default" : "secondary"
+                        }
                       >
                         {attendee.status}
                       </Badge>
