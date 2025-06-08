@@ -65,6 +65,8 @@
     "@unlock-protocol/hardhat-plugin": "^0.2.3",
     "@unlock-protocol/networks": "^0.0.25",
     "@unlock-protocol/unlock-js": "^0.51.1",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3",
     "axios": "^1.7.7",
     "body-scroll-lock": "^4.0.0-beta.0",
     "class-variance-authority": "^0.7.0",
