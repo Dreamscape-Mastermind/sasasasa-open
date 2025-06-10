@@ -40,12 +40,12 @@ export const useTicket = () => {
     });
   };
 
-  const useUpdateTicketType = (eventId: string, ticketTypeId: string) => {
+  const useUpdateTicketType = (eventId: string) => {
     return useMutation({
-      mutationFn: (data: UpdateTicketTypeRequest) => ticketService.updateTicketType(eventId, ticketTypeId, data),
-      onSuccess: () => {
+      mutationFn: (data: UpdateTicketTypeRequest) => ticketService.updateTicketType(eventId, data.id as string, data),
+      onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ["ticket-types", eventId] });
-        queryClient.invalidateQueries({ queryKey: ["ticket-type", eventId, ticketTypeId] });
+        queryClient.invalidateQueries({ queryKey: ["ticket-type", eventId] }); // TODO check this code as Im not sure if this is correct , i remove the ticket type id
       },
     });
   };
@@ -61,6 +61,14 @@ export const useTicket = () => {
 
   // Tickets
   const useTickets = (eventId: string, params?: TicketQueryParams) => {
+    if (!eventId) {
+      console.log("No event id provided");
+      return {
+        data: null,
+        isLoading: false,
+        error: { message: "No event id provided" },
+      }
+    }
     return useQuery({
       queryKey: ["tickets", eventId, params],
       queryFn: () => ticketService.listTickets(eventId, params),

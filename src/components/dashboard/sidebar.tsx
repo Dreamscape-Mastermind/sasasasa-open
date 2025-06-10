@@ -150,7 +150,7 @@ export function Sidebar() {
                   variant="outline"
                   role="combobox"
                   aria-expanded={open}
-                  className="w-full justify-between rounded bg-[#CC322D] px-4 py-2 text-sm font-medium text-white hover:bg-[#CC322D]/4 hover:font-extrabold hover:text-white"
+                  className="w-full justify-between rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 hover:font-extrabold hover:text-primary-foreground"
                   disabled={isLoadingEvents || events.length === 0}
                 >
                   {isLoadingEvents
@@ -163,16 +163,16 @@ export function Sidebar() {
               </PopoverTrigger>
               <PopoverContent
                 align="end"
-                className="w-full p-0 rounded-xl shadow-lg border-none bg-[#CC322D] px-4 text-sm font-medium text-white animate-fade-in-scale"
+                className="w-full p-0 rounded-xl shadow-lg border-none px-4 text-sm font-medium text-primary-foreground animate-fade-in-scale"
                 sideOffset={8}
               >
-                <Command className="rounded-xl bg-[#CC322D] text-white">
+                <Command className="rounded-xl">
                   <CommandInput
                     placeholder="Search events..."
-                    className="bg-[#CC322D] text-white placeholder:text-white/60 focus:ring-0 focus:outline-none [&_svg]:text-white [&_svg]:opacity-100"
+                    className="border-none focus:ring-0 focus:outline-none"
                   />
-                  <CommandList>
-                    <CommandEmpty className="text-white">
+                                      <CommandList>
+                    <CommandEmpty className="text-muted-foreground">
                       {isLoadingEvents ? "Loading..." : "No event found."}
                     </CommandEmpty>
                     <CommandGroup>
@@ -189,10 +189,10 @@ export function Sidebar() {
                               );
                             }}
                             className={cn(
-                              "hover:bg-white/10 focus:bg-white/20 text-white font-medium rounded-lg transition-all cursor-pointer",
+                              "hover:bg-accent focus:bg-accent text-foreground font-medium rounded-lg transition-all cursor-pointer",
                               selectedEvent &&
                                 selectedEvent.id === event.id &&
-                                "bg-white/10 font-bold"
+                                "bg-accent font-bold"
                             )}
                           >
                             <Check
@@ -215,10 +215,10 @@ export function Sidebar() {
 
           {/* Event Menus Section */}
           {selectedEvent && (
-            <div className="px-3">
-              <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
-                <h3 className="font-bold text-lg text-white">
-                  Event Management
+            <div className="px-3 bg-transparent">
+              <div className="bg-primary p-4 rounded-lg border border-primary/20">
+                <h3 className="font-bold text-lg text-foreground">
+                  Experiences
                 </h3>
                 <div className="space-y-1">
                   {NAV_ITEMS.DASHBOARD_EVENT_ORGANIZER.map((menu: MenuItem) => (
@@ -252,9 +252,9 @@ export function Sidebar() {
                         )}
                       >
                         {menu.icon && (
-                          <menu.icon className="h-4 w-4 text-white" />
+                          <menu.icon className="h-4 w-4" />
                         )}
-                        <span className="text-white">{menu.label}</span>
+                        <span>{menu.label}</span>
                       </Button>
                     </Link>
                   ))}
@@ -266,7 +266,7 @@ export function Sidebar() {
           {/* Blog Menus Section */}
           <div className="px-3">
             <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
-              <h3 className="font-bold text-lg text-white">Blog Management</h3>
+              <h3 className="font-bold text-lg text-foreground">Blog Management</h3>
               <ScrollArea className="flex-1">
                 <div className="p-3 space-y-1">
                   {NAV_ITEMS.DASHBOARD_BLOG_ADMIN.map((menu: MenuItem) => (
@@ -280,9 +280,9 @@ export function Sidebar() {
                         )}
                       >
                         {menu.icon && (
-                          <menu.icon className="h-4 w-4 text-white" />
+                          <menu.icon className="h-4 w-4" />
                         )}
-                        <span className="text-white">{menu.label}</span>
+                        <span>{menu.label}</span>
                       </Button>
                     </Link>
                   ))}
@@ -293,7 +293,7 @@ export function Sidebar() {
 
           {/* User Menus Section */}
           <div className="px-3">
-            <div className="p-4 rounded-lg bg-muted/50 border border-border">
+            <div className="p-4 rounded-lg bg-transparent border border-border">
               <h3 className="font-bold text-lg text-foreground">
                 User Settings
               </h3>
@@ -332,15 +332,15 @@ export function Sidebar() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-72 border-r shrink-0">
-        <div className="sticky top-0 h-screen overflow-y-auto bg-card">
+      <aside className="hidden lg:block w-60 border-r shrink-0">
+        <div className="sticky top-0 h-screen overflow-y-auto bg-transparent">
           {sidebarContent}
         </div>
       </aside>
 
       {/* Mobile sidebar */}
       <Sheet open={isOpen} onOpenChange={toggleSidebar}>
-        <SheetContent side="left" className="p-0 w-72">
+        <SheetContent side="left" className="p-0 w-64">
           {sidebarContent}
         </SheetContent>
       </Sheet>

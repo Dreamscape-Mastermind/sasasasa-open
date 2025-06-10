@@ -108,6 +108,7 @@ export interface TicketExport extends BaseTicketEntity {
  * Request interfaces
  */
 export interface CreateTicketTypeRequest {
+  id?: string | number;
   name: string;
   description?: string;
   price: number;

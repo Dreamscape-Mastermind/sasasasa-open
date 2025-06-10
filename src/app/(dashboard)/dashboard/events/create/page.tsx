@@ -5,10 +5,8 @@ import * as z from "zod"
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/shadtab"
-import EventForm from "@/components/forms/event-form"
+import { EventForm, TicketForm, TeamMembersForm } from "@/components/dashboard/LazyDashboardComponents"
 import { format } from "date-fns";
-import TicketForm from "@/components/forms/ticket-form"
-import TeamMembersForm from "@/components/forms/team-members-form"
 import { useSearchParams } from "next/navigation"
 
 // First, define the role type and schema

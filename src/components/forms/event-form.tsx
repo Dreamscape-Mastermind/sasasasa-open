@@ -27,8 +27,8 @@ import {
 } from "@/components/ui/form";
 import { Globe, ImagePlus, Loader2 } from "lucide-react";
 import { allTimezones, useTimezoneSelect } from "react-timezone-select";
-import { useCreateEvent, useUpdateEvent } from "@/lib/hooks/useEvents";
-import { useMyEvents } from '@/lib/hooks/useEvents';
+import { useCreateEvent, useUpdateEvent } from "@/hooks/useEvent";
+import { useEvent } from '@/hooks/useEvent';
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { useEvent } from '@/lib/hooks/useEvents';
 import { useParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -129,7 +128,7 @@ export default function EventForm() {
   const [isEditing, setIsEditing] = useState(false);
 
   // Fetch event details if eventId is present
-  const { data: eventData, error: eventError, isLoading: loading } = useEvent(eventId);
+  const { data: eventData, error: eventError, isLoading: loading } = useEvent().useEvent(eventId);
 
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent(eventId);
@@ -166,29 +165,29 @@ export default function EventForm() {
 
   // Populate the form with event data if available
   useEffect(() => {
-    if (eventData) {
-      form.setValue("title", eventData.title);
-      form.setValue("description", eventData.description);
-      form.setValue("start_date", new Date(eventData.start_date));
+    if (eventData?.result) {
+      form.setValue("title", eventData.result.title);
+      form.setValue("description", eventData.result.description);
+      form.setValue("start_date", new Date(eventData.result.start_date));
       form.setValue(
         "start_time",
-        format(new Date(eventData.start_date), "HH:mm")
+        format(new Date(eventData.result.start_date), "HH:mm")
       );
-      form.setValue("end_date", new Date(eventData.end_date));
+      form.setValue("end_date", new Date(eventData.result.end_date));
       form.setValue(
         "end_time",
-        format(new Date(eventData.end_date), "HH:mm")
+        format(new Date(eventData.result.end_date), "HH:mm")
       );
-      form.setValue("venue", eventData.venue);
-      form.setValue("capacity", eventData.capacity);
+      form.setValue("venue", eventData.result.venue);
+      form.setValue("capacity", eventData.result.capacity);
       form.setValue(
         "cover_image",
-        eventData.cover_image ? eventData.cover_image : ""
+        eventData.result.cover_image ? eventData.result.cover_image : ""
       );
-      form.setValue("timezone", eventData.timezone);
+      form.setValue("timezone", eventData.result.timezone);
       // Populate other fields as necessary
       setIsEditing(true); // Set editing mode to true if event data is loaded
-      setImagePreview(eventData.cover_image ?? null);
+      setImagePreview(eventData.result.cover_image ?? null);
       setIsLoading(false);
     }
     console.log({ eventError, eventData });

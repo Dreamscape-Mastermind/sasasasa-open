@@ -48,6 +48,7 @@ export const ROUTES = {
   DASHBOARD_BLOG_COMMENTS: "/dashboard/blog/comments",
   // Dashboard Event routes
   DASHBOARD_EVENT_DETAILS: (id: string) => `/dashboard/events/${id}/details`,
+  DASHBOARD_EVENT_CREATE : () => "/dashboard/events/create",
   DASHBOARD_EVENT_ATTENDEES: (id: string) =>
     `/dashboard/events/${id}/attendees`,
   DASHBOARD_EVENT_ANALYTICS: (id: string) =>

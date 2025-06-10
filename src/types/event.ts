@@ -131,6 +131,122 @@ export interface Event extends BaseEventEntity {
   performers: Performer[];
 }
 
+export interface PerformerCreateRequest {
+  id?: string;
+  name: string;
+  description?: string;
+  website_url?: string;
+  facebook_url?: string;
+  twitter_url?: string;
+  instagram_url?: string;
+  linkedin_url?: string;
+  spotify_url?: string;
+  apple_music_url?: string;
+  soundcloud_url?: string;
+  youtube_url?: string;
+  bandcamp_url?: string;
+  tiktok_url?: string;
+  artstation_url?: string;
+  behance_url?: string;
+}
+
+export interface LocationCreateRequest {
+  name: string;
+  description?: string;
+  address?: string;
+  city?: string;
+  country: string;
+  landmarks?: string;
+  latitude?: number;
+  longitude?: number;
+  maps_url?: string;
+  phone?: string;
+}
+
+export interface EventCreateRequest {
+  title: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  venue: string;
+  location?: LocationCreateRequest;
+  capacity?: number;
+  price?: number;
+  cover_image?: File;
+  facebook_url?: string;
+  twitter_url?: string;
+  instagram_url?: string;
+  linkedin_url?: string;
+  website_url?: string;
+  timezone?: string;
+  featured?: boolean;
+  featured_until?: string;
+  performers?: PerformerCreateRequest[];
+}
+
+export interface EventUpdateRequest {
+  title?: string;
+  description?: string;
+  start_date?: string;
+  end_date?: string;
+  venue?: string;
+  location?: Partial<LocationCreateRequest>;
+  capacity?: number;
+  price?: number;
+  cover_image?: File;
+  facebook_url?: string;
+  twitter_url?: string;
+  instagram_url?: string;
+  linkedin_url?: string;
+  website_url?: string;
+  timezone?: string;
+  featured?: boolean;
+  featured_until?: string;
+  performers?: PerformerCreateRequest[];
+}
+
+export interface TeamMemberInviteRequest {
+  user_email: string;
+  role: TeamMemberRole;
+}
+
+export interface TeamMemberAcceptRequest {
+  token: string;
+}
+
+export interface TeamMemberUpdateRequest {
+  role?: TeamMemberRole;
+}
+
+export interface LocationFilterParams {
+  name?: string;
+  city?: string;
+  country?: string;
+}
+
+export interface EventFilterParams {
+  status?: EventStatus;
+  venue?: string;
+  organizer?: string;
+  short_url?: string;
+  featured?: boolean;
+  featured_until?: string;
+  search?: string;
+  ordering?: string;
+  page?: number;
+  page_size?: number;
+  is_past?: boolean;
+  is_featured?: boolean;
+  location__city?: string;
+  location__country?: string;
+  start_date?: string;
+  end_date?: string;
+  price_min?: number;
+  price_max?: number;
+  capacity_min?: number;
+  capacity_max?: number;
+}
+
 /**
  * Request interfaces
  */
@@ -213,6 +329,7 @@ export interface EventQueryParams {
   price_max?: number;
   capacity_min?: number;
   capacity_max?: number;
+  is_active?: boolean;
 }
 
 export interface LocationQueryParams {

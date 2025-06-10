@@ -24,7 +24,8 @@ import { Button } from "@/components/ui/button";
 import { Event } from "@/types/event";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { Overview } from "@/components/dashboard/overview";
+import { OverviewContent } from "@/components/dashboard/LazyDashboardComponents";
+import { LazyViewportSection } from "@/components/dashboard/LazyDashboardSections";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useEvent } from "@/hooks/useEvent";
@@ -237,7 +238,7 @@ export default function DashboardPage() {
             className="pl-10"
           />
         </div>
-        <Link href={ROUTES.DASHBOARD_EVENT_DETAILS("new")}>
+        <Link href={ROUTES.DASHBOARD_EVENT_CREATE()}>
           <Button className="gap-2">
             <PlusCircle className="h-4 w-4" />
             Create Event
@@ -252,7 +253,13 @@ export default function DashboardPage() {
             <CardTitle>Ticket Sales Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            <Overview />
+            <LazyViewportSection fallback={
+              <div className="h-[350px] animate-pulse bg-muted/10 rounded-xl flex items-center justify-center">
+                <div className="text-muted-foreground">Loading charts...</div>
+              </div>
+            }>
+              <OverviewContent />
+            </LazyViewportSection>
           </CardContent>
         </Card>
 

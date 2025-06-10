@@ -14,11 +14,10 @@ import { Suspense } from "react";
 import { TicketType } from "@/types/ticket";
 import moment from "moment-timezone";
 import { useEvent } from "@/hooks/useEvent";
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 
 function EventDetailsContent() {
-  const searchParams = useSearchParams();
-  const eventId = searchParams.get("id");
+  const eventId = useParams().id as string;
 
   const { useEvent: useEventQuery } = useEvent();
   const { data: eventData, isLoading, error } = useEventQuery(eventId || "");

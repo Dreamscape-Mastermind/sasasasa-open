@@ -31,11 +31,12 @@ import {
 } from "@/components/ui/table";
 // import { TimePicker } from "@/components/ui/time-picker"
 import {
-  useCreateTicketType,
-  useDeleteTicketType,
-  useTicketTypes,
-  useUpdateTicketType,
-} from "@/lib/hooks/useTickets";
+  // useCreateTicketType,
+  // useDeleteTicketType,
+  // useTicketTypes,
+  // useUpdateTicketType,
+  useTicket,
+} from "@/hooks/useTicket";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useParams, useSearchParams } from "next/navigation";
-import { useTickets } from "@/lib/hooks/useTickets";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 function combineDateTime(date: Date, time: string): Date {
@@ -84,7 +84,10 @@ export default function TicketForm() {
   const params = useParams();
   const eventId = params.id as string;
 
+
   const searchParams = useSearchParams();
+
+  const {useTicketTypes, useCreateTicketType, useUpdateTicketType, useDeleteTicketType} = useTicket();
   // const eventId = searchParams.get("eventId");
   const { data: tickets, isLoading: isLoadingTickets } = useTicketTypes(eventId);
   const createTicket = useCreateTicketType(eventId);
@@ -121,8 +124,8 @@ export default function TicketForm() {
 
       if (editingTicketId && eventId) {
         await updateTicket.mutateAsync({
-          ticketId: editingTicketId,
-          data: processedTicket
+          id: editingTicketId,
+          ...processedTicket
         }
         );
         setIsEditing(false); // Reset editing state after submission

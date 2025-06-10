@@ -74,7 +74,7 @@ const Header = () => {
               <span>Go to Dashboard</span>
             </Button>
           </Link>
-          <NotificationPopover />
+          {/* <NotificationPopover /> */}
           <ProfileDropdown />
         </>
       );

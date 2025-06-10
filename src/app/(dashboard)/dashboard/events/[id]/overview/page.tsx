@@ -3,7 +3,7 @@ import { useParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { BarChart2, Users, Ticket, CreditCard, Megaphone } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
-import { useEvent, usePublishEvent } from '@/lib/hooks/useEvents';
+import { useEvent, usePublishEvent } from '@/hooks/useEvent';
 import TeamMembersForm from '@/components/forms/team-members-form';
 
 export default function OverviewLayout() {
@@ -12,8 +12,11 @@ export default function OverviewLayout() {
   const pathname = usePathname();
   const eventId = params.id as string;
   const publishEvent = usePublishEvent(eventId); // Use the publish hook
+  const { useEvent: useSingleEvent } = useEvent();
 
-  const { data: event, isLoading, error } = useEvent(eventId);
+  const { data: event, isLoading, error } = useSingleEvent(eventId);
+
+  console.log({ event });
 
   const handlePublish = async () => {
     try {
@@ -31,43 +34,74 @@ export default function OverviewLayout() {
     return <div className="text-center mt-10 text-lg text-muted-foreground">Loading event details...</div>;
   }
 
-  if (!event) {
+  if (!event?.result) {
     return <div className="text-center mt-10 text-lg text-muted-foreground">Event not found.</div>;
   }
 
   return (
-    <>
-      <div className="bg-white pb-6 sm:pb-8 lg:pb-12">
-        <div className="mx-auto max-w-screen-2xl px-4 md:px-8">
-
-            <section className="flex flex-col justify-between gap-6 sm:gap-10 md:gap-16 lg:flex-row lg:items-center">
-
-              <div className="flex flex-col justify-center sm:text-center lg:text-left xl:w-5/12">
-                <p className="mb-4 font-semibold text-[#CC322D]  md:mb-6 md:text-lg xl:text-xl">{formatDateTime(event.start_date)}</p>
-
-                <h1 className="mb-8 text-4xl font-bold text-black sm:text-5xl md:mb-12 md:text-6xl">{event.title}</h1>
-
-                <p className="mb-8 leading-relaxed text-gray-500 md:mb-12 lg:w-4/5 xl:text-lg">{event.description}</p>
-                {/* bg-[#CC322D] dark:text-white text-primary2-foreground hover:bg-[#CC322D]/90 rounded-[4rem] */}
-                <div className="flex flex-col gap-2.5 sm:flex-row sm:justify-center lg:justify-start">
-                  <button className="inline-block rounded-full bg-[#CC322D] px-8 py-3 text-center text-sm font-semibold text-white outline-none ring-indigo-300 transition duration-100 hover:bg-[#CC322D]/90  focus-visible:ring active:bg-[#CC322D]/90  md:text-base"
-                    onClick={handlePublish}>Publish</button>
-
-                  <button className="inline-block rounded-full bg-gray-200 px-8 py-3 text-center text-sm font-semibold text-gray-500 outline-none ring-indigo-300 transition duration-100 hover:bg-gray-300 focus-visible:ring active:text-gray-700 md:text-base">Edit</button>
-                </div>
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl px-6 py-8 sm:px-8 lg:px-12">
+        
+        {/* Main Event Section */}
+        <section className="mb-16">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20">
+            
+            {/* Content Column */}
+            <div className="flex flex-col justify-center space-y-8">
+              <div className="space-y-6">
+                <p className="text-lg font-semibold text-primary tracking-wide">
+                  {formatDateTime(event.result.start_date)}
+                </p>
+                
+                <h1 className="text-5xl font-bold text-foreground leading-tight sm:text-6xl lg:text-7xl">
+                  {event.result.title}
+                </h1>
+                
+                <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
+                  {event.result.description}
+                </p>
               </div>
-
-              <div className="relative w-full xl:w-5/12">
-                <div className="aspect-square overflow-hidden rounded-lg bg-gray-100 shadow-lg">
-                  <img src={event.cover_image ? event.cover_image : ""} loading="lazy" alt={event.title} className="h-full w-full object-cover object-center" />
-                </div>
+              
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
+                <button 
+                  className="inline-flex items-center justify-center rounded-2xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg transition-all duration-200 hover:bg-primary/90 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98]"
+                  onClick={handlePublish}
+                >
+                  Publish Event
+                </button>
+                
+                <button className="inline-flex items-center justify-center rounded-2xl bg-secondary px-8 py-4 text-base font-semibold text-secondary-foreground shadow-lg transition-all duration-200 hover:bg-secondary/80 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 active:scale-[0.98]">
+                  Edit Details
+                </button>
               </div>
-            </section>
+            </div>
+            
+            {/* Image Column */}
+            <div className="relative">
+              <div className="aspect-square overflow-hidden rounded-3xl bg-muted shadow-2xl ring-1 ring-black/5">
+                {event.result.cover_image ? (
+                  <img 
+                    src={event.result.cover_image} 
+                    loading="lazy" 
+                    alt={event.result.title} 
+                    className="h-full w-full object-cover object-center" 
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <p className="text-muted-foreground">No image available</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
 
-        </div>
-        <TeamMembersForm />
+        {/* Team Management Section */}
+        <section className="rounded-3xl bg-card p-8 shadow-lg ring-1 ring-border/50 sm:p-12">
+          <TeamMembersForm />
+        </section>
       </div>
-
-    </>
+    </div>
   );
 }

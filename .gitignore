@@ -11,6 +11,10 @@
 !.yarn/versions
 .cursorignore
 
+
+# bundle analyzer metrics
+/analyze
+
 # testing
 /coverage
 

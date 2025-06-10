@@ -10,8 +10,9 @@ import {
 } from '@/components/ui/card';
 import { Calendar, MapPin, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
-import { useMyEvents } from '@/lib/hooks/useEvents';
+import { useEvent } from '@/hooks/useEvent';
 import { Event } from '@/types';
+import { Suspense } from 'react';
 
 
 // Helper function to format date
@@ -28,11 +29,11 @@ const formatDate = (dateString: string) => {
 };
 let events: Event[] = [];
 
-export default function EventsPage() {
-  const { data: userEvents, isLoading, isError } = useMyEvents();
+function EventsContent() {
+  const { data: userEvents, isLoading, isError } = useEvent().useMyEvents();
   if (!isLoading && userEvents) {
-    events = userEvents.results ? [...userEvents.results] : [];
-    console.log({ userEvents: userEvents.results});
+    events = userEvents.result ? [...userEvents.result.results] : [];
+    console.log({ userEvents: userEvents.result});
   }
 
   // Helper to parse and compare dates
@@ -86,7 +87,7 @@ export default function EventsPage() {
               <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video relative">
                   <img
-                    src={event.cover_image ? event.cover_image : null}
+                    src={event.cover_image ? event.cover_image : undefined}
                     alt={event.title}
                     className="object-cover w-full h-full"
                   />
@@ -100,7 +101,15 @@ export default function EventsPage() {
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <MapPin className="h-4 w-4" />
-                      {event.location}
+                      {<div className="flex items-center gap-2 text-sm">
+                          <MapPin className="h-4 w-4" />
+                          {event.location ? (
+                            <span>{event.location.name}</span>
+                          ) : (
+                            <span>Location not available</span>
+                          )}
+                        </div>
+                        }
                     </div>
                   </CardDescription>
                 </CardHeader>
@@ -141,7 +150,11 @@ export default function EventsPage() {
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <MapPin className="h-4 w-4" />
-                      {event.location}
+                      {event.location ? (
+                        <span>{event.location.name}</span>
+                      ) : (
+                        <span>Location not available</span>
+                      )}
                     </div>
                   </CardDescription>
                 </CardHeader>

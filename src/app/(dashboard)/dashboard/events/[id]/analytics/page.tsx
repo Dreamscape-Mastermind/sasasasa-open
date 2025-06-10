@@ -24,15 +24,15 @@ import {
 } from "@/components/ui/select";
 
 import { Button } from "@/components/ui/button";
-import { Overview } from "@/components/dashboard/overview";
-import { Suspense } from "react";
+import { OverviewContent } from "@/components/dashboard/LazyDashboardComponents";
+import { Suspense, useEffect } from "react";
 import { useEvent } from "@/hooks/useEvent";
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useTicket } from "@/hooks/useTicket";
 
 function AnalyticsContent() {
   const searchParams = useSearchParams();
-  const eventId = searchParams.get("id");
+  const eventId = useParams().id as string;
 
   const { useEvent: useEventQuery } = useEvent();
   const { useTickets } = useTicket();
@@ -42,9 +42,16 @@ function AnalyticsContent() {
     isLoading: isLoadingEvent,
     error: eventError,
   } = useEventQuery(eventId || "");
+
   const { data: ticketsData, isLoading: isLoadingTickets } = useTickets(
     eventId || ""
   );
+
+  useEffect(() => {
+    console.log("eventId", eventId);
+  }, [eventId]);
+
+  console.log({ eventData, ticketsData, eventError });
 
   const currentEvent = eventData?.result;
   const tickets = ticketsData?.result?.results || [];
@@ -123,7 +130,7 @@ function AnalyticsContent() {
     <div className="space-y-6 animate-in">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">{currentEvent.title} Analytics</h1>
+          <h1 className="text-3xl font-bold">Analytics</h1>
           <p className="text-muted-foreground">
             Track your event performance and metrics
           </p>
@@ -194,7 +201,7 @@ function AnalyticsContent() {
             <CardDescription>Monthly revenue from ticket sales</CardDescription>
           </CardHeader>
           <CardContent>
-            <Overview />
+            <OverviewContent />
           </CardContent>
         </Card>
       </div>

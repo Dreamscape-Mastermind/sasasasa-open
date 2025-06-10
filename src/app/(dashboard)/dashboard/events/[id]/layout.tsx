@@ -11,7 +11,9 @@ export default function EventLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const eventId = params.id as string;
 
-  const { data: event, isLoading, error } = useEvent().useEvent(eventId);
+  const { data, isLoading, error } = useEvent().useEvent(eventId);
+
+  const event = data?.result;
 
   if (isLoading) {
     return <div className="text-center mt-10 text-lg text-muted-foreground">Loading event details...</div>;
@@ -23,20 +25,22 @@ export default function EventLayout({ children }: { children: React.ReactNode })
     return <div className="text-center mt-10 text-lg text-muted-foreground">Event not found.</div>;
   }
 
+  console.log({ event });
+
   return (
     <>
-      <div className="bg-white sm:pb-2 lg:pb-2">
-        <div className="mx-auto max-w-screen-2xl px-1 md:px-2">
+      <div className="bg-transparent sm:pb-2 lg:pb-2">
+        <div className="mx-auto px-1 md:px-2">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-4xl font-bold">{event.title}</h1>
-            <p className="text-xl text-[#CC322D]">{formatDateTime(event.start_date)}</p>
+            <h1 className="text-4xl font-bold text-foreground">{event.title}</h1>
+            <p className="text-xl text-primary">{formatDateTime(event.start_date)}</p>
           </div>
-          <nav className="mb-8 bg-gray-50 border rounded-lg">
+          <nav className="mb-8 bg-muted border rounded-lg">
             <div className="flex justify-between px-6 py-3">
               <Link
                 href={`/dashboard/events/${eventId}/overview`}
                 className={`flex flex-col items-center text-sm hover:text-primary relative ${pathname === `/dashboard/events/${eventId}/overview`
-                    ? 'text-[#CC322D] after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-[#CC322D]'
+                    ? 'text-primary after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-primary'
                     : 'text-muted-foreground'
                   }`}
               >
@@ -46,7 +50,7 @@ export default function EventLayout({ children }: { children: React.ReactNode })
               <Link
                 href={`/dashboard/events/${eventId}/analytics`}
                 className={`flex flex-col items-center text-sm hover:text-primary relative ${pathname === `/dashboard/events/${eventId}/analytics`
-                    ? 'text-[#CC322D] after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-[#CC322D]'
+                    ? 'text-primary after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-primary'
                     : 'text-muted-foreground'
                   }`}
               >
@@ -56,7 +60,7 @@ export default function EventLayout({ children }: { children: React.ReactNode })
               <Link
                 href={`/dashboard/events/${eventId}/attendees`}
                 className={`flex flex-col items-center text-sm hover:text-primary relative ${pathname === `/dashboard/events/${eventId}/attendees`
-                    ? 'text-[#CC322D] after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-[#CC322D]'
+                    ? 'text-primary after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-primary'
                     : 'text-muted-foreground'
                   }`}
               >
@@ -66,7 +70,7 @@ export default function EventLayout({ children }: { children: React.ReactNode })
               <Link
                 href={`/dashboard/events/${eventId}/tickets`}
                 className={`flex flex-col items-center text-sm hover:text-primary relative ${pathname === `/dashboard/events/${eventId}/tickets`
-                    ? 'text-[#CC322D] after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-[#CC322D]'
+                    ? 'text-primary after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-primary'
                     : 'text-muted-foreground'
                   }`}
               >
@@ -76,7 +80,7 @@ export default function EventLayout({ children }: { children: React.ReactNode })
               <Link
                 href={`/dashboard/events/${eventId}/payments`}
                 className={`flex flex-col items-center text-sm hover:text-primary relative ${pathname === `/dashboard/events/${eventId}/payments`
-                    ? 'text-[#CC322D] after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-[#CC322D]'
+                    ? 'text-primary after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-primary'
                     : 'text-muted-foreground'
                   }`}
               >
@@ -86,7 +90,7 @@ export default function EventLayout({ children }: { children: React.ReactNode })
               <Link
                 href={`/dashboard/events/${eventId}/promotions`}
                 className={`flex flex-col items-center text-sm hover:text-primary relative ${pathname === `/dashboard/events/${eventId}/promotions`
-                    ? 'text-[#CC322D] after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-[#CC322D]'
+                    ? 'text-primary after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-primary'
                     : 'text-muted-foreground'
                   }`}
               >
