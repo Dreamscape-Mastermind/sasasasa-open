@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-6 py-8 flex flex-col md:flex-row md:items-center md:justify-between">
         <div className="text-center md:text-left text-sm text-gray-400">
           <div>
-            &copy; {new Date().getFullYear()} {siteMetadata.title}. All rights
+            &copy; {new Date().getFullYear()} {siteMetadata.title} All rights
             reserved.
           </div>
           <div>

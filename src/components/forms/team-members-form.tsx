@@ -26,13 +26,13 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useInviteTeamMember, useTeamMembers } from "@/lib/hooks/useEvents";
-import { usePublishEvent } from "@/lib/hooks/useEvents"; // Import the usePublish hook
+import { useInviteTeamMember, useTeamMembers } from "@/hooks/useEvent";
+import { usePublishEvent } from "@/hooks/useEvent"; // Import the usePublish hook
 import { useParams, useSearchParams } from "next/navigation";
 // import { useTeamMembers } from "@/services/events-team/queries"; // Import the query hook
 import { zodResolver } from "@hookform/resolvers/zod";
-
-// import { useMyEvents } from '@/lib/hooks/useEvents';useInviteTeamMember
+import { TeamMemberRole } from "@/types/event";
+import { Users } from "lucide-react";
 
 // First, define the role type and schema
 const ROLES = {
@@ -75,7 +75,7 @@ export default function TeamMembersForm() {
   const handleInvite = async () => {
     const memberData = {
       user_email: teamForm.getValues("user_email"),
-      role: teamForm.getValues("role"),
+      role: teamForm.getValues("role") as TeamMemberRole,
     }; // Get email and role from form
     if (eventId)
       await inviteTeamMember.mutateAsync(memberData);
@@ -99,118 +99,118 @@ export default function TeamMembersForm() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-900 text-gray-900 dark:text-gray-200 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Card to display current team members */}
-        <Card className="mb-6 rounded-lg">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">
-              Invite Team Members
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* Form to invite a new team member */}
-            <Form {...teamForm}>
-              <form
-                onSubmit={teamForm.handleSubmit(handleInvite)}
-                className="flex items-center space-x-4 mt-4"
-              >
-                {/* Input for team member email */}
-                <FormField
-                  control={teamForm.control}
-                  name="user_email" // Updated to match the new schema
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="email"
-                          placeholder="team@example.com"
-                          className="dark:bg-zinc-900 dark:border-gray-700 mt-2 rounded-full"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {/* Dropdown for role selection */}
-                <FormField
-                  control={teamForm.control}
-                  name="role" // Updated to match the new schema
-                  render={({ field }) => (
-                    <FormItem>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <SelectTrigger className="w-40 rounded-full">
-                          <SelectValue placeholder="Select Role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="EVENT_ORGANIZER">
-                            Event Organizer
-                          </SelectItem>
-                          <SelectItem value="EVENT_TEAM">Event Team</SelectItem>
-                          <SelectItem value="SELLER">Seller</SelectItem>
-                          <SelectItem value="CUSTOMER">Customer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  size="sm"
-                  className=" dark:bg-zinc-900 dark:border-gray-700 rounded-full hover:bg-gray-300"
-                >
-                  Invite Team Member
-                </Button>
-              </form>
-            </Form>
-            <hr className="my-4 border-gray-300 dark:border-gray-700" />
-            <h3 className="text-lg font-bold">Current Team Members</h3>
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {teamMembers?.results?.map((member) => (
-                  <tr key={member.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {member.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {member.role}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            
-          </CardContent>
-        </Card>
-
-        {/* <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">Publish Event</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-between">
-            <span>Is everything set?</span>
-            <Button variant="default" className="ml-4" onClick={handlePublish}>
-              Publish Event
+    <div className="space-y-8">
+      {/* Card to display current team members */}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">
+            Invite Team Members
+          </h2>
+          <p className="text-muted-foreground">
+            Add team members to help manage your event
+          </p>
+        </div>
+        
+        {/* Form to invite a new team member */}
+        <Form {...teamForm}>
+          <form
+            onSubmit={teamForm.handleSubmit(handleInvite)}
+            className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-4"
+          >
+            {/* Input for team member email */}
+            <FormField
+              control={teamForm.control}
+              name="user_email" // Updated to match the new schema
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      placeholder="team@example.com"
+                      className="rounded-xl"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Dropdown for role selection */}
+            <FormField
+              control={teamForm.control}
+              name="role" // Updated to match the new schema
+              render={({ field }) => (
+                <FormItem className="w-full sm:w-48">
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Select Role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="EVENT_ORGANIZER">
+                        Event Organizer
+                      </SelectItem>
+                      <SelectItem value="EVENT_TEAM">Event Team</SelectItem>
+                      <SelectItem value="SELLER">Seller</SelectItem>
+                      <SelectItem value="CUSTOMER">Customer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              className="rounded-xl px-6 py-2 w-full sm:w-auto"
+            >
+              Invite Team Member
             </Button>
-          </CardContent>
-        </Card> */}
+          </form>
+        </Form>
+      </div>
+      
+      {/* Current Team Members Section */}
+      <div className="space-y-4">
+        <div className="border-t border-border pt-6">
+          <h3 className="text-xl font-bold text-foreground mb-4">Current Team Members</h3>
+          
+          {teamMembers?.result?.results && teamMembers.result.results.length > 0 ? (
+            <div className="overflow-hidden rounded-xl border border-border">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-foreground uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-foreground uppercase tracking-wider">
+                      Role
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-background divide-y divide-border">
+                  {teamMembers.result.results.map((member) => (
+                    <tr key={member.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                        {member.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                        {member.role}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-12 rounded-xl border border-dashed border-border">
+              <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">No team members yet</p>
+              <p className="text-sm text-muted-foreground">Invite your first team member to get started</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

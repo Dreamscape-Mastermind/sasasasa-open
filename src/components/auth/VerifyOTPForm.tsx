@@ -149,8 +149,6 @@ export function VerifyOTPForm() {
         setTimeout(() => {
           setShowConfetti(false);
         }, 5000);
-      } else {
-        router.push(ROUTES.DASHBOARD);
       }
     } catch (error: any) {
       console.error("Error:", error);

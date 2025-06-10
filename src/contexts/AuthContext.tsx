@@ -20,6 +20,7 @@ import {
   useState,
 } from "react";
 import {
+  createAppKit,
   useAppKitAccount,
   useAppKitNetworkCore,
   useAppKitProvider,
@@ -36,6 +37,10 @@ import { useLogger } from "@/hooks/useLogger";
 import { useRouter } from "next/navigation";
 import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
 import { useUser } from "@/hooks/useUser";
+import { EthersAdapter } from "@reown/appkit-adapter-ethers";
+import { scrollSepolia } from "viem/chains";
+import colors from "tailwindcss/colors";
+import { networks, ethersAdapter, projectId } from "@/config/web3";
 
 type AccessLevel = (typeof ACCESS_LEVELS)[keyof typeof ACCESS_LEVELS];
 

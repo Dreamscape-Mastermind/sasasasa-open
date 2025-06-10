@@ -41,12 +41,12 @@ export function TicketList({
       for (const ticket of tickets) {
         if (ticket.sale_start_date) {
           formatted[`start_${ticket.id}`] = await formatDate(
-            ticket.sale_start_date
+            ticket.sale_start_date as unknown as string
           );
         }
         if (ticket.sale_end_date) {
           formatted[`end_${ticket.id}`] = await formatDate(
-            ticket.sale_end_date
+            ticket.sale_end_date as unknown as string
           );
         }
       }
@@ -169,7 +169,7 @@ export function TicketList({
               )}
 
               <div className="text-sm text-muted-foreground">
-                {!isTicketLive(ticket.sale_start_date) ? (
+                {!isTicketLive(ticket.sale_start_date as unknown as string) ? (
                   <motion.div
                     className="text-amber-600"
                     initial={{ opacity: 0 }}
