@@ -23,10 +23,9 @@ export function CTASection() {
   return (
     <div className="bg-primary/5 py-24">
       <div className="container mx-auto px-4 text-center">
-        <h2 className="text-3xl font-bold mb-4">Ready to Create Your Event?</h2>
+        <h2 className="text-3xl font-bold mb-4">Ready To Grow Your Brand?</h2>
         <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Join thousands of event organizers who trust Sasasasa to create
-          memorable experiences for their attendees.
+          Join our growing community of creatives who trust Sasasasa to create to grow their community and revenue.
         </p>
         <Link href="/dashboard" onClick={handleClick}>
           <Button size="lg" className="gap-2">

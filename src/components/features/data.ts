@@ -3,26 +3,31 @@ import {
   Calendar,
   CreditCard,
   Globe2,
+  HandCoins,
+  Percent,
   QrCode,
   Settings,
   Share2,
+  ShieldCheck,
   Smartphone,
   Ticket,
+  Truck,
 } from "lucide-react";
 
 export const features = [
   {
-    title: "Event Management",
-    description: "Create and manage events with powerful tools",
+    title: "Experience Management",
+    description: "Create and manage experiences with powerful tools. Flexible ticketing options with QR code check-in and digital tickets.",
     icon: Calendar,
     color: "bg-blue-500/10 text-blue-500",
   },
   {
-    title: "Ticketing System",
-    description: "Flexible ticketing options with QR code check-in",
-    icon: Ticket,
-    color: "bg-green-500/10 text-green-500",
+    title: "Social Integration",
+    description: "Share and sell across social media platforms",
+    icon: Share2,
+    color: "bg-red-500/10 text-red-500",
   },
+  
   {
     title: "Analytics Dashboard",
     description: "Track sales and attendance with detailed analytics",
@@ -36,34 +41,37 @@ export const features = [
     color: "bg-pink-500/10 text-pink-500",
   },
   {
-    title: "Mobile Check-in",
-    description: "Quick and easy check-in with our mobile app",
-    icon: Smartphone,
-    color: "bg-orange-500/10 text-orange-500",
-  },
-  {
-    title: "QR Code Tickets",
-    description: "Digital tickets with secure QR code verification",
-    icon: QrCode,
-    color: "bg-yellow-500/10 text-yellow-500",
-  },
-  {
-    title: "Social Integration",
-    description: "Share events across social media platforms",
-    icon: Share2,
-    color: "bg-red-500/10 text-red-500",
-  },
-  {
-    title: "Custom Branding",
-    description: "Personalize your event pages and tickets",
-    icon: Settings,
+    title: "Dropship Curated Products (Coming Soon)",
+    description: "Discover and sell our curated quality products to your community via custom store links. $0 cost on stock, shipping and fulfillment using our global network.",
+    icon: Globe2 ,
     color: "bg-indigo-500/10 text-indigo-500",
   },
   {
-    title: "Multi-language",
-    description: "Support for multiple languages and regions",
-    icon: Globe2,
+    title: "Set Your Own Commission (Coming Soon)",
+    description: "Set your own commission margin on our curated products. You know your community best.",
+    icon:  Percent,
     color: "bg-teal-500/10 text-teal-500",
+  },
+
+  {
+    title: "0% Supplier Commission (Coming Soon)",
+    description: "We don't take a cut from supplier sales. We're here to help you grow your sales and connect you with the right curators.",
+    icon: HandCoins,
+    color: "bg-purple-500/10 text-purple-500",
+  },
+
+  {
+    title: "Trusted Suppliers (Coming Soon)",
+    description: " Only verified manufacturers / wholesalers allowed",
+    icon: ShieldCheck,
+    color: "bg-purple-500/10 text-purple-500",
+  },
+  
+  {
+    title: "Global and Continental Shipping (Coming Soon)",
+    description: "We source and ship, globally.",
+    icon: Truck,
+    color: "bg-purple-500/10 text-purple-500",
   },
 ];
 
