@@ -6,7 +6,7 @@ import { ReactNode, useEffect } from "react";
 
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { SearchParamsProvider } from "@/providers/SearchParamsProvider";
+import { SearchParamsProvider } from "./SearchParamsProvider";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProviders } from "@/providers/theme-providers";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -78,7 +78,7 @@ const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
     };
 
     // Track initial page view
-    analytics.trackPageView(window.location.pathname);
+    analytics.trackPageView(window.location.pathname, document.title);
 
     // Add route change listener
     window.addEventListener("popstate", () =>
@@ -118,9 +118,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <LoggerProvider>
-        <AnalyticsProvider>
-          <SearchParamsProvider>
+      <SearchParamsProvider>
+        <LoggerProvider>
+          <AnalyticsProvider>
             <AuthProvider>
               <ThemeProviders>
                 <FormProvider {...methods}>
@@ -128,10 +128,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
                 </FormProvider>
               </ThemeProviders>
             </AuthProvider>
-          </SearchParamsProvider>
-          <ReactQueryDevtools initialIsOpen={false} />
-        </AnalyticsProvider>
-      </LoggerProvider>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </AnalyticsProvider>
+        </LoggerProvider>
+      </SearchParamsProvider>
     </QueryClientProvider>
   );
 }

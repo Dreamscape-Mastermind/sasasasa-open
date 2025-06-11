@@ -1,15 +1,16 @@
 // TODO: Add useWeb3 hook
 
 import { ethersAdapter, networks, projectId } from "@/config/web3";
-import { createAppKit } from "@reown/appkit/react";
+
 import colors from "tailwindcss/colors";
+import { createAppKit } from "@reown/appkit/react";
 
 export const useWeb3 = () => {
   // 2. Create a metadata object
   const metadata = {
     name: "Sasasasa",
     description: "Community to Commerce, now now",
-    url: "https://beta.sasasasa.co", // origin must match your domain & subdomain
+    url: process.env.BASE_PATH || "https://beta.sasasasa.co", // origin must match your domain & subdomain
     icons: ["https://beta.sasasasa.co/images/sasasasaLogo.png"],
   };
 
@@ -37,5 +38,5 @@ export const useWeb3 = () => {
 
   return {
     initializeAppKitButton,
-  }
+  };
 };

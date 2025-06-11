@@ -48,12 +48,15 @@ export const ROUTES = {
   DASHBOARD_BLOG_POST_CREATE: "/dashboard/blog/posts/create",
   DASHBOARD_BLOG_COMMENTS: "/dashboard/blog/comments",
   // Dashboard Event routes
-  DASHBOARD_EVENT_DETAILS: (id: string) => `/dashboard/events/${id}/details`,
-  DASHBOARD_EVENT_CREATE : () => "/dashboard/events/create",
-  DASHBOARD_EVENT_ATTENDEES: (id: string) =>
-    `/dashboard/events/${id}/attendees`,
+  DASHBOARD_EVENTS: "/dashboard/events",
+  DASHBOARD_EVENT_CREATE: () => "/dashboard/events/create",
   DASHBOARD_EVENT_ANALYTICS: (id: string) =>
     `/dashboard/events/${id}/analytics`,
+  DASHBOARD_EVENT_ATTENDEES: (id: string) =>
+    `/dashboard/events/${id}/attendees`,
+  DASHBOARD_EVENT_DETAILS: (id: string) => `/dashboard/events/${id}/details`,
+  DASHBOARD_EVENT_EDIT: (id: string) => `/dashboard/events/${id}/edit`,
+  DASHBOARD_EVENT_OVERVIEW: (id: string) => `/dashboard/events/${id}/overview`,
   DASHBOARD_EVENT_PAYMENTS: (id: string) => `/dashboard/events/${id}/payments`,
   DASHBOARD_EVENT_PROMOTIONS: (id: string) =>
     `/dashboard/events/${id}/promotions`,
@@ -126,7 +129,7 @@ export const NAV_ITEMS = {
   ],
   DASHBOARD_ADMIN: [
     { label: "Dashboard", href: ROUTES.DASHBOARD, icon: Layout },
-    { label: "Events", href: ROUTES.EVENTS, icon: Calendar },
+    { label: "Events", href: ROUTES.DASHBOARD_EVENTS, icon: Calendar },
     { label: "Settings", href: ROUTES.DASHBOARD_SETTINGS, icon: Settings },
     {
       label: "My Purchases",

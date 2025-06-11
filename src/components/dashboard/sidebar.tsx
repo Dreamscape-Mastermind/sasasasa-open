@@ -156,7 +156,9 @@ export function Sidebar() {
                   {isLoadingEvents
                     ? "Loading..."
                     : selectedEvent
-                    ? selectedEvent.title
+                    ? selectedEvent.title.length > 20
+                      ? `${selectedEvent.title.slice(0, 20)}...`
+                      : selectedEvent.title
                     : "No Events"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -171,7 +173,7 @@ export function Sidebar() {
                     placeholder="Search events..."
                     className="border-none focus:ring-0 focus:outline-none"
                   />
-                                      <CommandList>
+                  <CommandList>
                     <CommandEmpty className="text-muted-foreground">
                       {isLoadingEvents ? "Loading..." : "No event found."}
                     </CommandEmpty>
@@ -251,9 +253,7 @@ export function Sidebar() {
                           ) && "bg-primary text-primary-foreground font-medium"
                         )}
                       >
-                        {menu.icon && (
-                          <menu.icon className="h-4 w-4" />
-                        )}
+                        {menu.icon && <menu.icon className="h-4 w-4" />}
                         <span>{menu.label}</span>
                       </Button>
                     </Link>
@@ -266,7 +266,9 @@ export function Sidebar() {
           {/* Blog Menus Section */}
           <div className="px-3">
             <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
-              <h3 className="font-bold text-lg text-foreground">Blog Management</h3>
+              <h3 className="font-bold text-lg text-foreground">
+                Blog Management
+              </h3>
               <ScrollArea className="flex-1">
                 <div className="p-3 space-y-1">
                   {NAV_ITEMS.DASHBOARD_BLOG_ADMIN.map((menu: MenuItem) => (
@@ -279,9 +281,7 @@ export function Sidebar() {
                             "bg-primary text-primary-foreground font-medium"
                         )}
                       >
-                        {menu.icon && (
-                          <menu.icon className="h-4 w-4" />
-                        )}
+                        {menu.icon && <menu.icon className="h-4 w-4" />}
                         <span>{menu.label}</span>
                       </Button>
                     </Link>

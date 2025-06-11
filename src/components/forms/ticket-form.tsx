@@ -4,7 +4,6 @@ import "react-datepicker/dist/react-datepicker.css"; // Import the CSS for react
 
 import * as z from "zod";
 
-import { Loader2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -12,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/ShadCard";
-import { Control, useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
@@ -21,31 +19,22 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-// import { TimePicker } from "@/components/ui/time-picker"
-import {
-  // useCreateTicketType,
-  // useDeleteTicketType,
-  // useTicketTypes,
-  // useUpdateTicketType,
-  useTicket,
-} from "@/hooks/useTicket";
-import { useRef, useState } from "react";
+import { Loader2, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { CreateTicketTypeRequest } from "@/types/ticket";
 import DatePicker from "react-datepicker";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useParams, useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
+import { useEvent } from "@/hooks/useEvent";
+import { useForm } from "react-hook-form";
+import { useSearchParams } from "next/navigation";
+// import { TimePicker } from "@/components/ui/time-picker"
+import { useTicket } from "@/hooks/useTicket";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 function combineDateTime(date: Date, time: string): Date {
@@ -55,55 +44,62 @@ function combineDateTime(date: Date, time: string): Date {
   return datetime;
 }
 
-const ticketSchema = z
-  .object({
-    name: z.string().min(1, "Ticket name is required"),
-    description: z.string().min(1, "Description is required"),
-    price: z.coerce.number().nonnegative("Price should be  positive"),
-    quantity: z.coerce.number().gt(0, "Quantity is required"),
-    sale_start_date: z.date({
-      required_error: "Sale start date is required",
-    }),
-    sale_end_date: z.date({
-      required_error: "Sale end date is required",
-    }),
-  })
-  .refine(
-    (data) => {
-      const startDateTime = data.sale_start_date;
-      const endDateTime = data.sale_end_date;
-      return endDateTime > startDateTime;
-    },
-    {
-      message: "Sale end date must be after sale start date",
-      path: ["sale_end_date"],
-    }
-  );
+const ticketSchema = z.object({
+  name: z.string().min(1, "Ticket name is required"),
+  price: z.number().min(0, "Price must be a positive number"),
+  quantity: z.number().min(1, "Quantity must be at least 1"),
+  description: z.string().min(1, "Description is required"),
+  sale_start_date: z.date(),
+  sale_end_date: z.date(),
+  is_active: z.boolean().default(true),
+});
+
+type TicketFormData = z.infer<typeof ticketSchema>;
+
+interface Event {
+  id: string;
+  ticket_types: Array<{
+    name: string;
+    price: number;
+    quantity: number;
+    description: string;
+  }>;
+}
 
 export default function TicketForm() {
-  const params = useParams();
-  const eventId = params.id as string;
-
-
   const searchParams = useSearchParams();
+  const eventId = searchParams.get("id") as string;
 
-  const {useTicketTypes, useCreateTicketType, useUpdateTicketType, useDeleteTicketType} = useTicket();
-  // const eventId = searchParams.get("eventId");
-  const { data: tickets, isLoading: isLoadingTickets } = useTicketTypes(eventId);
+  const {
+    useTicketTypes,
+    useCreateTicketType,
+    useUpdateTicketType,
+    useDeleteTicketType,
+  } = useTicket();
+  const { data: tickets, isLoading: isLoadingTickets } =
+    useTicketTypes(eventId);
   const createTicket = useCreateTicketType(eventId);
-  const updateTicket = useUpdateTicketType(eventId);
+  const updateTicket = useUpdateTicketType(eventId, ""); // We'll set the ticketId when editing
   const deleteTicket = useDeleteTicketType(eventId);
   console.log({ "tickets data": tickets });
   const formRef = useRef<HTMLDivElement>(null);
-  const ticketForm = useForm<z.infer<typeof ticketSchema>>({
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { useEvent: useEventQuery, useUpdateEvent } = useEvent();
+
+  const { data: eventData, error: eventError } = useEventQuery(eventId);
+  const updateEvent = useUpdateEvent(eventId);
+
+  const form = useForm<TicketFormData>({
     resolver: zodResolver(ticketSchema),
     defaultValues: {
       name: "",
-      description: "",
       price: 0,
-      quantity: 0,
+      quantity: 1,
+      description: "",
       sale_start_date: new Date(),
       sale_end_date: new Date(),
+      is_active: true,
     },
   });
 
@@ -111,55 +107,68 @@ export default function TicketForm() {
   const [isEditing, setIsEditing] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
-  const onSubmitTicket = async (data: z.infer<typeof ticketSchema>) => {
-    console.log({ data })
+  useEffect(() => {
+    if (eventData?.result?.available_tickets?.[0]) {
+      const ticket = eventData.result.available_tickets[0];
+      form.reset({
+        name: ticket.name,
+        price: ticket.price,
+        quantity: ticket.quantity,
+        description: ticket.description,
+        sale_start_date: new Date(ticket.sale_start_date),
+        sale_end_date: new Date(ticket.sale_end_date),
+        is_active: ticket.is_active,
+      });
+    }
+  }, [eventData, form]);
+
+  const handleSubmit = async (data: TicketFormData) => {
+    setIsLoading(true);
+
     try {
-      const processedTicket = {
-        ...data,
+      const ticketData: CreateTicketTypeRequest = {
+        name: data.name,
+        price: data.price,
+        quantity: data.quantity,
+        description: data.description,
         sale_start_date: data.sale_start_date,
         sale_end_date: data.sale_end_date,
-        remaining_tickets: data.quantity,
-        is_active: true
+        is_active: data.is_active,
       };
 
-      if (editingTicketId && eventId) {
-        await updateTicket.mutateAsync({
-          id: editingTicketId,
-          ...processedTicket
-        }
-        );
-        setIsEditing(false); // Reset editing state after submission
-      } else {
-        await createTicket.mutateAsync(processedTicket);
-      }
-
-      ticketForm.reset(); // Reset form after successful creation or update
+      await updateEvent.mutateAsync({
+        available_tickets: [ticketData],
+      } as any); // Type assertion needed due to API type mismatch
+      toast.success("Ticket updated successfully");
     } catch (error) {
-      console.error("Error submitting ticket:", error);
+      toast.error("Failed to update ticket");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleEditTicket = (ticket) => {
-    ticketForm.setValue("name", ticket.name);
-    ticketForm.setValue("description", ticket.description);
-    ticketForm.setValue("price", ticket.price);
-    ticketForm.setValue("quantity", ticket.quantity);
-    ticketForm.setValue("sale_start_date", new Date(ticket.sale_start_date));
-    ticketForm.setValue("sale_end_date", new Date(ticket.sale_end_date));
+    form.setValue("name", ticket.name);
+    form.setValue("description", ticket.description);
+    form.setValue("price", ticket.price);
+    form.setValue("quantity", ticket.quantity);
+    form.setValue("sale_start_date", new Date(ticket.sale_start_date));
+    form.setValue("sale_end_date", new Date(ticket.sale_end_date));
     setEditingTicketId(ticket.id);
     setIsEditing(true);
-    setShowForm(true); // Show form when editing
+    setShowForm(true);
     formRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleClearForm = () => {
-    ticketForm.reset({
+    form.reset({
       name: "",
       description: "",
       price: 0,
       quantity: 0,
       sale_start_date: new Date(),
       sale_end_date: new Date(),
+      is_active: true,
     });
     setIsEditing(false);
     setShowForm(false); // Hide form when clearing
@@ -174,8 +183,16 @@ export default function TicketForm() {
     }
   };
 
+  if (eventError) {
+    return (
+      <div className="text-red-500">
+        Error loading event data. Please try again.
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white dark:bg-zinc-900 text-gray-900 dark:text-gray-200 p-6">
+    <div className="bg-whi.te dark:bg-zinc-900 text-gray-900 dark:text-gray-200 p-6">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Existing Tickets Section */}
         <div>
@@ -188,26 +205,30 @@ export default function TicketForm() {
                 </p>
               </div>
             </div>
-              <Button
-                onClick={() => {
-                  if (!showForm) {
-                    handleClearForm(); // Clear form first
-                    setShowForm(true); // Then show form
-                    formRef.current?.scrollIntoView({ behavior: "smooth" });
-                  } else {
-                    setShowForm(false); // Just hide form if it's showing
-                  }
-                }}
-                variant="default"
-              >
-                {showForm ? "Hide Form" : "Add New Ticket"}
-              </Button>
+            <Button
+              onClick={() => {
+                if (!showForm) {
+                  handleClearForm(); // Clear form first
+                  setShowForm(true); // Then show form
+                  formRef.current?.scrollIntoView({ behavior: "smooth" });
+                } else {
+                  setShowForm(false); // Just hide form if it's showing
+                }
+              }}
+              variant="default"
+            >
+              {showForm ? "Hide Form" : "Add New Ticket"}
+            </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {isLoadingTickets ? (
-              <div className="text-center col-span-full">Loading tickets...</div>
+              <div className="text-center col-span-full">
+                Loading tickets...
+              </div>
             ) : tickets?.result?.results?.length === 0 ? (
-              <div className="text-center col-span-full">No tickets created yet</div>
+              <div className="text-center col-span-full">
+                No tickets created yet
+              </div>
             ) : (
               tickets?.result?.results?.map((ticket) => (
                 <Card key={ticket.id} className="p-2 rounded-lg">
@@ -223,17 +244,23 @@ export default function TicketForm() {
                       </div>
                       <div>
                         <p className="text-sm font-medium">Quantity</p>
-                        <p className="text-lg font-bold">{ticket.remaining_tickets} / {ticket.quantity}</p>
+                        <p className="text-lg font-bold">
+                          {ticket.remaining_tickets} / {ticket.quantity}
+                        </p>
                       </div>
                     </div>
                     <div className="space-y-2 bg-gray-50 dark:bg-zinc-800 p-2 rounded-lg border-b border-b-black-500">
                       <div>
                         <p className="text-sm font-medium">Sale Start</p>
-                        <p className="text-sm">{format(new Date(ticket.sale_start_date), "PPP p")}</p>
+                        <p className="text-sm">
+                          {format(new Date(ticket.sale_start_date), "PPP p")}
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm font-medium">Sale End</p>
-                        <p className="text-sm">{format(new Date(ticket.sale_end_date), "PPP p")}</p>
+                        <p className="text-sm">
+                          {format(new Date(ticket.sale_end_date), "PPP p")}
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-2 pt-4">
@@ -260,45 +287,34 @@ export default function TicketForm() {
         </div>
 
         {/* Add New Ticket Form */}
-        <div ref={formRef} className={cn(
-          "transition-all duration-300 ease-in-out overflow-hidden",
-          showForm ? "max-h-[2000px]" : "max-h-0"
-        )}>
+        <div
+          ref={formRef}
+          className={cn(
+            "transition-all duration-300 ease-in-out overflow-hidden",
+            showForm ? "max-h-[2000px]" : "max-h-0"
+          )}
+        >
           <Card className="p-2 rounded-lg">
             <CardHeader>
-              <CardTitle>{isEditing ? "Edit Ticket" : "Add New Ticket"}</CardTitle>
+              <CardTitle>
+                {isEditing ? "Edit Ticket" : "Add New Ticket"}
+              </CardTitle>
               <CardDescription>
-                {isEditing ? "Update ticket details" : "Create a new ticket type for your event"}
+                {isEditing
+                  ? "Update ticket details"
+                  : "Create a new ticket type for your event"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Form {...ticketForm}>
+              <Form {...form}>
                 <form
-                  onSubmit={
-                    (e) => {
-                      console.log("Form submit event triggered");
-                      console.log("Current form state:", {
-                        isValid: ticketForm.formState.isValid,
-                        errors: ticketForm.formState.errors,
-                        isDirty: ticketForm.formState.isDirty,
-                        values: ticketForm.getValues()
-                      });
-                      ticketForm.handleSubmit(
-                        (data) => {
-                          console.log("Form validation passed, submitting data");
-                          onSubmitTicket(data);
-                        },
-                        (errors) => {
-                          console.log("Form validation failed:", errors);
-                        }
-                      )(e);
-                    }}
+                  onSubmit={form.handleSubmit(handleSubmit)}
                   className="space-y-6"
                 >
                   {/* Single Ticket Form Fields */}
                   <div className="space-y-4">
                     <FormField
-                      control={ticketForm.control}
+                      control={form.control}
                       name="name"
                       render={({ field }) => (
                         <FormItem>
@@ -316,7 +332,7 @@ export default function TicketForm() {
                     />
 
                     <FormField
-                      control={ticketForm.control}
+                      control={form.control}
                       name="description"
                       render={({ field }) => (
                         <FormItem>
@@ -335,7 +351,7 @@ export default function TicketForm() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
-                        control={ticketForm.control}
+                        control={form.control}
                         name="price"
                         render={({ field }) => (
                           <FormItem>
@@ -354,7 +370,7 @@ export default function TicketForm() {
                       />
 
                       <FormField
-                        control={ticketForm.control}
+                        control={form.control}
                         name="quantity"
                         render={({ field }) => (
                           <FormItem>
@@ -376,7 +392,7 @@ export default function TicketForm() {
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
-                          control={ticketForm.control}
+                          control={form.control}
                           name="sale_start_date"
                           render={({ field }) => (
                             <FormItem className="flex flex-col">
@@ -397,7 +413,7 @@ export default function TicketForm() {
                         />
 
                         <FormField
-                          control={ticketForm.control}
+                          control={form.control}
                           name="sale_end_date"
                           render={({ field }) => (
                             <FormItem className="flex flex-col">
@@ -420,29 +436,28 @@ export default function TicketForm() {
                     </div>
                   </div>
 
-                  <Button type="submit" disabled={createTicket.isPending}>
-                    {isEditing ? (
-                      "Edit Ticket"
-                    ) : createTicket.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating...
-                      </>
-                    ) : (
-                      "Create Ticket"
-                    )}
-                  </Button>
-
-                  {/* Clear Form Button */}
-                  {isEditing && (
+                  <div className="flex justify-between">
                     <Button
                       type="button"
+                      variant="outline"
                       onClick={handleClearForm}
-                      className="mt-4 ml-4"
+                      className="flex items-center"
                     >
-                      Cancel Editing
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Cancel
                     </Button>
-                  )}
+
+                    <Button type="submit" disabled={isLoading}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        "Save Changes"
+                      )}
+                    </Button>
+                  </div>
                 </form>
               </Form>
             </CardContent>
