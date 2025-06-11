@@ -4,11 +4,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Suspense, use } from "react";
 
 import { CheckoutCallback } from "@/components/checkout/CheckoutCallback";
 import { Loader2 } from "lucide-react";
 import type { Metadata } from "next";
-import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Payment Verification - Sasasasa",
@@ -16,7 +16,13 @@ export const metadata: Metadata = {
   robots: "noindex, nofollow",
 };
 
-export default function CheckoutCallbackPage() {
+type Props = {
+  params: Promise<{ reference: string }>;
+};
+
+export default function CheckoutCallbackPage({ params }: Props) {
+  const { reference } = use(params);
+
   return (
     <Suspense
       fallback={
@@ -35,7 +41,7 @@ export default function CheckoutCallbackPage() {
         </Dialog>
       }
     >
-      <CheckoutCallback />
+      <CheckoutCallback reference={reference} />
     </Suspense>
   );
 }

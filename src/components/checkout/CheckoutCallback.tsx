@@ -1,16 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { PaymentStatus } from "@/types/payment";
 import { PaymentStatusDialog } from "./PaymentStatusDialog";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { usePaymentVerification } from "@/hooks/usePaymentVerification";
-import { useRouter } from "next/navigation";
-import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
 
-export function CheckoutCallback() {
-  const { searchParams } = useSearchParamsContext();
+export function CheckoutCallback({ reference }: { reference: string }) {
   const analytics = useAnalytics();
   const { trackEvent } = analytics;
   const router = useRouter();
@@ -35,8 +33,6 @@ export function CheckoutCallback() {
   });
 
   useEffect(() => {
-    const reference = searchParams?.get("reference");
-
     trackEvent({
       event: "checkout_callback_view",
       timestamp: new Date().toISOString(),
@@ -45,7 +41,7 @@ export function CheckoutCallback() {
     if (reference) {
       verifyPayment(reference);
     }
-  }, [searchParams]);
+  }, [reference]);
 
   const handleClose = () => {
     const status =

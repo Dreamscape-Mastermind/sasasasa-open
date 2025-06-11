@@ -72,11 +72,9 @@ const serverLogger = {
     if (process.env.NODE_ENV === "development") {
       const errorDetails = error
         ? {
-            message: error.message,
             status: error.status,
             data: error.data,
-            stack: error.stack,
-            config: error.config,
+            name: error.name,
           }
         : {};
       console.error(`[API Error] ${message}`, errorDetails);
@@ -228,6 +226,7 @@ class ApiClient {
   public getApi(): AxiosInstance {
     return this.api;
   }
+
   public async get<T>(url: string, config?: any): Promise<T> {
     try {
       const response = await this.api.get<T>(url, {
@@ -238,6 +237,7 @@ class ApiClient {
       return handleApiError(error);
     }
   }
+
   public async post<T>(url: string, data?: any, config?: any): Promise<T> {
     try {
       const response = await this.api.post<T>(url, data, {

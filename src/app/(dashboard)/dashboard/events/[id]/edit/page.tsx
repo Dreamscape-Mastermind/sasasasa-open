@@ -1,15 +1,19 @@
-'use client'
+"use client";
 
-import EventForm from "@/components/forms/event-form"
+import { Suspense, use } from "react";
 
+import { EditEventContent } from "@/components/dashboard/event/edit/EditEventContent";
+import Spinner from "@/components/ui/spinner";
 
-export default function EditEvent() {
+type Props = {
+  params: Promise<{ id: string }>;
+};
 
+export default function EditEventPage({ params }: Props) {
+  const { id } = use(params);
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-900 text-gray-900 dark:text-gray-200 p-6">
-      <div className="max-w-6xl mx-auto">
-        <EventForm/>
-      </div>
-    </div>
+    <Suspense fallback={<Spinner />}>
+      <EditEventContent eventId={id} />
+    </Suspense>
   );
 }

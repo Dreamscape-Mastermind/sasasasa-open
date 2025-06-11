@@ -8,16 +8,15 @@ import Image from "next/image";
 import Link from "./Link";
 import { LogIn } from "lucide-react";
 import MobileNav from "@/components/MobileNav";
-import { NotificationPopover } from "./notifications/NotificationPopover";
 import { ProfileDropdown } from "./profile/ProfileDropdown";
 import ThemeSwitch from "@/components/ThemeSwitch";
 import siteMetadata from "@/config/siteMetadata";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
+import { useSearchParams } from "next/navigation";
 
 const Header = () => {
   const { isAuthenticated, user, isLoading } = useAuth();
-  const { searchParams } = useSearchParamsContext();
+  const searchParams = useSearchParams();
   const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
 
   let headerClass =
@@ -49,7 +48,7 @@ const Header = () => {
   );
 
   const renderNavigation = () => (
-    <nav className="hidden sm:flex items-center space-x-4 md:space-x-6">
+    <nav className="hidden sm:flex items-center space-x-4 md:space-x-3 lg:space-x-6">
       {NAV_ITEMS.MAIN.filter((link) => link.href !== "/").map((link) => (
         <Link
           key={link.href}
@@ -95,21 +94,12 @@ const Header = () => {
     <header className={headerClass}>
       {renderHeaderLogo()}
       <div className="flex items-center space-x-4 leading-5 sm:space-x-6">
-        {/* <div className="no-scrollbar hidden max-w-40 items-center space-x-4 overflow-x-auto sm:flex sm:space-x-6 md:max-w-72 lg:max-w-96">
-          {getNavLinks().map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="block font-medium text-gray-900 hover:text-primary-500 dark:text-gray-100 dark:hover:text-primary-400"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div> */}
         {renderNavigation()}
-        {renderAuthButtons()}
+        <div className="hidden sm:flex items-center space-x-4">
+          {renderAuthButtons()}
+        </div>
         <ThemeSwitch />
-        <MobileNav />
+        <MobileNav authButtons={renderAuthButtons()} />
       </div>
     </header>
   );

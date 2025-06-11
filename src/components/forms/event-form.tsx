@@ -1,7 +1,9 @@
 "use client";
 
 import "react-datepicker/dist/react-datepicker.css";
+
 import * as z from "zod";
+
 import {
   Accordion,
   AccordionContent,
@@ -27,8 +29,6 @@ import {
 } from "@/components/ui/form";
 import { Globe, ImagePlus, Loader2 } from "lucide-react";
 import { allTimezones, useTimezoneSelect } from "react-timezone-select";
-import { useCreateEvent, useUpdateEvent } from "@/hooks/useEvent";
-import { useEvent } from '@/hooks/useEvent';
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { useParams } from "next/navigation";
+import { useEvent } from "@/hooks/useEvent";
+import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const formSchema = z
@@ -58,9 +59,7 @@ const formSchema = z
     venue: z.string().min(2, {
       message: "Venue must be at least 2 characters",
     }),
-    capacity: z.coerce.number().nonnegative(
-      "Capacity is required."
-    ),
+    capacity: z.coerce.number().nonnegative("Capacity is required."),
     cover_image: z.any().optional(),
     facebook_url: z.string(),
     website_url: z.string(),
@@ -92,7 +91,6 @@ interface TimePickerProps {
   control: Control<any>;
 }
 
-
 const labelStyle = "original";
 const timezones = {
   ...allTimezones,
@@ -121,18 +119,28 @@ const CustomTimezoneSelect = ({ onChange, value }) => {
 };
 
 export default function EventForm() {
-  const params = useParams();
-  const eventId = params.id as string;
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get("id") as string;
 
   // State to track if we are editing an event
   const [isEditing, setIsEditing] = useState(false);
 
+  // Get the event hooks
+  const {
+    useEvent: useEventQuery,
+    useCreateEvent,
+    useUpdateEvent,
+  } = useEvent();
+
   // Fetch event details if eventId is present
-  const { data: eventData, error: eventError, isLoading: loading } = useEvent().useEvent(eventId);
+  const {
+    data: eventData,
+    error: eventError,
+    isLoading: loading,
+  } = useEventQuery(eventId);
 
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent(eventId);
-
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -256,7 +264,7 @@ export default function EventForm() {
                   isValid: form.formState.isValid,
                   errors: form.formState.errors,
                   isDirty: form.formState.isDirty,
-                  values: form.getValues()
+                  values: form.getValues(),
                 });
                 form.handleSubmit(
                   (data) => {
@@ -394,7 +402,10 @@ export default function EventForm() {
                                   onChange={(date) => {
                                     field.onChange(date);
                                     if (date) {
-                                      form.setValue("start_time", format(date, "HH:mm"));
+                                      form.setValue(
+                                        "start_time",
+                                        format(date, "HH:mm")
+                                      );
                                     }
                                   }}
                                   className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-zinc-800 rounded-full "
@@ -424,7 +435,10 @@ export default function EventForm() {
                                   onChange={(date) => {
                                     field.onChange(date);
                                     if (date) {
-                                      form.setValue("end_time", format(date, "HH:mm"));
+                                      form.setValue(
+                                        "end_time",
+                                        format(date, "HH:mm")
+                                      );
                                     }
                                   }}
                                   className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-zinc-800 rounded-full "
@@ -449,15 +463,12 @@ export default function EventForm() {
                               <FormLabel className="text-gray-700 dark:text-gray-300">
                                 Timezone
                               </FormLabel>
-                              {/* <div className="max-w-full">  */}
                               <CustomTimezoneSelect
                                 value={field.value}
                                 onChange={(timezone) =>
                                   field.onChange(timezone.value)
                                 }
                               />
-                              {/* </div> */}
-                              {/* <CustomTimezoneSelect value={field.value} onChange={(timezone) => field.onChange(timezone.value)} /> */}
                               <FormMessage />
                             </FormItem>
                           )}
@@ -620,9 +631,18 @@ export default function EventForm() {
                       type="submit"
                       variant="default"
                       className="w-full text-white dark:bg-gray-700 dark:hover:bg-gray-600 mt-4"
-                      onClick={() => console.log("Submit button clicked")}
+                      disabled={isLoading}
                     >
-                      {isEditing ? "Edit Event" : "Create Event"}
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {isEditing ? "Updating..." : "Creating..."}
+                        </>
+                      ) : isEditing ? (
+                        "Edit Event"
+                      ) : (
+                        "Create Event"
+                      )}
                     </Button>
                   </CardContent>
                 </Card>

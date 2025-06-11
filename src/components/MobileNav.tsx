@@ -11,7 +11,11 @@ import {
 import Link from "@/components/Link";
 import { NAV_ITEMS } from "@/lib/constants";
 
-const MobileNav = () => {
+interface MobileNavProps {
+  authButtons: React.ReactNode;
+}
+
+const MobileNav = ({ authButtons }: MobileNavProps) => {
   const [navShow, setNavShow] = useState(false);
   const navRef = useRef(null);
 
@@ -95,6 +99,9 @@ const MobileNav = () => {
                     {link.label}
                   </Link>
                 ))}
+                <div className="mt-4 flex flex-col space-y-4">
+                  {authButtons}
+                </div>
               </nav>
 
               <button

@@ -29,12 +29,12 @@ export const useAnalytics = () => {
 
   // Track page view
   const trackPageView = useCallback(
-    (path: string, title = 'Page View') => {
-        trackEvent({
-          event: "page_view",
-          page_path: path,
-          page_title: title,
-        });
+    (path: string, title: string = "Page View") => {
+      trackEvent({
+        event: "page_view",
+        page_path: path,
+        page_title: title,
+      });
     },
     [trackEvent]
   );
