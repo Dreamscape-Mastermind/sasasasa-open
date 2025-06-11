@@ -47,9 +47,9 @@ export interface TicketType extends BaseTicketEntity {
   quantity: number;
   remaining_tickets: number; // Read-only field from serializer
   is_active: boolean;
-  sale_start_date: string;
-  sale_end_date: string;
-  flash_sale: TicketTypeWithFlashSale | null;
+  sale_start_date: Date;
+  sale_end_date: Date;
+  flash_sale?: TicketTypeWithFlashSale | null;
 }
 
 /**
@@ -108,13 +108,14 @@ export interface TicketExport extends BaseTicketEntity {
  * Request interfaces
  */
 export interface CreateTicketTypeRequest {
+  id?: string | number;
   name: string;
   description?: string;
   price: number;
   quantity: number;
-  sale_start_date: string;
-  sale_end_date: string;
   is_active?: boolean;
+  sale_start_date: Date;
+  sale_end_date: Date;
 }
 
 export interface UpdateTicketTypeRequest

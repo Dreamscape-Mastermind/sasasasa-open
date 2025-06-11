@@ -1,13 +1,13 @@
 /** @type {import("pliny/config").PlinyConfig } */
 const siteMetadata = {
-  title: "Sasasasa: The Best Events and Cultural Experiences.",
+  title: "Sasasasa: Quality Community to Commerce",
   author: "Dreamscape Mastermind",
   authorUrl: "https://dreamscapemastermind.com",
   headerTitle: "SASASASA",
   googleAnalyticsId: "G-JRGL0BGFTT",
 
   theme: "dark", // system, dark or light
-  description: "Events and Cultural Experiences.",
+  description: "Discover Culture and Commerce",
   language: "en-us",
   theme: "system", // system, dark or light
   siteUrl: "https://sasasasa.co",

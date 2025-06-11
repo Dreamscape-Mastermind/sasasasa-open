@@ -10,9 +10,9 @@ import { HomeEventListing } from "./HomeEventListing";
 import { Skeleton } from "@/components/ui/skeleton";
 import dynamic from "next/dynamic";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
 import { useLogger } from "@/hooks/useLogger";
-import { useAuth } from "@/contexts/AuthContext";
 
 // Lazy load below-the-fold components
 const FeaturedEventBanner = dynamic(
@@ -96,15 +96,6 @@ export default function HomeContent() {
     isLoading: isLoadingEventListing,
     error: eventListingError,
   } = useEvents(eventsParams);
-
-  // Track page view
-  try {
-    analytics.trackPageView("home");
-    logger.info("User viewed home page");
-  } catch (error) {
-    logger.error("Failed to track page view", error);
-    analytics.trackError(error as Error);
-  }
 
   // Handle errors
   if (featuredError || eventListingError) {

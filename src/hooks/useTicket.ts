@@ -33,7 +33,8 @@ export const useTicket = () => {
 
   const useCreateTicketType = (eventId: string) => {
     return useMutation({
-      mutationFn: (data: CreateTicketTypeRequest) => ticketService.createTicketType(eventId, data),
+      mutationFn: (data: CreateTicketTypeRequest) =>
+        ticketService.createTicketType(eventId, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["ticket-types", eventId] });
       },
@@ -42,17 +43,21 @@ export const useTicket = () => {
 
   const useUpdateTicketType = (eventId: string, ticketTypeId: string) => {
     return useMutation({
-      mutationFn: (data: UpdateTicketTypeRequest) => ticketService.updateTicketType(eventId, ticketTypeId, data),
+      mutationFn: (data: UpdateTicketTypeRequest) =>
+        ticketService.updateTicketType(eventId, ticketTypeId, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["ticket-types", eventId] });
-        queryClient.invalidateQueries({ queryKey: ["ticket-type", eventId, ticketTypeId] });
+        queryClient.invalidateQueries({
+          queryKey: ["ticket-type", eventId, ticketTypeId],
+        });
       },
     });
   };
 
   const useDeleteTicketType = (eventId: string) => {
     return useMutation({
-      mutationFn: (ticketTypeId: string) => ticketService.deleteTicketType(eventId, ticketTypeId),
+      mutationFn: (ticketTypeId: string) =>
+        ticketService.deleteTicketType(eventId, ticketTypeId),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["ticket-types", eventId] });
       },
@@ -76,7 +81,8 @@ export const useTicket = () => {
 
   const usePurchaseTickets = (eventId: string) => {
     return useMutation({
-      mutationFn: (data: TicketPurchaseRequest) => ticketService.purchaseTickets(eventId, data),
+      mutationFn: (data: TicketPurchaseRequest) =>
+        ticketService.purchaseTickets(eventId, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
       },
@@ -85,7 +91,8 @@ export const useTicket = () => {
 
   const useRequestRefund = (eventId: string, ticketId: string) => {
     return useMutation({
-      mutationFn: (data: RequestRefundRequest) => ticketService.requestRefund(eventId, ticketId, data),
+      mutationFn: (data: RequestRefundRequest) =>
+        ticketService.requestRefund(eventId, ticketId, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
         queryClient.invalidateQueries({ queryKey: ["refunds", eventId] });
@@ -95,7 +102,8 @@ export const useTicket = () => {
 
   const useCheckInTicket = (eventId: string) => {
     return useMutation({
-      mutationFn: (ticketId: string) => ticketService.checkInTicket(eventId, ticketId),
+      mutationFn: (ticketId: string) =>
+        ticketService.checkInTicket(eventId, ticketId),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
       },
@@ -104,7 +112,8 @@ export const useTicket = () => {
 
   const useSendComplementaryTickets = (eventId: string) => {
     return useMutation({
-      mutationFn: (data: ComplementaryTicketRequest) => ticketService.sendComplementaryTickets(eventId, data),
+      mutationFn: (data: ComplementaryTicketRequest) =>
+        ticketService.sendComplementaryTickets(eventId, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["tickets", eventId] });
       },
@@ -134,10 +143,13 @@ export const useTicket = () => {
 
   const useProcessRefund = (eventId: string, refundId: string) => {
     return useMutation({
-      mutationFn: (data: ProcessRefundRequest) => ticketService.processRefund(eventId, refundId, data),
+      mutationFn: (data: ProcessRefundRequest) =>
+        ticketService.processRefund(eventId, refundId, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["refunds", eventId] });
-        queryClient.invalidateQueries({ queryKey: ["refund", eventId, refundId] });
+        queryClient.invalidateQueries({
+          queryKey: ["refund", eventId, refundId],
+        });
       },
     });
   };

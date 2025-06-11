@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import { OTPVerificationRequest, ResendOtpRequest } from "@/types/user";
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
@@ -26,8 +27,6 @@ import { ROUTES } from "@/lib/constants";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
 import { useUser } from "@/hooks/useUser";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,11 +57,13 @@ const checkmarkVariants = {
 };
 
 export function VerifyOTPForm() {
-  const { searchParams } = useSearchParamsContext();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") as string;
+  const type = searchParams.get("type") as string;
+  const redirectTo = searchParams.get("redirect") || ROUTES.DASHBOARD;
   const router = useRouter();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const email = searchParams?.get("email");
   const [showConfetti, setShowConfetti] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
@@ -70,7 +71,6 @@ export function VerifyOTPForm() {
   const { useVerifyOtp, useResendOtp } = useUser();
   const verifyOtpMutation = useVerifyOtp();
   const resendOtpMutation = useResendOtp();
-  const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
 
   // Redirect if user is already authenticated
   useEffect(() => {
@@ -132,29 +132,44 @@ export function VerifyOTPForm() {
       };
 
       const response = await verifyOtpMutation.mutateAsync(data);
-      // const { user, tokens } = response?.result || {};
-
       const verifiedOTP = await completeOtpVerification(response);
 
       if (!verifiedOTP) {
-        // setError("Invalid OTP");
         throw new Error("Invalid OTP");
       }
 
       setSuccess("Email verified successfully!");
 
-      if (searchParams?.get("type") === "waitlist") {
+      if (type === "waitlist") {
         setShowConfetti(true);
         setShowWelcomeDialog(true);
         setTimeout(() => {
           setShowConfetti(false);
         }, 5000);
       } else {
-        router.push(ROUTES.DASHBOARD);
+        // For login type, redirect to dashboard after successful verification
+        router.replace(redirectTo);
       }
     } catch (error: any) {
-      console.error("Error:", error);
-      setError(error.message || "An error occurred. Please try again.");
+      // Handle specific error messages from the API
+      if (error?.data?.message === "Invalid or expired OTP") {
+        setError(
+          "The verification code is invalid or has expired. Please try again or request a new code."
+        );
+      } else if (error?.message === "Network error occurred") {
+        setError(
+          "Unable to connect to the server. Please check your internet connection and try again."
+        );
+      } else {
+        setError(
+          error?.data?.message ||
+            error?.message ||
+            "An error occurred. Please try again."
+        );
+      }
+
+      // Clear the OTP input field on error
+      form.setValue("otp", "");
     }
   }
 

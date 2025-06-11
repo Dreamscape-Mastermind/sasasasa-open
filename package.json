@@ -3,10 +3,12 @@
   "version": "0.7.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --turbo",
+    "build": "next build --turbo",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "analyze": "ANALYZE=true yarn build",
+    "analyze:server": "yarn build && npx webpack-bundle-analyzer .next/static/chunks/"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.8",
@@ -47,7 +49,6 @@
     "@tailwindcss/forms": "^0.5.9",
     "@tailwindcss/typography": "^0.5.15",
     "@tanstack/react-query": "^5.74.11",
-    "@tanstack/react-query-devtools": "^5.74.11",
     "@tiptap/extension-highlight": "^2.12.0",
     "@tiptap/extension-image": "^2.12.0",
     "@tiptap/extension-link": "^2.12.0",
@@ -61,8 +62,6 @@
     "@tiptap/pm": "^2.12.0",
     "@tiptap/react": "^2.12.0",
     "@tiptap/starter-kit": "^2.12.0",
-    "@unlock-protocol/contracts": "^0.0.33",
-    "@unlock-protocol/hardhat-plugin": "^0.2.3",
     "@unlock-protocol/networks": "^0.0.25",
     "@unlock-protocol/unlock-js": "^0.51.1",
     "axios": "^1.7.7",
@@ -107,6 +106,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.3.3",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@nomicfoundation/hardhat-ignition": "^0.15.0",
@@ -131,6 +131,10 @@
     "solidity-coverage": "^0.8.0",
     "tailwindcss": "^3.4.14",
     "typechain": "^8.3.0",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "webpack-bundle-analyzer": "^4.10.2",
+    "@tanstack/react-query-devtools": "^5.74.11",
+    "@unlock-protocol/contracts": "^0.0.33",
+    "@unlock-protocol/hardhat-plugin": "^0.2.3"
   }
 }

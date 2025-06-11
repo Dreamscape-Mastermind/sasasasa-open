@@ -17,15 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/ShadCard";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
 import { Control, useForm } from "react-hook-form";
-import type { CreateEventRequest, UpdateEventRequest } from "@/types/event";
 import { Facebook, Instagram, Linkedin, Twitter } from "../social-icons/icons";
 import {
   Form,
@@ -36,11 +28,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Globe, ImagePlus, Loader2 } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { allTimezones, useTimezoneSelect } from "react-timezone-select";
 import { useEffect, useState } from "react";
 
@@ -53,7 +40,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { useEvent } from "@/hooks/useEvent";
-import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
+import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const formSchema = z
@@ -72,9 +59,7 @@ const formSchema = z
     venue: z.string().min(2, {
       message: "Venue must be at least 2 characters",
     }),
-    capacity: z.number().min(1, {
-      message: "Capacity is required.",
-    }),
+    capacity: z.coerce.number().nonnegative("Capacity is required."),
     cover_image: z.any().optional(),
     facebook_url: z.string(),
     website_url: z.string(),
@@ -106,60 +91,6 @@ interface TimePickerProps {
   control: Control<any>;
 }
 
-const TimePicker = ({ name, control }: TimePickerProps) => {
-  const times = Array.from({ length: 48 }, (_, i) => {
-    const hour = Math.floor(i / 2);
-    const minute = i % 2 === 0 ? "00" : "30";
-    return `${hour.toString().padStart(2, "0")}:${minute}`;
-  });
-
-  return (
-    <FormField
-      control={control}
-      name={name}
-      render={({ field, fieldState }) => (
-        <FormItem className="flex flex-col">
-          <Popover>
-            <PopoverTrigger asChild>
-              <FormControl>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "w-[100px] pl-3 text-left font-normal bg-white border-gray-300 hover:bg-gray-100",
-                    !field.value && "text-gray-500",
-                    fieldState.error && "border-red-500"
-                  )}
-                >
-                  {field.value || "Time"}
-                </Button>
-              </FormControl>
-            </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0" align="start">
-              <Command>
-                <CommandInput placeholder="Search time..." />
-                <CommandEmpty>No time found.</CommandEmpty>
-                <CommandGroup className="max-h-[200px] overflow-auto">
-                  {times.map((time) => (
-                    <CommandItem
-                      key={time}
-                      value={time}
-                      onSelect={(value: string) => field.onChange(value)}
-                    >
-                      {time}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </Command>
-            </PopoverContent>
-          </Popover>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  );
-};
-
 const labelStyle = "original";
 const timezones = {
   ...allTimezones,
@@ -188,12 +119,13 @@ const CustomTimezoneSelect = ({ onChange, value }) => {
 };
 
 export default function EventForm() {
-  const { searchParams } = useSearchParamsContext();
-  const eventId = searchParams.get("eventId");
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get("id") as string;
 
   // State to track if we are editing an event
   const [isEditing, setIsEditing] = useState(false);
 
+  // Get the event hooks
   const {
     useEvent: useEventQuery,
     useCreateEvent,
@@ -201,19 +133,18 @@ export default function EventForm() {
   } = useEvent();
 
   // Fetch event details if eventId is present
-  const { data: eventData, error: eventError } = useEventQuery(eventId || "");
+  const {
+    data: eventData,
+    error: eventError,
+    isLoading: loading,
+  } = useEventQuery(eventId);
 
   const createEvent = useCreateEvent();
-  const updateEvent = useUpdateEvent(eventId || "");
-
-  useEffect(() => {
-    if (createEvent.isSuccess) {
-      setIsEditing(true); // Set editing mode to true after successful creation
-    }
-  }, [createEvent.isSuccess]);
+  const updateEvent = useUpdateEvent(eventId);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -234,9 +165,15 @@ export default function EventForm() {
     },
   });
 
+  useEffect(() => {
+    if (createEvent.isSuccess) {
+      setIsEditing(true); // Set editing mode to true after successful creation
+    }
+  }, [createEvent.isSuccess]);
+
   // Populate the form with event data if available
   useEffect(() => {
-    if (eventData && eventData.result) {
+    if (eventData?.result) {
       form.setValue("title", eventData.result.title);
       form.setValue("description", eventData.result.description);
       form.setValue("start_date", new Date(eventData.result.start_date));
@@ -258,11 +195,11 @@ export default function EventForm() {
       form.setValue("timezone", eventData.result.timezone);
       // Populate other fields as necessary
       setIsEditing(true); // Set editing mode to true if event data is loaded
-      setImagePreview(eventData.result.cover_image);
+      setImagePreview(eventData.result.cover_image ?? null);
       setIsLoading(false);
     }
+    console.log({ eventError, eventData });
     if (eventError) {
-      console.log({ eventError });
       const errorMessage = eventError?.message.includes("401")
         ? "Session expired, please login again"
         : "An error occurred while fetching event details.";
@@ -271,23 +208,29 @@ export default function EventForm() {
     }
   }, [eventData, eventError, form]); // Run effect when eventData changes
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    const processedData: CreateEventRequest | UpdateEventRequest = {
+  const onSubmit = async (data) => {
+    console.log("Form submission started");
+    console.log("Form data:", data);
+
+    const processedData = {
       ...data,
-      start_date: combineDateTime(
-        data.start_date,
-        data.start_time
-      ).toISOString(),
-      end_date: combineDateTime(data.end_date, data.end_time).toISOString(),
+      start_date: data.start_date.toISOString(),
+      end_date: data.end_date.toISOString(),
     };
 
-    console.log({ processedData });
+    console.log("Processed data:", processedData);
 
-    if (isEditing && eventId) {
-      // Call the update function here
-      await updateEvent.mutateAsync(processedData);
-    } else {
-      await createEvent.mutateAsync(processedData as CreateEventRequest);
+    try {
+      if (isEditing && eventId) {
+        console.log("Updating event with ID:", eventId);
+        await updateEvent.mutateAsync(processedData);
+      } else {
+        console.log("Creating new event");
+        await createEvent.mutateAsync(processedData);
+      }
+      console.log("Form submission successful");
+    } catch (error) {
+      console.error("Form submission failed:", error);
     }
   };
 
@@ -315,7 +258,24 @@ export default function EventForm() {
         ) : (
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={(e) => {
+                console.log("Form submit event triggered");
+                console.log("Current form state:", {
+                  isValid: form.formState.isValid,
+                  errors: form.formState.errors,
+                  isDirty: form.formState.isDirty,
+                  values: form.getValues(),
+                });
+                form.handleSubmit(
+                  (data) => {
+                    console.log("Form validation passed, submitting data");
+                    onSubmit(data);
+                  },
+                  (errors) => {
+                    console.log("Form validation failed:", errors);
+                  }
+                )(e);
+              }}
               className="space-y-8"
               encType="multipart/form-data"
             >
@@ -439,7 +399,15 @@ export default function EventForm() {
                                 </FormLabel>
                                 <DatePicker
                                   selected={field.value}
-                                  onChange={(date) => field.onChange(date)}
+                                  onChange={(date) => {
+                                    field.onChange(date);
+                                    if (date) {
+                                      form.setValue(
+                                        "start_time",
+                                        format(date, "HH:mm")
+                                      );
+                                    }
+                                  }}
                                   className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-zinc-800 rounded-full "
                                   placeholderText="Select start date and time"
                                   dateFormat="MMM d, yyyy h:mm aa"
@@ -464,7 +432,15 @@ export default function EventForm() {
                                 </FormLabel>
                                 <DatePicker
                                   selected={field.value}
-                                  onChange={(date) => field.onChange(date)}
+                                  onChange={(date) => {
+                                    field.onChange(date);
+                                    if (date) {
+                                      form.setValue(
+                                        "end_time",
+                                        format(date, "HH:mm")
+                                      );
+                                    }
+                                  }}
                                   className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-zinc-800 rounded-full "
                                   placeholderText="Select end date and time"
                                   dateFormat="MMM d, yyyy h:mm aa"
@@ -528,7 +504,7 @@ export default function EventForm() {
                           </FormLabel>
                           <FormControl>
                             <Input
-                              type="number"
+                              type="text"
                               placeholder="Enter maximum capacity"
                               {...field}
                               className="bg-gray-50 dark:bg-zinc-900 border-gray-300 dark:border-gray-700 rounded-full "
@@ -655,8 +631,18 @@ export default function EventForm() {
                       type="submit"
                       variant="default"
                       className="w-full text-white dark:bg-gray-700 dark:hover:bg-gray-600 mt-4"
+                      disabled={isLoading}
                     >
-                      {isEditing ? "Edit Event" : "Create Event"}
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {isEditing ? "Updating..." : "Creating..."}
+                        </>
+                      ) : isEditing ? (
+                        "Edit Event"
+                      ) : (
+                        "Create Event"
+                      )}
                     </Button>
                   </CardContent>
                 </Card>

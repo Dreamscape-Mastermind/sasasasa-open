@@ -11,11 +11,9 @@ import {
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
-import EventForm from "@/components/forms/event-form";
+import { EventForm, TicketForm, TeamMembersForm } from "@/components/dashboard/LazyDashboardComponents";
 import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
-import TeamMembersForm from "@/components/forms/team-members-form";
-import TicketForm from "@/components/forms/ticket-form";
 // import { VenueSearchResult } from "@/types/venue";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";

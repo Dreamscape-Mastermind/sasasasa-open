@@ -25,6 +25,7 @@ import {
   useAppKitProvider,
   useDisconnect,
 } from "@reown/appkit/react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import type { Role } from "../types";
 import { cookieService } from "@/services/cookie.service";
@@ -33,8 +34,6 @@ import toast from "react-hot-toast";
 import { tokenService } from "@/services/token.service";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
-import { useRouter } from "next/navigation";
-import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
 import { useUser } from "@/hooks/useUser";
 
 type AccessLevel = (typeof ACCESS_LEVELS)[keyof typeof ACCESS_LEVELS];
@@ -74,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const router = useRouter();
-  const { searchParams } = useSearchParamsContext();
+  const searchParams = useSearchParams();
   const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
   const { address, isConnected } = useAppKitAccount();
   const { chainId } = useAppKitNetworkCore();
@@ -604,9 +603,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast.success("OTP sent to your email");
         analytics.trackUserAction("login_initiated", "auth", "email");
         router.push(
-          `${ROUTES.VERIFY_OTP}/verify-otp?email=${encodeURIComponent(
+          `${ROUTES.VERIFY_OTP}?email=${encodeURIComponent(
             data.identifier
-          )}&redirect=${encodeURIComponent(redirectTo)}`
+          )}&type=login&redirect=${encodeURIComponent(redirectTo)}`
         );
         return true;
       }
@@ -641,8 +640,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         logger.info("OTP verification successful", { userId: newUser.id });
         analytics.trackUserAction("login_completed", "auth", "email");
-        toast.success("Successfully verified OTP");
-        router.push(redirectTo);
         return true;
       }
 
@@ -667,9 +664,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         analytics.trackUserAction("otp_resent", "auth");
         toast.success("OTP resent successfully");
         router.push(
-          `${ROUTES.VERIFY_OTP}/verify-otp?email=${encodeURIComponent(
+          `${ROUTES.VERIFY_OTP}?email=${encodeURIComponent(
             data.identifier
-          )}&redirect=${encodeURIComponent(redirectTo)}`
+          )}&type=login&redirect=${encodeURIComponent(redirectTo)}`
         );
         return true;
       }

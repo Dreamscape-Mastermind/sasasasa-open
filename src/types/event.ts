@@ -213,6 +213,7 @@ export interface EventQueryParams {
   price_max?: number;
   capacity_min?: number;
   capacity_max?: number;
+  is_active?: boolean;
 }
 
 export interface LocationQueryParams {

@@ -10,19 +10,19 @@ const features = [
     icon: Calendar,
     title: "Get Started Quick and Easy",
     description:
-      "Create and customize your experiences in minutes with our intuitive tools and templates.",
+      "Create and customize your experiences in minutes. All you need is an email.",
   },
   {
     icon: Ticket,
-    title: "Smart Ticketing",
+    title: "Smart Experience Management",
     description:
-      "Flexible ticketing options with QR codes, multiple tiers, and real-time analytics.",
+      "Flexible ticketing options with QR codes, multiple tiers, and analytics.",
   },
   {
     icon: DollarSign,
-    title: "Secure Payments",
+    title: "Secure Payments, Low Fees",
     description:
-      "Process payments securely with instant transfers and detailed financial reporting.",
+      "Process payments securely with mobile money and card payments. More options coming soon. Low fees always.",
   },
 ];
 
@@ -45,8 +45,8 @@ export function Features() {
       <div className="text-center max-w-2xl mx-auto mb-16">
         <h2 className="text-3xl font-bold mb-4">Why Choose Sasasasa?</h2>
         <p className="text-muted-foreground">
-          Everything you need to create and manage and print out your
-          experiences.
+        Our goal is simple, give you the tools to turn your African brand into a global export. Everything you need to create and manage and grow  your
+          experiences and brand via global commerce.
         </p>
       </div>
       <div className="grid md:grid-cols-3 gap-8">
