@@ -30,7 +30,7 @@ const features = [
   {
     title: "Built for Africa",
     description:
-      "Designed specifically for the unique needs of the Global South market",
+      "Designed specifically for the unique needs of the Global Majority market. We're particularly excited about building the future of African creativity.",
   },
   {
     title: "Multiple Payment Options",
@@ -39,16 +39,16 @@ const features = [
   },
   {
     title: "Fast Payouts",
-    description: "We understand event organizers need quick access to funds",
+    description: "We understand creatives need quick access to funds so we are working on a fast payout systems and partnering with the best in the business.",
   },
   {
     title: "Tech-Forward",
     description:
-      "Leveraging open protocols like blockchain and NFTs for community engagement and interoperability",
+      "Leveraging open protocols like blockchain for resilience, affordability and ownership",
   },
   {
     title: "Experience Backed",
-    description: "Founded by event organizers who understand your challenges",
+    description: "Founded by creatives and techies who understand the challenges of building sustainable creative businesses and the dynamics of a fragmented e-commerce market.",
   },
 ];
 
@@ -59,19 +59,19 @@ const faqData = [
       "We accept various payment methods including Mobile Money (M-Pesa), credit cards, and (soon) select cryptocurrencies.",
   },
   {
-    question: "How quickly can event organizers access their funds?",
+    question: "How quickly can creatives access their funds?",
     answer:
       "Most payouts are processed within 24-48 hours, subject to our security verification process.",
   },
   {
     question: "Can I sell tickets to virtual events?",
     answer:
-      "Yes! Sasasasa supports both physical and virtual events, with integrated solutions for streaming and access management coming soon.",
+      "Yes! Sasasasa supports both physical and virtual events.",
   },
   {
     question: "What makes Sasasasa different from other ticketing platforms?",
     answer:
-      "We're built specifically for the Global South market, with features like offline ticket validation, multiple payment options, and fast local payouts.",
+      "First is our obsession with the creator economy here. We love Africa, we love the stories and the storytellers here and we see the value. We're building specifically for them and those in the Global Majority market, with features like dropshipping and global commerce, flexible commission margins, multiple payment options, crafted to handle to the leaky systems and unique logistics hurdles found here. We're focused on being the collaborative vertical stack enabling creatives to grow their brand and revenue, beyond live experiences.",
   },
 ];
 export default function AboutContent() {
@@ -85,10 +85,8 @@ export default function AboutContent() {
       <motion.div initial="hidden" animate="visible" variants={fadeIn}>
         <h1 className="text-4xl font-bold mt-16 mb-8">About Sasasasa</h1>
         <p className="text-lg mb-8">
-          Sasasasa is innovating on digital commerce across the Global South,
-          starting with Sub-Saharan Africa. We're not just another ticketing
-          platform – we're building the future of entertainment commerce, one
-          event at a time.
+          Sasasasa is innovating on digital commerce across the Global Majority,
+          starting with Sub-Saharan Africa. 
         </p>
       </motion.div>
       <motion.div
@@ -99,9 +97,9 @@ export default function AboutContent() {
       >
         <h2 className="text-2xl font-bold mt-12 mb-6">Our Mission</h2>
         <p className="text-lg mb-8">
-          To make buying and selling as simple as saying "sasa" (hello). Whether
-          you're an independent artist hosting your first show or a major venue
-          managing multiple events, we provide the tools you need to succeed.
+          Sasasasa exists to build a self-sustaining creative ecosystem for Africa. To make buying and selling simple. Like saying "sasa" (hello). We're an ecosystem who's objective is to celebrate African stories, grow creators economically, and takes ownership of the value chain. By providing the tools to monetize culture, we ensure more value flows back to the communities who create it. Whether
+          you're an independent artist hosting your first show, a major venue
+          managing primetime experiences, or a growing fashion brand looking to expand globally, we provide the tools you need to succeed.
         </p>
       </motion.div>
       <motion.div

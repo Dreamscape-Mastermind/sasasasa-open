@@ -27,16 +27,15 @@ export function Hero() {
       <div className="container mx-auto px-4 py-24 relative z-10">
         <div className="text-center space-y-8 max-w-3xl mx-auto">
           <h1 className="text-5xl font-bold tracking-tight">
-            We're here for the creatives. Bringing you commerce for your community and the tools to grow your value on demand.
+            Bringing you the tools to grow your value as a creative.
           </h1>
           <p className="text-xl text-muted-foreground">
-            Build with your audience, grow your brand revenue with $0
-            investment. From intimate circles to global audiences, go beyond, into being a multinational coordinated brand.
+           Your brand, Africa's export. From local events to global e-commerce we're building the pipeline to take African creativity worldwide. Start with events, expand to e-commerce, and grow on your terms. 
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/dashboard" onClick={() => handleAction("get_started")}>
               <Button size="lg" className="gap-2 w-full sm:w-auto">
-                I'm a creator/curator
+                I'm a creator (beta)
                 <Calendar className="h-4 w-4" />
               </Button>
             </Link>
@@ -46,7 +45,7 @@ export function Hero() {
                 variant="outline"
                 className="gap-2 w-full sm:w-auto"
               >
-                Discover
+                Discover Experiences
                 <Ticket className="h-4 w-4" />
               </Button>
             </Link>
