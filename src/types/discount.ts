@@ -1,4 +1,9 @@
-import { Nullable, PaginatedResponse, SuccessResponse, TimeStamp } from "./common";
+import {
+  Nullable,
+  PaginatedResponse,
+  SuccessResponse,
+  TimeStamp,
+} from "./common";
 
 import { UserProfile } from "./user";
 
@@ -74,14 +79,48 @@ export interface CreateDiscountRequest {
 
 export interface UpdateDiscountRequest extends Partial<CreateDiscountRequest> {}
 
+export interface DiscountOverallStats {
+  total_discounts: number;
+  active_discounts: number;
+  total_uses: number;
+  total_amount_saved: number;
+  average_discount_per_use: number;
+  type_distribution: Array<{
+    discount_type: DiscountType;
+    count: number;
+    total_uses: number;
+    total_saved: number;
+  }>;
+  status_distribution: Array<{
+    status: DiscountStatus;
+    count: number;
+    total_uses: number;
+  }>;
+  usage_over_time: Array<{
+    date: string;
+    count: number;
+    amount_saved: number;
+  }>;
+  top_performing_discounts: Array<{
+    id: string;
+    code: string;
+    name: string;
+    total_uses: number;
+    total_saved: number;
+    discount_type: DiscountType;
+    amount: number;
+  }>;
+}
 /**
  * Response interfaces
  */
 export interface DiscountResponse extends SuccessResponse<Discount> {}
 
-export interface DiscountsResponse extends SuccessResponse<PaginatedResponse<Discount>> {}
+export interface DiscountsResponse
+  extends SuccessResponse<PaginatedResponse<Discount>> {}
 
-export interface DiscountUsageResponse extends SuccessResponse<DiscountUsage[]> {}
+export interface DiscountUsageResponse
+  extends SuccessResponse<DiscountUsage[]> {}
 
 export interface DiscountAnalyticsResponse
   extends SuccessResponse<{
@@ -91,6 +130,9 @@ export interface DiscountAnalyticsResponse
     usage_by_date: Record<string, number>;
     total_unique_users: number;
   }> {}
+
+export interface DiscountOverallStatsResponse
+  extends SuccessResponse<DiscountOverallStats> {}
 
 /**
  * Query parameter interfaces

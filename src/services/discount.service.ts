@@ -7,6 +7,7 @@ import {
   DiscountUsageResponse,
   DiscountsResponse,
   UpdateDiscountRequest,
+  type DiscountOverallStatsResponse,
 } from "@/types/discount";
 
 import { apiClient } from "./api.service";
@@ -30,16 +31,33 @@ class DiscountService {
   /**
    * Discount operations
    */
-  public async listDiscounts(eventId: string, params?: DiscountQueryParams): Promise<DiscountsResponse> {
-    return apiClient.get<DiscountsResponse>(`${this.baseUrl}/events/${eventId}/discounts`, { params });
+  public async listDiscounts(
+    eventId: string,
+    params?: DiscountQueryParams
+  ): Promise<DiscountsResponse> {
+    return apiClient.get<DiscountsResponse>(
+      `${this.baseUrl}/events/${eventId}/discounts`,
+      { params }
+    );
   }
 
-  public async getDiscount(eventId: string, discountId: string): Promise<DiscountResponse> {
-    return apiClient.get<DiscountResponse>(`${this.baseUrl}/events/${eventId}/discounts/${discountId}`);
+  public async getDiscount(
+    eventId: string,
+    discountId: string
+  ): Promise<DiscountResponse> {
+    return apiClient.get<DiscountResponse>(
+      `${this.baseUrl}/events/${eventId}/discounts/${discountId}`
+    );
   }
 
-  public async createDiscount(eventId: string, data: CreateDiscountRequest): Promise<DiscountResponse> {
-    return apiClient.post<DiscountResponse>(`${this.baseUrl}/events/${eventId}/discounts`, data);
+  public async createDiscount(
+    eventId: string,
+    data: CreateDiscountRequest
+  ): Promise<DiscountResponse> {
+    return apiClient.post<DiscountResponse>(
+      `${this.baseUrl}/events/${eventId}/discounts`,
+      data
+    );
   }
 
   public async updateDiscount(
@@ -47,11 +65,19 @@ class DiscountService {
     discountId: string,
     data: UpdateDiscountRequest
   ): Promise<DiscountResponse> {
-    return apiClient.patch<DiscountResponse>(`${this.baseUrl}/events/${eventId}/discounts/${discountId}`, data);
+    return apiClient.patch<DiscountResponse>(
+      `${this.baseUrl}/events/${eventId}/discounts/${discountId}`,
+      data
+    );
   }
 
-  public async deleteDiscount(eventId: string, discountId: string): Promise<void> {
-    return apiClient.delete(`${this.baseUrl}/events/${eventId}/discounts/${discountId}`);
+  public async deleteDiscount(
+    eventId: string,
+    discountId: string
+  ): Promise<void> {
+    return apiClient.delete(
+      `${this.baseUrl}/events/${eventId}/discounts/${discountId}`
+    );
   }
 
   /**
@@ -62,17 +88,31 @@ class DiscountService {
     discountId: string,
     params?: DiscountUsageQueryParams
   ): Promise<DiscountUsageResponse> {
-    return apiClient.get<DiscountUsageResponse>(`${this.baseUrl}/events/${eventId}/discounts/${discountId}/usage`, {
-      params,
-    });
+    return apiClient.get<DiscountUsageResponse>(
+      `${this.baseUrl}/events/${eventId}/discounts/${discountId}/usage`,
+      {
+        params,
+      }
+    );
   }
 
   /**
    * Discount analytics operations
    */
-  public async getDiscountAnalytics(eventId: string, discountId: string): Promise<DiscountAnalyticsResponse> {
+  public async getDiscountAnalytics(
+    eventId: string,
+    discountId: string
+  ): Promise<DiscountAnalyticsResponse> {
     return apiClient.get<DiscountAnalyticsResponse>(
       `${this.baseUrl}/events/${eventId}/discounts/${discountId}/analytics`
+    );
+  }
+
+  public async getDiscountOverallStats(
+    eventId: string
+  ): Promise<DiscountOverallStatsResponse> {
+    return apiClient.get<DiscountOverallStatsResponse>(
+      `${this.baseUrl}/events/${eventId}/discounts/overall_stats`
     );
   }
 }

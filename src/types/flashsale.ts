@@ -103,6 +103,31 @@ export interface ValidatePurchaseRequest {
   quantity: number;
 }
 
+export interface FlashSaleOverallStats {
+  total_flash_sales: number;
+  active_flash_sales: number;
+  total_tickets_sold: number;
+  total_revenue: number;
+  ticket_type_stats: Record<
+    string,
+    {
+      tickets_sold: number;
+      revenue: number;
+      average_discount: number;
+      count: number;
+    }
+  >;
+  status_distribution: Array<{
+    status: FlashSaleStatus;
+    count: number;
+  }>;
+  sales_over_time: Array<{
+    date: string;
+    count: number;
+    tickets_sold: number;
+  }>;
+}
+
 /**
  * Response interfaces
  */
@@ -126,6 +151,9 @@ export interface ValidatePurchaseResponse
     message: string;
     discount_amount?: number;
   }> {}
+
+export interface FlashSaleOverallStatsResponse
+  extends SuccessResponse<FlashSaleOverallStats> {}
 
 /**
  * Query parameter interfaces
