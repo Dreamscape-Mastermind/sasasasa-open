@@ -1,6 +1,7 @@
 import {
   BarChart2,
   Calendar,
+  Check,
   CreditCard,
   FileText,
   Layout,
@@ -60,6 +61,7 @@ export const ROUTES = {
   DASHBOARD_EVENT_PROMOTIONS: (id: string) =>
     `/dashboard/events/${id}/promotions`,
   DASHBOARD_EVENT_TICKETS: (id: string) => `/dashboard/events/${id}/tickets`,
+  DASHBOARD_EVENT_CHECK_IN: (id: string) => `/dashboard/events/${id}/checkin`,
 };
 
 // Route protection configuration
@@ -101,6 +103,7 @@ export const ROUTE_PROTECTION = {
     ROUTES.DASHBOARD_EVENT_PAYMENTS("*"),
     ROUTES.DASHBOARD_EVENT_PROMOTIONS("*"),
     ROUTES.DASHBOARD_EVENT_TICKETS("*"),
+    ROUTES.DASHBOARD_EVENT_CHECK_IN("*"),
     ROUTES.DASHBOARD_PURCHASES,
   ],
 } as const;
@@ -164,6 +167,11 @@ export const NAV_ITEMS = {
       label: "Event Promotions",
       href: ROUTES.DASHBOARD_EVENT_PROMOTIONS("{eventId}"),
       icon: Percent,
+    },
+    {
+      label: "Event Check-In",
+      href: ROUTES.DASHBOARD_EVENT_CHECK_IN("{eventId}"),
+      icon: Check,
     },
   ],
   DASHBOARD_BLOG_ADMIN: [
