@@ -1,5 +1,3 @@
-// TODO: Add useWeb3 hook
-
 import { ethersAdapter, networks, projectId } from "@/config/web3";
 
 import colors from "tailwindcss/colors";

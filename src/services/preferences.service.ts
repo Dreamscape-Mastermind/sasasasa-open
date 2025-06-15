@@ -1,6 +1,8 @@
 import {
+  ConsentResponse,
   OnboardingResponse,
   ProfileResponse,
+  UpdateConsentRequest,
   UpdateOnboardingRequest,
   UpdateProfileRequest,
 } from "@/types/preferences";
@@ -47,6 +49,17 @@ class PreferencesService {
 
   public async updateOnboarding(data: UpdateOnboardingRequest): Promise<OnboardingResponse> {
     return apiClient.patch<OnboardingResponse>(`${this.baseUrl}/preferences/onboarding`, data);
+  }
+
+  /**
+   * Consent operations
+   */
+  public async getConsent(): Promise<ConsentResponse> {
+    return apiClient.get<ConsentResponse>(`${this.baseUrl}/preferences/profile/consent`);
+  }
+
+  public async updateConsent(data: UpdateConsentRequest): Promise<ConsentResponse> {
+    return apiClient.post<ConsentResponse>(`${this.baseUrl}/preferences/profile/consent`, data);
   }
 }
 

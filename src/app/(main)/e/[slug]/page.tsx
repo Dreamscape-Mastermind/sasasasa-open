@@ -19,9 +19,10 @@ export async function generateMetadata(
   const MAX_TITLE_LENGTH = 50;
   try {
     const shortUrl = (await params).slug;
+    // Direct lookup is faster than filtered list query
     const response = await eventService.getEvent(shortUrl);
 
-    // Since we're filtering by short_url, we should get only the matching event
+    // Since we're using direct lookup, we get the event directly
     const event = response.result;
 
     if (!event) {

@@ -33,13 +33,11 @@ interface TicketWithFlashSale extends Omit<TicketType, "flash_sale"> {
 const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
   const logger = useLogger({ context: "EventDetails" });
   const analytics = useAnalytics();
-  const { useEvents } = useEvent();
-  const [filters, setFilters] = useState<EventQueryParams>({
-    short_url: slug,
-  });
-  const { data: eventResponse, isLoading, error } = useEvents(filters);
+  const { useEvent: useSingleEvent } = useEvent();
 
-  const event = eventResponse?.result?.results[0] as Event | undefined;
+  const { data: eventResponse, isLoading, error } = useSingleEvent(slug);
+
+  const event = eventResponse?.result as Event | undefined;
 
   useEffect(() => {
     if (event) {
@@ -57,7 +55,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
     }
   }, [event, analytics, logger]);
 
-  if (error) {
+  if (error && !event) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     logger.error("Error loading event data", {
@@ -71,8 +69,8 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
     return <Error />;
   }
 
-  // Handle loading state
-  if (isLoading) {
+  // Handle loading state (only if no provided event and still loading)
+  if (isLoading && !event) {
     return (
       <div className="flex flex-col items-center min-h-[60vh] w-full px-4">
         <div className="bg-zinc-900 rounded-xl shadow-lg flex flex-col sm:flex-row w-full max-w-5xl overflow-hidden">

@@ -103,6 +103,15 @@ export interface Payment extends BasePaymentEntity {
   provider_status: Nullable<string>;
 }
 
+export interface TransactionResult {
+  status: PaymentStatus;
+  message: string;
+  reference: string;
+  amount: number;
+  eventId?: string;
+  eventTitle?: string;
+}
+
 /**
  * Request interfaces
  */

@@ -20,6 +20,8 @@ export const useEvent = () => {
     return useQuery({
       queryKey: ["events", params],
       queryFn: () => eventService.listEvents(params),
+      staleTime: 5 * 60 * 1000, // 5 minutes - data is considered fresh for 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes - cache garbage collection time
     });
   };
 
@@ -27,6 +29,8 @@ export const useEvent = () => {
     return useQuery({
       queryKey: ["event", id],
       queryFn: () => eventService.getEvent(id),
+      staleTime: 5 * 60 * 1000, // 5 minutes - data is considered fresh for 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes - cache garbage collection time
     });
   };
 

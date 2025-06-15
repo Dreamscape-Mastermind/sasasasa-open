@@ -2,7 +2,7 @@
 
 import { FormProvider, useForm } from "react-hook-form";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState, useRef } from "react";
 
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -11,6 +11,7 @@ import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProviders } from "@/providers/theme-providers";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
+import { ConsentProvider } from "@/contexts/ConsentContext";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -67,47 +68,57 @@ const queryClient = new QueryClient({
   },
 });
 
-// Analytics Provider
+// Fixed AnalyticsProvider - remove analytics dependency and use refs
 const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
   const analytics = useAnalytics();
-
-  // Track page views on route changes
+  const [hasTrackedInitial, setHasTrackedInitial] = useState(false);
+  const analyticsRef = useRef(analytics);
+  
+  // Update ref when analytics changes
   useEffect(() => {
-    const handleRouteChange = (url: string) => {
-      analytics.trackPageView(url);
-    };
-
-    // Track initial page view
-    analytics.trackPageView(window.location.pathname, document.title);
-
-    // Add route change listener
-    window.addEventListener("popstate", () =>
-      handleRouteChange(window.location.pathname)
-    );
-
-    return () => {
-      window.removeEventListener("popstate", () =>
-        handleRouteChange(window.location.pathname)
-      );
-    };
+    analyticsRef.current = analytics;
   }, [analytics]);
+
+  // Track initial page view - only once
+  useEffect(() => {
+    if (!hasTrackedInitial) {
+      analyticsRef.current.trackPageView(window.location.pathname, document.title);
+      setHasTrackedInitial(true);
+    }
+  }, [hasTrackedInitial]); // No analytics dependency
+
+  // Track route changes - setup only once  
+  useEffect(() => {
+    const handleRouteChange = () => {
+      analyticsRef.current.trackPageView(window.location.pathname);
+    };
+
+    window.addEventListener("popstate", handleRouteChange);
+    return () => window.removeEventListener("popstate", handleRouteChange);
+  }, []); // Empty dependency - setup once only
 
   return <>{children}</>;
 };
 
-// Logger Provider
+// Fixed LoggerProvider - remove logger from dependencies
 const LoggerProvider = ({ children }: { children: ReactNode }) => {
   const logger = useLogger({ context: "App" });
+  const loggerRef = useRef(logger);
+  
+  // Update ref when logger changes
+  useEffect(() => {
+    loggerRef.current = logger;
+  }, [logger]);
 
-  // Log unhandled errors
+  // Log unhandled errors - setup once only
   useEffect(() => {
     const handleError = (error: ErrorEvent) => {
-      logger.error("Unhandled error occurred", error);
+      loggerRef.current.error("Unhandled error occurred", error);
     };
 
     window.addEventListener("error", handleError);
     return () => window.removeEventListener("error", handleError);
-  }, [logger]);
+  }, []); // No logger dependency
 
   return <>{children}</>;
 };
@@ -120,16 +131,18 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <SearchParamsProvider>
         <LoggerProvider>
-          <AnalyticsProvider>
+          <ConsentProvider>
             <AuthProvider>
               <ThemeProviders>
                 <FormProvider {...methods}>
-                  <SidebarProvider>{children}</SidebarProvider>
+                  <AnalyticsProvider>
+                    <SidebarProvider>{children}</SidebarProvider>
+                  </AnalyticsProvider>
                 </FormProvider>
               </ThemeProviders>
             </AuthProvider>
-            <ReactQueryDevtools initialIsOpen={false} />
-          </AnalyticsProvider>
+          </ConsentProvider>
+          <ReactQueryDevtools initialIsOpen={false} />
         </LoggerProvider>
       </SearchParamsProvider>
     </QueryClientProvider>

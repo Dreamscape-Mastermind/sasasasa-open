@@ -56,11 +56,16 @@ export function useLogger(options: LoggerOptions = {}) {
     [context, enabled]
   );
 
-  // Expose logging methods
+  // Expose logging methods - memoized to prevent recreation
+  const info = useCallback((msg: string, data?: any) => log("info", msg, data), [log]);
+  const warn = useCallback((msg: string, data?: any) => log("warn", msg, data), [log]);
+  const error = useCallback((msg: string, data?: any) => log("error", msg, data), [log]);
+  const debug = useCallback((msg: string, data?: any) => log("debug", msg, data), [log]);
+
   return {
-    info: (msg: string, data?: any) => log("info", msg, data),
-    warn: (msg: string, data?: any) => log("warn", msg, data),
-    error: (msg: string, data?: any) => log("error", msg, data),
-    debug: (msg: string, data?: any) => log("debug", msg, data),
+    info,
+    warn,
+    error,
+    debug,
   };
 }

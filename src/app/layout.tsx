@@ -11,6 +11,7 @@ import SectionContainer from "@/components/SectionContainer";
 import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "react-hot-toast";
 import siteMetadata from "@/config/siteMetadata";
+import { CookieBanner } from "@/components/ui/cookie-banner";
 
 const sen = Sen({
   subsets: ["latin"],
@@ -80,22 +81,24 @@ export default function RootLayout({
       <body
         className={`${sen.variable} ${anton.variable} antialiased bg-white text-black dark:bg-gray-950 dark:text-white`}
       >
-        <AppProviders>
-          {!children?.toString().includes("DashboardLayout") ? (
-            <SectionContainer>
-              <Header />
-              <main className="mb-auto">{children}</main>
-              <Footer />
-              <Sidebar />
-              <Toaster />
-            </SectionContainer>
-          ) : (
-            <>
-              {children}
-              <Toaster />
-            </>
-          )}
-        </AppProviders>
+        
+          <AppProviders>
+            {!children?.toString().includes("DashboardLayout") ? (
+              <SectionContainer>
+                <Header />
+                <main className="mb-auto">{children}</main>
+                <Footer />
+                <Sidebar />
+                <Toaster />
+              </SectionContainer>
+            ) : (
+              <>
+                {children}
+                <Toaster />
+              </>
+            )}
+            <CookieBanner />
+          </AppProviders>
       </body>
       <GoogleAnalytics gaId={siteMetadata.googleAnalyticsId} />
     </html>

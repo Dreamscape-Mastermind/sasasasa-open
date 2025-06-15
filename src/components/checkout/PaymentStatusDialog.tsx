@@ -9,18 +9,13 @@ import {
 } from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
-import { PaymentStatus } from "@/types/payment";
+import { PaymentStatus, TransactionResult } from "@/types/payment";
 
 interface PaymentStatusDialogProps {
   isOpen: boolean;
   onClose: () => void;
   loading?: boolean;
-  transaction?: {
-    status: PaymentStatus;
-    message: string;
-    reference: string;
-    amount: number;
-  } | null;
+  transaction?: TransactionResult | null;
   onPurchaseAgain?: () => void;
 }
 
@@ -55,7 +50,7 @@ export function PaymentStatusDialog({
         <DialogHeader>
           <DialogTitle className="text-foreground">
             {transaction?.status === PaymentStatus.COMPLETED
-              ? "Booking Confirmed!"
+              ? "Order Confirmed"
               : "Payment Failed"}
           </DialogTitle>
         </DialogHeader>
@@ -93,7 +88,7 @@ export function PaymentStatusDialog({
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}`
-                        : "Amount pending verification"}
+                        : "N/A"}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">

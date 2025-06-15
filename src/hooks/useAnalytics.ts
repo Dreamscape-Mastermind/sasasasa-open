@@ -1,6 +1,7 @@
 import { sendGAEvent } from "@next/third-parties/google";
 import { useCallback } from "react";
 import { useLogger } from "./useLogger";
+import { useConsent } from "@/contexts/ConsentContext";
 
 export type AnalyticsEvent = {
   event: string;
@@ -9,22 +10,31 @@ export type AnalyticsEvent = {
 
 export const useAnalytics = () => {
   const logger = useLogger({ context: "Analytics" });
+  const { hasAnalyticsConsent, consentStatus, preferences } = useConsent();
 
-  // Track event - sends immediately
+  // Track event - sends immediately if consent is granted
   const trackEvent = useCallback(
     async (event: AnalyticsEvent) => {
       try {
+        // Check consent before tracking inline to avoid function dependency
+        const hasConsent = consentStatus === 'granted' && preferences.analytics;
+        if (!hasConsent) {
+          logger.debug(`Event blocked (no consent): ${event.event}`, event);
+          return;
+        }
+
         if (process.env.NODE_ENV === "development") {
           logger.debug(`Event sent: ${event.event}`, event);
           return;
         }
+        
         await sendGAEvent(event);
         logger.debug(`Event sent: ${event.event}`, event);
       } catch (error) {
         logger.error(`Failed to send event: ${event.event}`, error);
       }
     },
-    [logger]
+    [logger, consentStatus, preferences.analytics]
   );
 
   // Track page view
@@ -72,5 +82,6 @@ export const useAnalytics = () => {
     trackPageView,
     trackUserAction,
     trackError,
+    hasConsent: hasAnalyticsConsent, // Expose consent status
   };
 };

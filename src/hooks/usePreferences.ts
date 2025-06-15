@@ -1,4 +1,4 @@
-import type { UpdateOnboardingRequest, UpdateProfileRequest } from "@/types/preferences";
+import type { UpdateConsentRequest, UpdateOnboardingRequest, UpdateProfileRequest } from "@/types/preferences";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { preferencesService } from "@/services/preferences.service";
@@ -49,6 +49,25 @@ export const usePreferences = () => {
     });
   };
 
+  // Consent
+  const useConsentPreferences = (options?: { enabled?: boolean }) => {
+    return useQuery({
+      queryKey: ["consent"],
+      queryFn: () => preferencesService.getConsent(),
+      staleTime: 5 * 60 * 1000, // 5 minutes - consent doesn't change often
+      enabled: options?.enabled ?? true, // Default to enabled unless explicitly disabled
+    });
+  };
+
+  const useUpdateConsent = () => {
+    return useMutation({
+      mutationFn: (data: UpdateConsentRequest) => preferencesService.updateConsent(data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["consent"] });
+      },
+    });
+  };
+
   return {
     // Profile preferences
     useProfile,
@@ -57,5 +76,8 @@ export const usePreferences = () => {
     // Onboarding
     useOnboarding,
     useUpdateOnboarding,
+    // Consent
+    useConsentPreferences,
+    useUpdateConsent,
   };
 };

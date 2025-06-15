@@ -199,6 +199,9 @@ export const ROLES_CACHE_DURATION = 60 * 30; // 30 minutes in seconds
 export const MAX_RETRIES = 2;
 export const RETRY_DELAY = 1000; // 1 second
 
+export const CONSENT_STORAGE_KEY = 'user-consent-preferences';
+export const CONSENT_VERSION = '1.0';
+
 // Auth storage configuration
 export const AUTH_STORAGE = {
   COOKIE_OPTIONS: {

@@ -8,6 +8,28 @@ export enum Gender {
   PREFER_NOT_TO_SAY = "prefer_not_to_say",
 }
 
+export interface ConsentPreferences {
+  analytics: boolean;
+  functional: boolean;
+  marketing: boolean;
+}
+
+export interface ConsentData {
+  preferences: ConsentPreferences;
+  version: string;
+  timestamp: number;
+  granted_at: string;
+}
+
+export interface ConsentResponse {
+  consent: ConsentData | null;
+}
+
+export interface UpdateConsentRequest {
+  preferences: ConsentPreferences;
+  version?: string;
+}
+
 // Base profile interface (public fields)
 export interface BaseProfile extends TimeStamp {
   id: string;

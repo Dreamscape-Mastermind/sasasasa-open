@@ -56,7 +56,9 @@ export function EventCheckout({
   const logger = useLogger({ context: "EventCheckout" });
   const [step, setStep] = useState<CheckoutStep>("details");
   const [error, setError] = useState<string | null>(null);
+  const { transaction } = usePaymentVerification();
 
+  console.log("transaction EventCheckout", transaction);
   const { verifyPayment } = usePaymentVerification({
     context: "EventCheckout",
     onSuccess: (result) => {
@@ -156,6 +158,10 @@ export function EventCheckout({
           });
 
           await verifyPayment(reference);
+          // Save paid event slug to cache
+          localStorage.setItem("paidEventSlug", slug);
+
+          return;
         }
 
         // Handle paid tickets with authorization URL
@@ -363,7 +369,7 @@ export function EventCheckout({
           <PaymentStatusDialog
             isOpen={true}
             onClose={onClose}
-            transaction={{
+            transaction={transaction ? transaction : {
               status: PaymentStatus.FAILED,
               message: error || "Payment failed",
               reference: "",
@@ -378,7 +384,7 @@ export function EventCheckout({
           <PaymentStatusDialog
             isOpen={true}
             onClose={onClose}
-            transaction={{
+            transaction={transaction ? transaction : {
               status: PaymentStatus.COMPLETED,
               message: "Your tickets have been purchased successfully",
               reference: "",
