@@ -76,7 +76,6 @@ export function BlogPostContent({ slug }: BlogPostContentProps) {
             ).toLocaleDateString()}
           </time>
           <span>•</span>
-          <span>{postData.view_count || 0} views</span>
         </div>
       </header>
 

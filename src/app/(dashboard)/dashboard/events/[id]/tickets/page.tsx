@@ -11,6 +11,7 @@ type Props = {
 
 export default function TicketsPage({ params }: Props) {
   const { id } = use(params);
+  console.log("id", id);
   return (
     <Suspense fallback={<Spinner />}>
       <TicketsContent eventId={id} />

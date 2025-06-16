@@ -2,14 +2,13 @@
 
 import { FormProvider, useForm } from "react-hook-form";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode, useEffect, useState, useRef } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { SearchParamsProvider } from "./SearchParamsProvider";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProviders } from "@/providers/theme-providers";
-import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
 import { ConsentProvider } from "@/contexts/ConsentContext";
 
@@ -68,49 +67,15 @@ const queryClient = new QueryClient({
   },
 });
 
-// Fixed AnalyticsProvider - remove analytics dependency and use refs
-const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
-  const analytics = useAnalytics();
-  const [hasTrackedInitial, setHasTrackedInitial] = useState(false);
-  const analyticsRef = useRef(analytics);
-  
-  // Update ref when analytics changes
-  useEffect(() => {
-    analyticsRef.current = analytics;
-  }, [analytics]);
-
-  // Track initial page view - only once
-  useEffect(() => {
-    if (!hasTrackedInitial) {
-      analyticsRef.current.trackPageView(window.location.pathname, document.title);
-      setHasTrackedInitial(true);
-    }
-  }, [hasTrackedInitial]); // No analytics dependency
-
-  // Track route changes - setup only once  
-  useEffect(() => {
-    const handleRouteChange = () => {
-      analyticsRef.current.trackPageView(window.location.pathname);
-    };
-
-    window.addEventListener("popstate", handleRouteChange);
-    return () => window.removeEventListener("popstate", handleRouteChange);
-  }, []); // Empty dependency - setup once only
-
-  return <>{children}</>;
-};
-
-// Fixed LoggerProvider - remove logger from dependencies
+// Fixed LoggerProvider - keep this as it's not causing issues
 const LoggerProvider = ({ children }: { children: ReactNode }) => {
   const logger = useLogger({ context: "App" });
   const loggerRef = useRef(logger);
   
-  // Update ref when logger changes
   useEffect(() => {
     loggerRef.current = logger;
   }, [logger]);
 
-  // Log unhandled errors - setup once only
   useEffect(() => {
     const handleError = (error: ErrorEvent) => {
       loggerRef.current.error("Unhandled error occurred", error);
@@ -118,12 +83,12 @@ const LoggerProvider = ({ children }: { children: ReactNode }) => {
 
     window.addEventListener("error", handleError);
     return () => window.removeEventListener("error", handleError);
-  }, []); // No logger dependency
+  }, []);
 
   return <>{children}</>;
 };
 
-// Combined Providers
+// Combined Providers - REMOVED AnalyticsProvider completely
 export function AppProviders({ children }: { children: ReactNode }) {
   const methods = useForm();
 
@@ -135,9 +100,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <AuthProvider>
               <ThemeProviders>
                 <FormProvider {...methods}>
-                  <AnalyticsProvider>
-                    <SidebarProvider>{children}</SidebarProvider>
-                  </AnalyticsProvider>
+                  <SidebarProvider>{children}</SidebarProvider>
                 </FormProvider>
               </ThemeProviders>
             </AuthProvider>

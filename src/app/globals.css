@@ -146,3 +146,56 @@ input:-webkit-autofill:focus {
 .overflow-hidden {
   overflow: hidden !important;
 }
+
+@layer utilities {
+  /* Ultra-subtle and super slow shimmer animation for beta crown */
+  @keyframes shimmer-crown {
+    0%, 100% {
+      background-position: -150% 0;
+      opacity: 0.2;
+    }
+    50% {
+      background-position: 150% 0;
+      opacity: 0.4;
+    }
+  }
+  
+  .shimmer-crown {
+    position: relative;
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      rgba(251, 191, 36, 0.08) 45%,
+      rgba(255, 255, 255, 0.12) 50%,
+      rgba(251, 191, 36, 0.08) 55%,
+      transparent 70%
+    );
+    background-size: 300% 100%;
+    animation: shimmer-crown 8s infinite ease-in-out;
+    will-change: background-position, opacity;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+  
+  /* Slightly faster and more visible on hover/focus */
+  .shimmer-crown:hover,
+  .shimmer-crown:focus-visible {
+    animation-duration: 5s;
+    background: linear-gradient(
+      115deg,
+      transparent 25%,
+      rgba(251, 191, 36, 0.12) 42%,
+      rgba(255, 255, 255, 0.18) 50%,
+      rgba(251, 191, 36, 0.12) 58%,
+      transparent 75%
+    );
+  }
+  
+  /* Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .shimmer-crown {
+      animation: none;
+      background: rgba(251, 191, 36, 0.3);
+    }
+  }
+}

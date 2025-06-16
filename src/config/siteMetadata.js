@@ -11,8 +11,8 @@ const siteMetadata = {
   language: "en-us",
   theme: "system", // system, dark or light
   siteUrl: "https://sasasasa.co",
-  siteLogo: "/images/sasasasaLogo.png",
-  socialBanner: "/images/sasasasaLogo.png",
+  siteLogo: process.env.NEXT_PUBLIC_LOGO_URL || "/logo.png",
+  socialBanner: process.env.NEXT_PUBLIC_LOGO_URL || "/logo.png",
   email: "support@sasasasa.co",
   x: "https://twitter.com/sasasasa",
   // twitter: 'https://twitter.com/Twitter',

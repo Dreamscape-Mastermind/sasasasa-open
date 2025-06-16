@@ -56,6 +56,7 @@ export function getRoleName(role: UserRole) {
     [UserRole.EVENT_ORGANIZER]: "Event Organizer",
     [UserRole.EVENT_TEAM]: "Event Team",
     [UserRole.CUSTOMER]: "Customer",
+    [UserRole.BETA_TESTER]: "Beta Program",
   };
 
   return roleMap[role] || "Unknown Role";

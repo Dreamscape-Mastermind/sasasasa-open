@@ -27,7 +27,7 @@ interface ConsentContextType {
 
 const defaultPreferences: ConsentPreferences = {
   analytics: false,
-  functional: true, // Always allow functional cookies
+  functional: true,
   marketing: false,
 };
 
@@ -42,7 +42,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
   
   // Track initialization state to prevent loops
   const initializationCompleteRef = useRef(false);
-  const isInitializingRef = useRef(false);
+  const hasSyncedWithBackendRef = useRef(false);
   
   // Check authentication once
   useEffect(() => {
@@ -55,6 +55,8 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
   const { data: backendConsent, isLoading: isBackendLoading, error: backendError } = useConsentPreferences({
     enabled: isAuthenticated
   });
+  
+  // Get mutation function but use it carefully to avoid dependency loops
   const updateConsentMutation = useUpdateConsent();
 
   // Initial load from localStorage - runs once only
@@ -80,6 +82,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
             setConsentStatus('granted');
             setShowBanner(false);
             setIsLoading(false);
+            initializationCompleteRef.current = true;
             return;
           }
         }
@@ -87,80 +90,58 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
         // No valid local consent - show banner
         setShowBanner(true);
         setIsLoading(false);
+        initializationCompleteRef.current = true;
       } catch (error) {
         console.warn('Failed to load local consent:', error);
         setShowBanner(true);
         setIsLoading(false);
+        initializationCompleteRef.current = true;
       }
     };
 
     loadLocalConsent();
   }, []); // Empty dependency - run once only
 
-  // Sync with backend when data becomes available - separate from initialization
+  // Sync with backend - much more controlled
   useEffect(() => {
-    // Skip if not authenticated or still loading backend data
-    if (!isAuthenticated || isBackendLoading || isInitializingRef.current) {
+    // Skip if not ready for backend sync or already synced
+    if (!isAuthenticated || 
+        isBackendLoading || 
+        !initializationCompleteRef.current ||
+        hasSyncedWithBackendRef.current) {
       return;
     }
 
-    // Skip if we haven't completed local initialization
-    if (isLoading) {
-      return;
-    }
-
-    const syncWithBackend = async () => {
-      isInitializingRef.current = true;
+    // Only sync once per session when backend data is available
+    if (backendConsent && !backendError) {
+      const backendConsentData = backendConsent.consent;
       
-      try {
-        // Backend has consent data - use it as source of truth
-        if (backendConsent && !backendError) {
-          const backendConsentData = backendConsent.consent;
+      if (backendConsentData) {
+        const backendPrefs = backendConsentData.preferences;
+        
+        // Only update if different from current state to avoid unnecessary re-renders
+        if (JSON.stringify(backendPrefs) !== JSON.stringify(preferences)) {
+          setPreferences(backendPrefs);
+          setConsentStatus('granted');
+          setShowBanner(false);
           
-          if (backendConsentData) {
-            const backendPrefs = backendConsentData.preferences;
-            setPreferences(backendPrefs);
-            setConsentStatus('granted');
-            setShowBanner(false);
-            
-            // Update localStorage to match backend
-            const consentData = {
-              preferences: backendPrefs,
-              version: backendConsentData.version,
-              timestamp: backendConsentData.timestamp,
-            };
-            localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(consentData));
-          } else {
-            // Backend has no consent data - check if we have local data to sync
-            const stored = localStorage.getItem(CONSENT_STORAGE_KEY);
-            if (stored) {
-              const { preferences: localPrefs } = JSON.parse(stored);
-              
-              // Don't trigger sync if backend might refetch - just update backend silently
-              try {
-                await updateConsentMutation.mutateAsync({
-                  preferences: localPrefs,
-                  version: CONSENT_VERSION,
-                });
-              } catch (error) {
-                console.warn('Failed to sync local consent to backend:', error);
-              }
-            }
-          }
-        } else if (backendError) {
-          // Backend error - continue with local storage behavior
-          console.warn('Backend consent fetch failed:', backendError);
+          // Update localStorage to match backend
+          const consentData = {
+            preferences: backendPrefs,
+            version: backendConsentData.version,
+            timestamp: backendConsentData.timestamp,
+          };
+          localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(consentData));
         }
-      } catch (error) {
-        console.warn('Failed to sync with backend:', error);
-      } finally {
-        isInitializingRef.current = false;
-        initializationCompleteRef.current = true;
       }
-    };
-
-    syncWithBackend();
-  }, [isAuthenticated, backendConsent, backendError, isBackendLoading, isLoading, updateConsentMutation]);
+      
+      hasSyncedWithBackendRef.current = true;
+    } else if (backendError) {
+      console.warn('Backend consent fetch failed:', backendError);
+      hasSyncedWithBackendRef.current = true;
+    }
+  }, [isAuthenticated, backendConsent, backendError, isBackendLoading, preferences]);
+  // CRITICAL: Removed updateConsentMutation from dependencies to prevent loops
 
   const saveConsent = useCallback((prefs: ConsentPreferences) => {
     try {
@@ -181,18 +162,16 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
     setShowBanner(false);
     saveConsent(prefs);
     
-    // Sync to backend if authenticated (don't await to avoid blocking UI)
+    // Sync to backend if authenticated - use setTimeout to break the invalidation loop
     if (isAuthenticated) {
-      try {
+      setTimeout(() => {
         updateConsentMutation.mutate({
           preferences: prefs,
           version: CONSENT_VERSION,
         });
-      } catch (error) {
-        console.warn('Failed to sync consent to backend:', error);
-      }
+      }, 100); // Small delay prevents immediate query invalidation cycle
     }
-  }, [saveConsent, updateConsentMutation, isAuthenticated]);
+  }, [saveConsent, isAuthenticated]); // Removed updateConsentMutation from dependencies
 
   const denyConsent = useCallback(async () => {
     const deniedPrefs = { ...defaultPreferences, analytics: false, marketing: false };
@@ -201,36 +180,30 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
     setShowBanner(false);
     saveConsent(deniedPrefs);
     
-    // Sync to backend if authenticated (don't await to avoid blocking UI)
     if (isAuthenticated) {
-      try {
+      setTimeout(() => {
         updateConsentMutation.mutate({
           preferences: deniedPrefs,
           version: CONSENT_VERSION,
         });
-      } catch (error) {
-        console.warn('Failed to sync consent to backend:', error);
-      }
+      }, 100);
     }
-  }, [saveConsent, updateConsentMutation, isAuthenticated]);
+  }, [saveConsent, isAuthenticated]);
 
   const updatePreferences = useCallback(async (newPrefs: Partial<ConsentPreferences>) => {
     const updated = { ...preferences, ...newPrefs };
     setPreferences(updated);
     saveConsent(updated);
     
-    // Sync to backend if authenticated (don't await to avoid blocking UI)
     if (isAuthenticated) {
-      try {
+      setTimeout(() => {
         updateConsentMutation.mutate({
           preferences: updated,
           version: CONSENT_VERSION,
         });
-      } catch (error) {
-        console.warn('Failed to sync consent to backend:', error);
-      }
+      }, 100);
     }
-  }, [preferences, saveConsent, updateConsentMutation, isAuthenticated]);
+  }, [preferences, saveConsent, isAuthenticated]);
 
   const hasAnalyticsConsent = useCallback(() => {
     return consentStatus === 'granted' && preferences.analytics;
@@ -242,6 +215,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
     setConsentStatus('pending');
     setShowBanner(true);
     initializationCompleteRef.current = false;
+    hasSyncedWithBackendRef.current = false;
   }, []);
 
   return (
@@ -266,7 +240,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
 export const useConsent = () => {
   const context = useContext(ConsentContext);
   if (context === undefined) {
-    throw new Error('useConsent must be used within a ConsentProvider');
+    throw new error('useConsent must be used within a ConsentProvider');
   }
   return context;
 };

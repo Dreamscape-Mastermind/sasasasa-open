@@ -50,6 +50,7 @@ export interface UserProfile extends BaseUserEntity {
   wallets: WalletInfo[];
   walletAddress?: Nullable<string>;
   authType: "web2" | "web3";
+  beta?: boolean;
 }
 
 /**
@@ -85,6 +86,7 @@ export enum UserRole {
   EVENT_ORGANIZER = "EVENT_ORGANIZER",
   EVENT_TEAM = "EVENT_TEAM",
   CUSTOMER = "CUSTOMER",
+  BETA_TESTER = "BETA_TESTER",
 }
 
 /**

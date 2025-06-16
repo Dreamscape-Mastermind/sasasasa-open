@@ -43,13 +43,14 @@ export const useEvent = () => {
     });
   };
 
-  const useUpdateEvent = (id: string) => {
+  const useUpdateEvent = (id: string, config?: { onSuccess?: () => void }) => {
     return useMutation({
       mutationFn: (data: UpdateEventRequest) =>
         eventService.updateEvent(id, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["events"] });
         queryClient.invalidateQueries({ queryKey: ["event", id] });
+        config?.onSuccess?.();
       },
     });
   };
