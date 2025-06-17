@@ -33,7 +33,6 @@ function EventsContent() {
   const { data: userEvents, isLoading, isError } = useEvent().useMyEvents();
   if (!isLoading && userEvents) {
     events = userEvents.result ? [...userEvents.result.results] : [];
-    console.log({ userEvents: userEvents.result});
   }
 
   // Helper to parse and compare dates

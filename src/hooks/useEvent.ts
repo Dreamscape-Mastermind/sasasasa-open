@@ -28,6 +28,7 @@ export const useEvent = () => {
   const useEvent = (id: string) => {
     return useQuery({
       queryKey: ["event", id],
+      enabled: !!id,
       queryFn: () => eventService.getEvent(id),
       staleTime: 5 * 60 * 1000, // 5 minutes - data is considered fresh for 5 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes - cache garbage collection time

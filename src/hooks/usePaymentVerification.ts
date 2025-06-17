@@ -26,7 +26,6 @@ export function usePaymentVerification({
   const logger = useLogger({ context });
 
   const verifyPayment = async (reference) => {
-    console.log("reference verifyPayment", reference);
     if (!reference) {
       const error = new Error("Invalid payment reference");
       setTransaction({
@@ -45,7 +44,6 @@ export function usePaymentVerification({
         reference,
       });
 
-      console.log("result verifyPayment", result);
 
       if (result.result?.status === PaymentStatus.COMPLETED) {
         const successResult = {
@@ -60,7 +58,6 @@ export function usePaymentVerification({
         };
 
         setTransaction(successResult);
-        console.log("successResult", successResult);
         // Send successful payment event
         trackEvent({
           event: "purchase",

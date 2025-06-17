@@ -58,7 +58,6 @@ export function EventCheckout({
   const [error, setError] = useState<string | null>(null);
   const { transaction } = usePaymentVerification();
 
-  console.log("transaction EventCheckout", transaction);
   const { verifyPayment } = usePaymentVerification({
     context: "EventCheckout",
     onSuccess: (result) => {

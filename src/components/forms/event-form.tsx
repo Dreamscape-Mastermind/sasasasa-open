@@ -60,12 +60,17 @@ const formSchema = z
       message: "Venue must be at least 2 characters",
     }),
     capacity: z.coerce.number().nonnegative("Capacity is required."),
-    cover_image: z.any().optional(),
-    facebook_url: z.string(),
-    website_url: z.string(),
-    linkedin_url: z.string(),
-    instagram_url: z.string(),
-    twitter_url: z.string(),
+    cover_image: z.union([
+      z.instanceof(File),
+      z.string(),
+      z.null(),
+      z.undefined()
+    ]).optional(),
+    facebook_url: z.string().optional(),
+    website_url: z.string().optional(),
+    linkedin_url: z.string().optional(),
+    instagram_url: z.string().optional(),
+    twitter_url: z.string().optional(),
   })
   .refine(
     (data) => {
@@ -122,8 +127,12 @@ export default function EventForm() {
   const searchParams = useSearchParams();
   const eventId = searchParams.get("id") as string;
 
-  // State to track if we are editing an event
+  // State to track image handling
   const [isEditing, setIsEditing] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
+  const [imageAction, setImageAction] = useState<'keep' | 'upload' | 'remove'>('keep');
+  const [isLoading, setIsLoading] = useState(false);
 
   // Get the event hooks
   const {
@@ -141,10 +150,6 @@ export default function EventForm() {
 
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent(eventId);
-
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -188,61 +193,136 @@ export default function EventForm() {
       );
       form.setValue("venue", eventData.result.venue);
       form.setValue("capacity", eventData.result.capacity);
-      form.setValue(
-        "cover_image",
-        eventData.result.cover_image ? eventData.result.cover_image : ""
-      );
       form.setValue("timezone", eventData.result.timezone);
-      // Populate other fields as necessary
-      setIsEditing(true); // Set editing mode to true if event data is loaded
-      setImagePreview(eventData.result.cover_image ?? null);
+      
+      // Handle existing social media URLs
+      form.setValue("facebook_url", eventData.result.facebook_url || "");
+      form.setValue("website_url", eventData.result.website_url || "");
+      form.setValue("linkedin_url", eventData.result.linkedin_url || "");
+      form.setValue("instagram_url", eventData.result.instagram_url || "");
+      form.setValue("twitter_url", eventData.result.twitter_url || "");
+      
+      // Handle image properly
+      const existingImageUrl = eventData.result.cover_image;
+      if (existingImageUrl) {
+        setOriginalImageUrl(existingImageUrl);
+        setImagePreview(existingImageUrl);
+        form.setValue("cover_image", existingImageUrl);
+        setImageAction('keep');
+      } else {
+        setOriginalImageUrl(null);
+        setImagePreview(null);
+        form.setValue("cover_image", null);
+        setImageAction('keep');
+      }
+      
+      // Populate other social media fields
+      setIsEditing(true);
       setIsLoading(false);
     }
-    console.log({ eventError, eventData });
+    
     if (eventError) {
       const errorMessage = eventError?.message.includes("401")
         ? "Session expired, please login again"
         : "An error occurred while fetching event details.";
-      toast.error(errorMessage); // Show error toast
-      setIsLoading(false); // Set loading to false on error
+      toast.error(errorMessage);
+      setIsLoading(false);
     }
-  }, [eventData, eventError, form]); // Run effect when eventData changes
+  }, [eventData, eventError, form]);
 
   const onSubmit = async (data) => {
-    console.log("Form submission started");
-    console.log("Form data:", data);
 
-    const processedData = {
+    // Create processed data with proper date formatting
+    let processedData = {
       ...data,
       start_date: data.start_date.toISOString(),
       end_date: data.end_date.toISOString(),
     };
 
-    console.log("Processed data:", processedData);
+    // Handle image based on action
+    switch (imageAction) {
+      case 'keep':
+        // Don't modify cover_image - keep existing URL or undefined
+        if (isEditing && originalImageUrl) {
+          processedData.cover_image = originalImageUrl;
+        }
+        break;
+      case 'upload':
+        // File object is already in data.cover_image
+        break;
+      case 'remove':
+        processedData.cover_image = null;
+        break;
+    }
+
+    // Remove empty social media URLs to avoid sending empty strings
+    const socialFields = ['facebook_url', 'website_url', 'linkedin_url', 'instagram_url', 'twitter_url'];
+    socialFields.forEach(field => {
+      if (!processedData[field] || processedData[field].trim() === '') {
+        delete processedData[field];
+      }
+    });
+
 
     try {
       if (isEditing && eventId) {
-        console.log("Updating event with ID:", eventId);
         await updateEvent.mutateAsync(processedData);
+        toast.success("Event updated successfully!");
       } else {
-        console.log("Creating new event");
-        await createEvent.mutateAsync(processedData);
+        const response = await createEvent.mutateAsync(processedData);
+        toast.success("Event created successfully!");
+        
+        // Redirect to edit mode after creation if needed
+        if (response?.result?.id) {
+          window.history.replaceState({}, '', `?id=${response.result.id}`);
+          setIsEditing(true);
+        }
       }
-      console.log("Form submission successful");
     } catch (error) {
       console.error("Form submission failed:", error);
+      const errorMessage = error?.message || "An error occurred while saving the event";
+      toast.error(errorMessage);
     }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Please upload a valid image file (JPEG, PNG, or WebP)');
+        return;
+      }
+
+      // Validate file size (e.g., max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > maxSize) {
+        toast.error('Image file must be less than 5MB');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
         form.setValue("cover_image", file);
+        setImageAction('upload');
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImagePreview(null);
+    form.setValue("cover_image", null);
+    setImageAction('remove');
+  };
+
+  const handleRestoreImage = () => {
+    if (originalImageUrl) {
+      setImagePreview(originalImageUrl);
+      form.setValue("cover_image", originalImageUrl);
+      setImageAction('keep');
     }
   };
 
@@ -259,16 +339,8 @@ export default function EventForm() {
           <Form {...form}>
             <form
               onSubmit={(e) => {
-                console.log("Form submit event triggered");
-                console.log("Current form state:", {
-                  isValid: form.formState.isValid,
-                  errors: form.formState.errors,
-                  isDirty: form.formState.isDirty,
-                  values: form.getValues(),
-                });
                 form.handleSubmit(
                   (data) => {
-                    console.log("Form validation passed, submitting data");
                     onSubmit(data);
                   },
                   (errors) => {
@@ -325,8 +397,46 @@ export default function EventForm() {
                                   {...field}
                                 />
                               </div>
+
+                              {/* Image action buttons */}
+                              {imagePreview && (
+                                <div className="flex gap-2 text-xs">
+                                  <button
+                                    type="button"
+                                    onClick={handleRemoveImage}
+                                    className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                                  >
+                                    Remove Image
+                                  </button>
+                                  {originalImageUrl && imageAction !== 'keep' && (
+                                    <button
+                                      type="button"
+                                      onClick={handleRestoreImage}
+                                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                                    >
+                                      Restore Original
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+
                               <div className="text-xs text-gray-500">
                                 Recommended: Square image, at least 1080x1080px
+                                {imageAction === 'upload' && (
+                                  <div className="text-green-600 mt-1">
+                                    ✓ New image will be uploaded
+                                  </div>
+                                )}
+                                {imageAction === 'remove' && (
+                                  <div className="text-red-600 mt-1">
+                                    ⚠ Image will be removed
+                                  </div>
+                                )}
+                                {imageAction === 'keep' && originalImageUrl && (
+                                  <div className="text-blue-600 mt-1">
+                                    ℹ Keeping existing image
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </FormControl>
@@ -341,7 +451,7 @@ export default function EventForm() {
                 <Card className="bg-white dark:bg-zinc-900 border-gray-200 dark:border-gray-700">
                   <CardHeader>
                     <CardTitle className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-200">
-                      Event Details
+                      {eventData?.result?.title ? `${eventData?.result?.title.substring(0, 20)}` : "New Event"}
                     </CardTitle>
                     <CardDescription className="text-gray-600 dark:text-gray-200">
                       Fill in the details for the event.

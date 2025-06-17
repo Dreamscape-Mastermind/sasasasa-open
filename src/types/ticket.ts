@@ -119,7 +119,9 @@ export interface CreateTicketTypeRequest {
 }
 
 export interface UpdateTicketTypeRequest
-  extends Partial<CreateTicketTypeRequest> {}
+  extends Partial<CreateTicketTypeRequest> {
+  ticketTypeId: string;
+}
 
 export interface TicketPurchaseItem {
   ticket_type_id: string;

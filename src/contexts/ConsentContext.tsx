@@ -240,7 +240,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
 export const useConsent = () => {
   const context = useContext(ConsentContext);
   if (context === undefined) {
-    throw new error('useConsent must be used within a ConsentProvider');
+    throw new Error('useConsent must be used within a ConsentProvider');
   }
   return context;
 };

@@ -200,7 +200,6 @@ export function CheckInContent() {
       checkInsData?.result?.results[0]?.ticket_details?.event_title) ||
     "";
 
-  console.log({ checkInsData });
 
   return (
     <div className="space-y-8 animate-in">

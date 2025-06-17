@@ -281,6 +281,36 @@ class ApiClient {
       return handleApiError(error);
     }
   }
+
+  public async postFormData<T>(url: string, formData: FormData, config?: any): Promise<T> {
+    try {
+      const response = await this.api.post<T>(url, formData, {
+        ...config,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...config?.headers,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
+  public async patchFormData<T>(url: string, formData: FormData, config?: any): Promise<T> {
+    try {
+      const response = await this.api.patch<T>(url, formData, {
+        ...config,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...config?.headers,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
 }
 
 export const apiClient = ApiClient.getInstance();
