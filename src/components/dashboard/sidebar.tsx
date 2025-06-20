@@ -267,7 +267,7 @@ export function Sidebar() {
           <div className="px-3">
             <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
               <h3 className="font-bold text-lg text-foreground">
-                Blog Management
+                Stories
               </h3>
               <ScrollArea className="flex-1">
                 <div className="p-3 space-y-1">
@@ -295,7 +295,7 @@ export function Sidebar() {
           <div className="px-3">
             <div className="p-4 rounded-lg bg-transparent border border-border">
               <h3 className="font-bold text-lg text-foreground">
-                User Settings
+                My Account
               </h3>
               <div className="space-y-1">
                 {NAV_ITEMS.DASHBOARD_ADMIN.map((menu) => (

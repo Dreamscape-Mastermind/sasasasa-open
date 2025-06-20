@@ -226,7 +226,7 @@ function NewEventContent() {
             >
               {getStatusIcon(getTabStatus("tickets"))}
               <Ticket className="w-4 h-4" />
-              Ticket Types
+              Ticket Options
               {!hasTickets && eventId && (
                 <Badge variant="secondary" className="ml-1 text-xs">
                   Required

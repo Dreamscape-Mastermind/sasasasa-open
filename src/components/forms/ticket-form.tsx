@@ -218,14 +218,14 @@ export default function TicketForm() {
   }
 
   return (
-    <div className="bg-whi.te dark:bg-zinc-900 text-gray-900 dark:text-gray-200 p-6">
+    <div className="p-0">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Existing Tickets Section */}
         <div>
           <div className="mb-4 flex justify-between items-center">
             <div className="flex items-center gap-4">
               <div>
-                <h2 className="text-2xl font-bold">Ticket Types</h2>
+                <h2 className="text-2xl font-bold">Tickets</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   All tickets created for this event
                 </p>
@@ -275,7 +275,7 @@ export default function TicketForm() {
                         </p>
                       </div>
                     </div>
-                    <div className="space-y-2 bg-gray-50 dark:bg-zinc-800 p-2 rounded-lg border-b border-b-black-500">
+                    <div className="space-y-2  p-2 rounded-lg border-b border-b-black-500">
                       <div>
                         <p className="text-sm font-medium">Sale Start</p>
                         <p className="text-sm">

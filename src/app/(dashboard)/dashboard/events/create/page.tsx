@@ -102,7 +102,7 @@ export default function CreateEvent() {
             value="tickets"
             disabled={!isEditMode}
             className="flex items-center gap-2"
-            aria-label={`Ticket Types ${!isEditMode ? '(Create event first)' : ''}`}
+            aria-label={`Ticket Options  ${!isEditMode ? '(Create event first)' : ''}`}
           >
             <Ticket className="w-4 h-4" />
             <span className="hidden sm:inline">Event Tickets</span>

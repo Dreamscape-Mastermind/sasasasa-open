@@ -73,6 +73,7 @@ export const useTicket = () => {
   const useTickets = (eventId: string, params?: TicketQueryParams) => {
     return useQuery({
       queryKey: ["tickets", eventId, params],
+      enabled: !!eventId,
       queryFn: () => ticketService.listTickets(eventId, params),
     });
   };

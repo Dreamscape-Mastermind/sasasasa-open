@@ -139,37 +139,37 @@ export const NAV_ITEMS = {
   ],
   DASHBOARD_EVENT_ORGANIZER: [
     {
-      label: "Event Analytics",
+      label: "Analytics",
       href: ROUTES.DASHBOARD_EVENT_ANALYTICS("{eventId}"),
       icon: BarChart2,
     },
     {
-      label: "Event Details",
+      label: "Details",
       href: ROUTES.DASHBOARD_EVENT_DETAILS("{eventId}"),
       icon: Calendar,
     },
     {
-      label: "Event Tickets",
+      label: "Tickets",
       href: ROUTES.DASHBOARD_EVENT_TICKETS("{eventId}"),
       icon: CreditCard,
     },
     {
-      label: "Event Attendees",
+      label: "Attendees",
       href: ROUTES.DASHBOARD_EVENT_ATTENDEES("{eventId}"),
       icon: Users,
     },
     {
-      label: "Event Payments",
+      label: "Payments",
       href: ROUTES.DASHBOARD_EVENT_PAYMENTS("{eventId}"),
       icon: CreditCard,
     },
     {
-      label: "Event Promotions",
+      label: "Promotions",
       href: ROUTES.DASHBOARD_EVENT_PROMOTIONS("{eventId}"),
       icon: Percent,
     },
     {
-      label: "Event Check-In",
+      label: "Check-In",
       href: ROUTES.DASHBOARD_EVENT_CHECK_IN("{eventId}"),
       icon: Check,
     },
@@ -180,9 +180,9 @@ export const NAV_ITEMS = {
       href: ROUTES.DASHBOARD_BLOG_ANALYTICS,
       icon: BarChart2,
     },
-    { label: "Blog Posts", href: ROUTES.DASHBOARD_BLOG_POSTS, icon: FileText },
+    { label: "Posts", href: ROUTES.DASHBOARD_BLOG_POSTS, icon: FileText },
     {
-      label: "Blog Comments",
+      label: "Comments",
       href: ROUTES.DASHBOARD_BLOG_COMMENTS,
       icon: MessageSquare,
     },
