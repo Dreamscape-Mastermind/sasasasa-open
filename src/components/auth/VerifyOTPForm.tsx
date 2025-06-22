@@ -147,6 +147,7 @@ export function VerifyOTPForm() {
         setTimeout(() => {
           setShowConfetti(false);
         }, 5000);
+        return
       } else {
         // For login type, redirect to dashboard after successful verification
         router.replace(redirectTo);

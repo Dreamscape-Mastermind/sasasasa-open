@@ -27,10 +27,10 @@ export function Hero() {
       <div className="container mx-auto px-4 py-24 relative z-10">
         <div className="text-center space-y-8 max-w-3xl mx-auto">
           <h1 className="text-5xl font-bold tracking-tight">
-            Bringing you the tools to grow your value as a creative.
+            The best tools for digital creators to grow their brand.
           </h1>
           <p className="text-xl text-muted-foreground">
-           Your brand, Africa's export. From local events to global e-commerce we're building the pipeline to take African creativity worldwide. Start with events, expand to e-commerce, and grow on your terms. 
+           Your brand, Africa's export. From local events to global e-commerce we're building the pipeline to take African creativity worldwide. Start with experiences, expand to e-commerce, and grow on your terms. 
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/dashboard" onClick={() => handleAction("get_started")}>
