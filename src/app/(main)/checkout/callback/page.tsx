@@ -18,11 +18,11 @@ export const metadata: Metadata = {
 
 type Props = {
   params: Promise<{ reference: string }>;
+  searchParams: Promise<{ reference: string }>;
 };
 
-export default function CheckoutCallbackPage({ params }: Props) {
-  const { reference } = use(params);
-
+export default function CheckoutCallbackPage({ searchParams }: Props) {
+  const { reference } = use(searchParams);
   return (
     <Suspense
       fallback={
