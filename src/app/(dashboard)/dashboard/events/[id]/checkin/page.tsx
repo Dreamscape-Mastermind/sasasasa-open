@@ -1,17 +1,18 @@
-import { CheckInContent } from "@/components/checkin/CheckInContent";
-import { Metadata } from "next";
-import Spinner from "@/components/ui/spinner";
-import { Suspense } from "react";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Event Check-in | Dashboard",
-  description: "Manage event check-ins and track attendance",
+import { CheckInContent } from "@/components/checkin/CheckInContent";
+import Spinner from "@/components/ui/spinner";
+import { Suspense, use } from "react";
+
+type Props = {
+  params: Promise<{ id: string }>;
 };
 
-export default function CheckInPage() {
+export default function CheckInPage({ params }: Props) {
+  const { id } = use(params);
   return (
     <Suspense fallback={<Spinner />}>
-      <CheckInContent />
+      <CheckInContent eventId={id} />
     </Suspense>
   );
 }

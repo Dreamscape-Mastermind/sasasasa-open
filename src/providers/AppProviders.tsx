@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useEffect, useRef } from "react";
 
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { SearchParamsProvider } from "./SearchParamsProvider";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProviders } from "@/providers/theme-providers";
@@ -105,7 +104,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
               </ThemeProviders>
             </AuthProvider>
           </ConsentProvider>
-          <ReactQueryDevtools initialIsOpen={false} />
+          {/* <ReactQueryDevtools initialIsOpen={false} /> */}
         </LoggerProvider>
       </SearchParamsProvider>
     </QueryClientProvider>

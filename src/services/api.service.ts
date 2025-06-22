@@ -77,17 +77,17 @@ const serverLogger = {
             name: error.name,
           }
         : {};
-      console.error(`[API Error] ${message}`, errorDetails);
+      console.log(`[API Error] ${message}`, errorDetails);
     }
   },
   warn: (message: string, details?: any) => {
     if (process.env.NODE_ENV === "development") {
-      console.warn(`[API Warning] ${message}`, details);
+      console.log(`[API Warning] ${message}`, details);
     }
   },
   info: (message: string, details?: any) => {
     if (process.env.NODE_ENV === "development") {
-      console.info(`[API Info] ${message}`, details);
+      console.log(`[API Info] ${message}`, details);
     }
   },
 };

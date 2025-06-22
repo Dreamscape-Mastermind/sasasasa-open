@@ -28,6 +28,7 @@ export const useCheckin = () => {
         queryClient.invalidateQueries({ queryKey: ["checkins", eventId] });
         queryClient.invalidateQueries({ queryKey: ["checkin-stats", eventId] });
       },
+      retry: false,
     });
   };
 
