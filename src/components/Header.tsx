@@ -7,22 +7,66 @@ import { DashboardIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import Link from "./Link";
 import { LogIn } from "lucide-react";
-import MobileNav from "@/components/MobileNav";
+import AnimatedMobileNav from "@/components/AnimatedMobileNav";
 import { ProfileDropdown } from "./profile/ProfileDropdown";
 import ThemeSwitch from "@/components/ThemeSwitch";
 import siteMetadata from "@/config/siteMetadata";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
 const Header = () => {
   const { isAuthenticated, user, isLoading } = useAuth();
   const searchParams = useSearchParams();
   const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
+  
+  // Scroll state management
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const controlNavbar = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Always show when at the very top
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      }
+      // Hide when scrolling down (after 50px to avoid accidental triggers)
+      else if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setIsVisible(false);
+      } 
+      // Show when scrolling up from anywhere
+      else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    // Throttle scroll events for better performance
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          controlNavbar();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   let headerClass =
-    "flex items-center w-full dark:bg-gray-950 justify-between py-10";
+    "flex items-center w-full dark:bg-gray-950 justify-between py-10 transition-transform duration-300 ease-in-out";
   if (siteMetadata.stickyNav) {
     headerClass += " sticky top-0 z-50";
+  }
+  if (!isVisible) {
+    headerClass += " -translate-y-full";
   }
 
   const renderHeaderLogo = () => (
@@ -91,17 +135,35 @@ const Header = () => {
   };
 
   return (
-    <header className={headerClass}>
-      {renderHeaderLogo()}
-      <div className="flex items-center space-x-4 leading-5 sm:space-x-6">
-        {renderNavigation()}
-        <div className="hidden sm:flex items-center space-x-4">
-          {renderAuthButtons()}
+    <>
+      {/* Desktop Header */}
+      <header className={`${headerClass} hidden sm:flex`}>
+        {renderHeaderLogo()}
+        <div className="flex items-center space-x-4 leading-5 sm:space-x-6">
+          {renderNavigation()}
+          <div className="flex items-center space-x-4">
+            {renderAuthButtons()}
+          </div>
+          <ThemeSwitch />
         </div>
-        <ThemeSwitch />
-        <MobileNav authButtons={renderAuthButtons()} />
+      </header>
+
+      {/* Mobile - Single Unified Navigation Bar */}
+      <div className="sm:hidden">
+        <AnimatedMobileNav 
+          navItems={NAV_ITEMS.MAIN}
+          authButtons={renderAuthButtons()}
+          isAuthenticated={isAuthenticated}
+          user={user}
+          logo={{
+            src: siteMetadata.siteLogo,
+            alt: siteMetadata.headerTitle,
+            title: siteMetadata.headerTitle
+          }}
+          isVisible={isVisible}
+        />
       </div>
-    </header>
+    </>
   );
 };
 

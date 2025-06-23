@@ -42,10 +42,10 @@ export function FeaturedEvents({
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="space-y-8">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
           <h2 className="text-3xl font-bold">Featured Experiences</h2>
-          <Link href="/e" onClick={handleViewAllClick}>
-            <Button variant="ghost">View All Experiences</Button>
+          <Link href="/e"  onClick={handleViewAllClick}>
+            <Button className="w-fit" variant="ghost">View All Experiences</Button>
           </Link>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
