@@ -45,8 +45,8 @@ export function Features() {
       <div className="text-center max-w-2xl mx-auto mb-16">
         <h2 className="text-3xl font-bold mb-4">Why Choose Sasasasa?</h2>
         <p className="text-muted-foreground">
-        Our goal is simple, give you the tools to turn your African brand into a global export. Everything you need to create and manage and grow  your
-          experiences and brand via global commerce.
+        Our goal is simple, give you the tools to get your brand to you global audience. Everything you need to create and manage and grow  your
+          experiences and brand via universal commerce.
         </p>
       </div>
       <div className="grid md:grid-cols-3 gap-8">

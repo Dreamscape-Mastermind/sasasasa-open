@@ -30,12 +30,12 @@ export function Hero() {
             The best tools for digital creators to grow their brand.
           </h1>
           <p className="text-xl text-muted-foreground">
-           Your brand, is a universal export. From homegrown events to global e-commerce we're building the pipeline to scale the reach of creativity. Starting with experiences, all the way to e-commerce and media distribution. 
+           Your brand, is a universal export. Lets build it. From homegrown events to global e-commerce we're evolving the premier pipeline to scale the reach of creativity. Experiences, all the way to e-commerce and media distribution. You ready?
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/dashboard" onClick={() => handleAction("get_started")}>
               <Button size="lg" className="gap-2 w-full sm:w-auto">
-                I'm a creator (beta)
+                Sign Up (creators beta)
                 <Calendar className="h-4 w-4" />
               </Button>
             </Link>
