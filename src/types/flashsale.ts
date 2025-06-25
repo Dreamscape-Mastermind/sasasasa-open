@@ -41,6 +41,16 @@ export interface FlashSaleTicketType extends BaseFlashSaleEntity {
 }
 
 /**
+ * Recurring pattern interface
+ */
+export interface RecurrencePattern {
+  type: "weekly" | "monthly";
+  interval?: number; // Optional: repeat every N weeks/months (default: 1)
+  end_after?: number; // Optional: stop after N occurrences
+  end_date?: string; // Optional: stop by specific date (ISO 8601 format)
+}
+
+/**
  * Flash sale interface
  */
 export interface FlashSale extends BaseFlashSaleEntity {
@@ -55,10 +65,7 @@ export interface FlashSale extends BaseFlashSaleEntity {
   discount_type: FlashSaleDiscountType;
   discount_amount: number;
   is_recurring: boolean;
-  recurrence_pattern: Nullable<{
-    type: "weekly" | "monthly";
-    [key: string]: any;
-  }>;
+  recurrence_pattern: Nullable<RecurrencePattern>;
   ticket_types: FlashSaleTicketType[];
 }
 
@@ -85,10 +92,7 @@ export interface CreateFlashSaleRequest {
   discount_type: FlashSaleDiscountType;
   discount_amount: number;
   is_recurring?: boolean;
-  recurrence_pattern?: {
-    type: "weekly" | "monthly";
-    [key: string]: any;
-  };
+  recurrence_pattern?: RecurrencePattern;
   ticket_types: {
     ticket_type: string; // TicketType ID
     max_tickets: number;

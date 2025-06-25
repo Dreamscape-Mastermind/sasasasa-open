@@ -1,18 +1,14 @@
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DiscountStatus, DiscountType } from "@/types/discount";
 import { DollarSign, Percent, X } from "lucide-react";
-import React, { useState, useRef, useEffect } from "react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import React, { useEffect, useRef, useState } from "react";
+
+import { AlertCircle } from "lucide-react";
+import { FlashSaleDiscountType } from "@/types/flashsale";
+import { TicketType } from "@/types/ticket";
 import { useDiscount } from "@/hooks/useDiscount";
 import { useFlashSale } from "@/hooks/useFlashSale";
 import { useTicket } from "@/hooks/useTicket";
-import { DiscountType, DiscountStatus } from "@/types/discount";
-import { FlashSaleDiscountType } from "@/types/flashsale";
-import { TicketType } from "@/types/ticket";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 
 interface CreatePromotionModalProps {
   isOpen: boolean;
@@ -60,12 +56,13 @@ export function CreatePromotionModal({
     maxDiscount: "",
     maxUses: "",
     minTickets: "1",
-    startDate: "",
-    endDate: "",
-    startTime: "00:00",
-    endTime: "23:59",
+    startDateTime: "",
+    endDateTime: "",
     ticketTypes: [] as string[],
     recurrence: "none",
+    recurrenceInterval: "1",
+    recurrenceEndAfter: "",
+    recurrenceEndDate: "",
   });
 
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
@@ -85,12 +82,13 @@ export function CreatePromotionModal({
         maxDiscount: discount.max_discount_amount?.toString() || "",
         maxUses: discount.max_uses.toString(),
         minTickets: discount.min_ticket_count.toString(),
-        startDate: discount.start_date.split("T")[0],
-        endDate: discount.end_date.split("T")[0],
-        startTime: "00:00",
-        endTime: "23:59",
+        startDateTime: new Date(discount.start_date).toISOString().slice(0, 16),
+        endDateTime: new Date(discount.end_date).toISOString().slice(0, 16),
         ticketTypes: [],
         recurrence: "none",
+        recurrenceInterval: "1",
+        recurrenceEndAfter: "",
+        recurrenceEndDate: "",
       });
       setIsEditing(true);
     } else if (flashSaleId && flashSaleData?.result) {
@@ -104,28 +102,26 @@ export function CreatePromotionModal({
         maxDiscount: "",
         maxUses: flashSale.max_tickets.toString(),
         minTickets: "1",
-        startDate: flashSale.start_date.split("T")[0],
-        endDate: flashSale.end_date.split("T")[0],
-        startTime: "00:00",
-        endTime: "23:59",
-        ticketTypes: flashSale.ticket_types.map((t) => t.ticket_type),
+        startDateTime: new Date(flashSale.start_date)
+          .toISOString()
+          .slice(0, 16),
+        endDateTime: new Date(flashSale.end_date).toISOString().slice(0, 16),
+        ticketTypes: flashSale.ticket_types.map((t) => t.ticket_type_name),
         recurrence: flashSale.is_recurring
           ? flashSale.recurrence_pattern?.type || "none"
           : "none",
+        recurrenceInterval:
+          flashSale.recurrence_pattern?.interval?.toString() || "1",
+        recurrenceEndAfter:
+          flashSale.recurrence_pattern?.end_after?.toString() || "",
+        recurrenceEndDate:
+          flashSale.recurrence_pattern?.end_date?.split("T")[0] || "",
       });
       setIsEditing(true);
     } else {
       setIsEditing(false);
     }
   }, [discountId, flashSaleId, discountData, flashSaleData]);
-
-  const ticketTypeOptions = [
-    "General Admission",
-    "VIP Experience",
-    "Cultural Package",
-    "Student Discount",
-    "Group Booking",
-  ];
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -152,9 +148,53 @@ export function CreatePromotionModal({
     setFormData((prev) => ({ ...prev, code }));
   };
 
+  const convertToISOString = (datetimeLocal: string): string => {
+    if (!datetimeLocal) return "";
+    // datetime-local format: "2025-06-25T14:00"
+    // We need to preserve the exact time without timezone conversion
+    return datetimeLocal + ":00.000Z";
+  };
+
+  const validateRecurrencePattern = () => {
+    if (formData.recurrence === "none") return true;
+
+    // Validate interval
+    const interval = parseInt(formData.recurrenceInterval);
+    if (isNaN(interval) || interval < 1) {
+      setError("Recurrence interval must be a positive number");
+      return false;
+    }
+
+    // Validate end_after if provided
+    if (formData.recurrenceEndAfter) {
+      const endAfter = parseInt(formData.recurrenceEndAfter);
+      if (isNaN(endAfter) || endAfter < 1) {
+        setError("End after occurrences must be a positive number");
+        return false;
+      }
+    }
+
+    // Validate end_date if provided
+    if (formData.recurrenceEndDate) {
+      const endDate = new Date(formData.recurrenceEndDate);
+      const startDate = new Date(convertToISOString(formData.startDateTime));
+      if (endDate <= startDate) {
+        setError("Recurrence end date must be after the start date");
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    // Validate recurring pattern if applicable
+    if (type === "flash-sale" && !validateRecurrencePattern()) {
+      return;
+    }
 
     try {
       if (type === "discount") {
@@ -169,8 +209,8 @@ export function CreatePromotionModal({
           max_discount_amount: formData.maxDiscount
             ? parseFloat(formData.maxDiscount)
             : undefined,
-          start_date: `${formData.startDate}T00:00:00Z`,
-          end_date: `${formData.endDate}T23:59:59Z`,
+          start_date: convertToISOString(formData.startDateTime),
+          end_date: convertToISOString(formData.endDateTime),
           status: DiscountStatus.ACTIVE,
         };
 
@@ -183,8 +223,8 @@ export function CreatePromotionModal({
         const flashSaleData = {
           name: formData.name,
           description: formData.description,
-          start_date: `${formData.startDate}T00:00:00Z`,
-          end_date: `${formData.endDate}T23:59:59Z`,
+          start_date: convertToISOString(formData.startDateTime),
+          end_date: convertToISOString(formData.endDateTime),
           max_tickets: parseInt(formData.maxUses),
           discount_type:
             formData.discountType.toUpperCase() as FlashSaleDiscountType,
@@ -194,12 +234,24 @@ export function CreatePromotionModal({
             formData.recurrence !== "none"
               ? {
                   type: formData.recurrence as "weekly" | "monthly",
+                  interval: parseInt(formData.recurrenceInterval) || 1,
+                  ...(formData.recurrenceEndAfter && {
+                    end_after: parseInt(formData.recurrenceEndAfter),
+                  }),
+                  ...(formData.recurrenceEndDate && {
+                    end_date: `${formData.recurrenceEndDate}T23:59:59Z`,
+                  }),
                 }
               : undefined,
-          ticket_types: formData.ticketTypes.map((ticketType) => ({
-            ticket_type: ticketType,
-            max_tickets: parseInt(formData.maxUses),
-          })),
+          ticket_types: formData.ticketTypes.map((ticketTypeName) => {
+            const ticketType = ticketTypesData?.result?.results.find(
+              (tt: TicketType) => tt.name === ticketTypeName
+            );
+            return {
+              ticket_type: ticketType?.id || ticketTypeName,
+              max_tickets: parseInt(formData.maxUses),
+            };
+          }),
         };
 
         if (isEditing && flashSaleId) {
@@ -256,13 +308,19 @@ export function CreatePromotionModal({
               {isEditing ? "Edit" : "Create"}{" "}
               {type === "discount" ? "Discount Code" : "Flash Sale"}
             </h2>
-            <Popover>
+            <button
+              onClick={handleDiscard}
+              className="p-2 hover:bg-muted rounded-lg transition-colors"
+            >
+              <X className="h-5 w-5 text-foreground" />
+            </button>
+            {/* <Popover>
               <PopoverTrigger asChild>
                 <button
                   ref={closeButtonRef}
                   className="p-2 hover:bg-muted rounded-lg transition-colors"
                 >
-                  <X className="h-5 w-5 text-muted-foreground" />
+                  <X className="h-5 w-5 text-foreground" />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-80">
@@ -270,7 +328,7 @@ export function CreatePromotionModal({
                   <h4 className="font-medium text-foreground">
                     Discard Changes?
                   </h4>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-foreground">
                     You have unsaved changes. Are you sure you want to discard
                     them?
                   </p>
@@ -290,7 +348,7 @@ export function CreatePromotionModal({
                   </div>
                 </div>
               </PopoverContent>
-            </Popover>
+            </Popover> */}
           </div>
 
           {/* Form */}
@@ -311,7 +369,7 @@ export function CreatePromotionModal({
               <div>
                 <label
                   htmlFor="name"
-                  className="block text-sm font-medium text-muted-foreground mb-1"
+                  className="block text-sm font-medium text-foreground mb-1"
                 >
                   Promotion Name *
                 </label>
@@ -330,7 +388,7 @@ export function CreatePromotionModal({
               <div>
                 <label
                   htmlFor="description"
-                  className="block text-sm font-medium text-muted-foreground mb-1"
+                  className="block text-sm font-medium text-foreground mb-1"
                 >
                   Description
                 </label>
@@ -349,7 +407,7 @@ export function CreatePromotionModal({
                 <div>
                   <label
                     htmlFor="code"
-                    className="block text-sm font-medium text-muted-foreground mb-1"
+                    className="block text-sm font-medium text-foreground mb-1"
                   >
                     Discount Code *
                   </label>
@@ -367,7 +425,7 @@ export function CreatePromotionModal({
                     <button
                       type="button"
                       onClick={generateCode}
-                      className="px-4 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-muted/80"
+                      className="px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
                     >
                       Generate
                     </button>
@@ -386,7 +444,7 @@ export function CreatePromotionModal({
                 <div>
                   <label
                     htmlFor="discountType"
-                    className="block text-sm font-medium text-muted-foreground mb-1"
+                    className="block text-sm font-medium text-foreground mb-1"
                   >
                     Discount Type *
                   </label>
@@ -405,7 +463,7 @@ export function CreatePromotionModal({
                 <div>
                   <label
                     htmlFor="amount"
-                    className="block text-sm font-medium text-muted-foreground mb-1"
+                    className="block text-sm font-medium text-foreground mb-1"
                   >
                     {formData.discountType === "percentage"
                       ? "Percentage (%)"
@@ -432,9 +490,9 @@ export function CreatePromotionModal({
                       required
                     />
                     {formData.discountType === "percentage" ? (
-                      <Percent className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Percent className="absolute left-2 top-2.5 h-4 w-4 text-foreground" />
                     ) : (
-                      <DollarSign className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <DollarSign className="absolute left-2 top-2.5 h-4 w-4 text-foreground" />
                     )}
                   </div>
                 </div>
@@ -444,7 +502,7 @@ export function CreatePromotionModal({
                 <div>
                   <label
                     htmlFor="maxDiscount"
-                    className="block text-sm font-medium text-muted-foreground mb-1"
+                    className="block text-sm font-medium text-foreground mb-1"
                   >
                     Maximum Discount Amount ($)
                   </label>
@@ -472,7 +530,7 @@ export function CreatePromotionModal({
                 <div>
                   <label
                     htmlFor="maxUses"
-                    className="block text-sm font-medium text-muted-foreground mb-1"
+                    className="block text-sm font-medium text-foreground mb-1"
                   >
                     Maximum Uses
                   </label>
@@ -491,7 +549,7 @@ export function CreatePromotionModal({
                 <div>
                   <label
                     htmlFor="minTickets"
-                    className="block text-sm font-medium text-muted-foreground mb-1"
+                    className="block text-sm font-medium text-foreground mb-1"
                   >
                     Minimum Tickets
                   </label>
@@ -517,16 +575,16 @@ export function CreatePromotionModal({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label
-                    htmlFor="startDate"
-                    className="block text-sm font-medium text-muted-foreground mb-1"
+                    htmlFor="startDateTime"
+                    className="block text-sm font-medium text-foreground mb-1"
                   >
-                    Start Date *
+                    Start Date & Time *
                   </label>
                   <input
-                    type="date"
-                    id="startDate"
-                    name="startDate"
-                    value={formData.startDate}
+                    type="datetime-local"
+                    id="startDateTime"
+                    name="startDateTime"
+                    value={formData.startDateTime}
                     onChange={handleInputChange}
                     className="w-full rounded-lg border border-input bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                     required
@@ -535,60 +593,22 @@ export function CreatePromotionModal({
 
                 <div>
                   <label
-                    htmlFor="endDate"
-                    className="block text-sm font-medium text-muted-foreground mb-1"
+                    htmlFor="endDateTime"
+                    className="block text-sm font-medium text-foreground mb-1"
                   >
-                    End Date *
+                    End Date & Time *
                   </label>
                   <input
-                    type="date"
-                    id="endDate"
-                    name="endDate"
-                    value={formData.endDate}
+                    type="datetime-local"
+                    id="endDateTime"
+                    name="endDateTime"
+                    value={formData.endDateTime}
                     onChange={handleInputChange}
                     className="w-full rounded-lg border border-input bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                     required
                   />
                 </div>
               </div>
-
-              {type === "flash-sale" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      htmlFor="startTime"
-                      className="block text-sm font-medium text-muted-foreground mb-1"
-                    >
-                      Start Time
-                    </label>
-                    <input
-                      type="time"
-                      id="startTime"
-                      name="startTime"
-                      value={formData.startTime}
-                      onChange={handleInputChange}
-                      className="w-full rounded-lg border border-input bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="endTime"
-                      className="block text-sm font-medium text-muted-foreground mb-1"
-                    >
-                      End Time
-                    </label>
-                    <input
-                      type="time"
-                      id="endTime"
-                      name="endTime"
-                      value={formData.endTime}
-                      onChange={handleInputChange}
-                      className="w-full rounded-lg border border-input bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Ticket Types - Only show for Flash Sales */}
@@ -604,8 +624,12 @@ export function CreatePromotionModal({
                         <input
                           type="radio"
                           name="ticketType"
-                          checked={formData.ticketTypes[0] === ticketType.id}
-                          onChange={() => handleTicketTypeChange(ticketType.id)}
+                          checked={formData.ticketTypes.includes(
+                            ticketType.name
+                          )}
+                          onChange={() =>
+                            handleTicketTypeChange(ticketType.name)
+                          }
                           className="rounded-full border-input text-primary focus:ring-primary mr-2"
                         />
                         <span className="text-sm text-foreground">
@@ -620,19 +644,126 @@ export function CreatePromotionModal({
 
             {type === "flash-sale" && (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-foreground">
-                  Recurrence (Optional)
-                </h3>
-                <select
-                  name="recurrence"
-                  value={formData.recurrence}
-                  onChange={handleInputChange}
-                  className="w-full rounded-lg border border-input bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  <option value="none">No Recurrence</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                </select>
+                <div>
+                  <h3 className="text-lg font-medium text-foreground">
+                    Recurrence (Optional)
+                  </h3>
+                  <p className="text-sm text-foreground mt-1">
+                    Set up automatic repetition of this flash sale at regular
+                    intervals
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="recurrence"
+                      className="block text-sm font-medium text-foreground mb-1"
+                    >
+                      Recurrence Type
+                    </label>
+                    <select
+                      id="recurrence"
+                      name="recurrence"
+                      value={formData.recurrence}
+                      onChange={handleInputChange}
+                      className="w-full rounded-lg border border-input bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="none">No Recurrence</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+
+                  {formData.recurrence !== "none" && (
+                    <>
+                      <div>
+                        <label
+                          htmlFor="recurrenceInterval"
+                          className="block text-sm font-medium text-foreground mb-1"
+                        >
+                          Repeat Every (Interval)
+                        </label>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="number"
+                            id="recurrenceInterval"
+                            name="recurrenceInterval"
+                            value={formData.recurrenceInterval}
+                            onChange={handleInputChange}
+                            className="w-20 rounded-lg border border-input bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                            min="1"
+                            max="52"
+                          />
+                          <span className="text-sm text-foreground">
+                            {formData.recurrence === "weekly"
+                              ? "week(s)"
+                              : "month(s)"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-foreground mt-1">
+                          Example: "2" means every 2{" "}
+                          {formData.recurrence === "weekly"
+                            ? "weeks"
+                            : "months"}
+                        </p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="block text-sm font-medium text-foreground">
+                          End Condition (Optional)
+                        </label>
+                        <p className="text-xs text-foreground">
+                          Set when the recurring pattern should stop. Leave both
+                          empty to continue indefinitely.
+                        </p>
+                        <div className="space-y-3">
+                          <div>
+                            <label
+                              htmlFor="recurrenceEndAfter"
+                              className="block text-sm text-foreground mb-1"
+                            >
+                              End After Occurrences
+                            </label>
+                            <input
+                              type="number"
+                              id="recurrenceEndAfter"
+                              name="recurrenceEndAfter"
+                              value={formData.recurrenceEndAfter}
+                              onChange={handleInputChange}
+                              className="w-full rounded-lg border border-input bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                              placeholder="e.g., 12"
+                              min="1"
+                            />
+                            <p className="text-xs text-foreground mt-1">
+                              Example: "12" means stop after 12 occurrences
+                            </p>
+                          </div>
+
+                          <div>
+                            <label
+                              htmlFor="recurrenceEndDate"
+                              className="block text-sm text-foreground mb-1"
+                            >
+                              End By Date
+                            </label>
+                            <input
+                              type="date"
+                              id="recurrenceEndDate"
+                              name="recurrenceEndDate"
+                              value={formData.recurrenceEndDate}
+                              onChange={handleInputChange}
+                              className="w-full rounded-lg border border-input bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                            <p className="text-xs text-foreground mt-1">
+                              Example: "2025-12-31" means stop by December 31,
+                              2025
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             )}
 
@@ -647,7 +778,7 @@ export function CreatePromotionModal({
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90"
               >
                 {isEditing
                   ? "Save Changes"

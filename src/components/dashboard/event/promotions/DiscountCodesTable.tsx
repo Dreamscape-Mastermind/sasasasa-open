@@ -4,20 +4,19 @@ import {
   Copy,
   Download,
   Edit,
-  Eye,
-  MoreHorizontal,
   Percent,
-  Plus,
   Search,
   Trash2,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
-import { useDiscount } from "@/hooks/useDiscount";
 import { DiscountStatus, DiscountType } from "@/types/discount";
+
 import { CreatePromotionModal } from "./CreatePromotionModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import toast from "react-hot-toast";
+import { useDiscount } from "@/hooks/useDiscount";
+import { useState } from "react";
 
 interface DiscountCodesTableProps {
   eventId: string;
@@ -111,7 +110,7 @@ export function DiscountCodesTable({
 
   const copyToClipboard = (code: string) => {
     navigator.clipboard.writeText(code);
-    // You could add a toast notification here
+    toast.success("Discount code copied to clipboard!");
   };
 
   if (isLoading) {
@@ -121,12 +120,18 @@ export function DiscountCodesTable({
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-10 w-48" />
         </div>
-        <div className="bg-card rounded-lg shadow-sm overflow-hidden">
-          <div className="p-6 space-y-4">
-            {[...Array(5)].map((_, index) => (
-              <Skeleton key={index} className="h-16 w-full" />
-            ))}
-          </div>
+        <div className="space-y-4">
+          {[...Array(5)].map((_, index) => (
+            <div
+              key={index}
+              className="bg-card rounded-lg shadow-sm border border-border p-4 sm:p-6 flex flex-col"
+            >
+              <Skeleton className="h-6 w-32 mb-2" />
+              <Skeleton className="h-4 w-48 mb-2" />
+              <Skeleton className="h-4 w-24 mb-2" />
+              <Skeleton className="h-2 w-full mb-2" />
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -136,7 +141,7 @@ export function DiscountCodesTable({
     <div className="space-y-6">
       {/* Header Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2">
           <div className="relative">
             <input
               type="text"
@@ -147,18 +152,6 @@ export function DiscountCodesTable({
             />
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
           </div>
-          <select
-            value={filterStatus}
-            onChange={(e) =>
-              setFilterStatus(e.target.value as DiscountStatus | "all")
-            }
-            className="border border-input bg-background rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="all">All Status</option>
-            <option value={DiscountStatus.ACTIVE}>Active</option>
-            <option value={DiscountStatus.EXPIRED}>Expired</option>
-            <option value={DiscountStatus.INACTIVE}>Inactive</option>
-          </select>
         </div>
         <div className="flex items-center space-x-3">
           {selectedCodes.length > 0 && (
@@ -174,198 +167,146 @@ export function DiscountCodesTable({
               </button>
             </div>
           )}
+
+          <select
+            value={filterStatus}
+            onChange={(e) =>
+              setFilterStatus(e.target.value as DiscountStatus | "all")
+            }
+            className="border border-input bg-background rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="all">All Status</option>
+            <option value={DiscountStatus.ACTIVE}>Active</option>
+            <option value={DiscountStatus.EXPIRED}>Expired</option>
+            <option value={DiscountStatus.INACTIVE}>Inactive</option>
+          </select>
           <button className="flex items-center px-4 py-2 border border-input bg-background text-foreground rounded-lg hover:bg-muted">
             <Download className="h-4 w-4 mr-2" />
             Export
           </button>
-          <button
+          {/* <button
             onClick={() => onCreatePromotion("discount")}
             className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
           >
             <Plus className="h-4 w-4 mr-2" />
             New Code
-          </button>
+          </button> */}
         </div>
       </div>
 
-      {/* Discount Codes Table */}
-      <div className="bg-card rounded-lg shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-muted">
-                <th className="px-6 py-3 text-left">
-                  <input
-                    type="checkbox"
-                    checked={
-                      selectedCodes.length ===
-                        (discounts?.result?.results?.length || 0) &&
-                      (discounts?.result?.results?.length || 0) > 0
-                    }
-                    onChange={handleSelectAll}
-                    className="rounded border-input text-primary focus:ring-primary"
-                  />
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Code
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Discount
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Usage
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Validity
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {discounts?.result?.results?.map((code) => {
-                const usagePercentage = getUsagePercentage(
-                  code.current_uses,
-                  code.max_uses
-                );
-                return (
-                  <tr key={code.id} className="hover:bg-muted/50">
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedCodes.includes(code.id)}
-                        onChange={() => handleSelectCode(code.id)}
-                        className="rounded border-input text-primary focus:ring-primary"
-                      />
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        <code className="bg-muted px-2 py-1 rounded text-sm font-mono">
-                          {code.code}
-                        </code>
-                        <button
-                          onClick={() => copyToClipboard(code.code)}
-                          className="ml-2 p-1 hover:bg-muted rounded"
-                          title="Copy code"
-                        >
-                          <Copy className="h-3 w-3 text-muted-foreground" />
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="font-medium text-foreground">
-                          {code.name}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {code.description}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm">
-                        <div className="font-medium text-foreground">
-                          {code.discount_type === DiscountType.PERCENTAGE
-                            ? `${code.amount}%`
-                            : `$${code.amount}`}
-                        </div>
-                        {code.discount_type === DiscountType.PERCENTAGE &&
-                          code.max_discount_amount && (
-                            <div className="text-muted-foreground">
-                              Max: ${code.max_discount_amount}
-                            </div>
-                          )}
-                        {code.min_ticket_count > 1 && (
-                          <div className="text-muted-foreground">
-                            Min: {code.min_ticket_count} tickets
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-foreground">
-                            {code.current_uses}/{code.max_uses}
-                          </span>
-                          <span className="text-muted-foreground">
-                            {usagePercentage.toFixed(0)}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full ${getUsageColor(
-                              usagePercentage
-                            )}`}
-                            style={{ width: `${usagePercentage}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                      <div>
-                        {format(new Date(code.start_date), "MMM d, yyyy")}
-                      </div>
-                      <div>
-                        {format(new Date(code.end_date), "MMM d, yyyy")}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        {getStatusIcon(code.status)}
-                        <span
-                          className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
-                            code.status
-                          )}`}
-                        >
-                          {code.status.charAt(0).toUpperCase() +
-                            code.status.slice(1)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        <button
-                          className="p-1 hover:bg-muted rounded"
-                          title="View details"
-                        >
-                          <Eye className="h-4 w-4 text-muted-foreground" />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(code.id)}
-                          className="p-1 hover:bg-muted rounded"
-                          title="Edit code"
-                        >
-                          <Edit className="h-4 w-4 text-muted-foreground" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(code.id)}
-                          className="p-1 hover:bg-muted rounded"
-                          title="Delete code"
-                        >
-                          <Trash2 className="h-4 w-4 text-muted-foreground" />
-                        </button>
-                        <button
-                          className="p-1 hover:bg-muted rounded"
-                          title="More options"
-                        >
-                          <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+      {/* Discount Codes List (Responsive) */}
+      <div className="space-y-4">
+        {discounts?.result?.results?.map((code) => {
+          const usagePercentage = getUsagePercentage(
+            code.current_uses,
+            code.max_uses
+          );
+          return (
+            <div
+              key={code.id}
+              className="bg-card rounded-lg shadow-sm border border-border p-4 sm:p-6 flex flex-col"
+            >
+              {/* Header and Status */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-4 gap-2">
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <span className="font-mono bg-muted px-2 py-1 rounded text-md sm:text-lg">
+                      {code.code}
+                    </span>
+                    <button
+                      onClick={() => copyToClipboard(code.code)}
+                      className="p-1 hover:bg-muted rounded"
+                      title="Copy code"
+                    >
+                      <Copy className="h-3 w-3 text-muted-foreground" />
+                    </button>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                        code.status
+                      )}`}
+                    >
+                      {code.status.charAt(0).toUpperCase() +
+                        code.status.slice(1)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handleEdit(code.id)}
+                    className="p-2 hover:bg-muted rounded-lg"
+                    title="Edit code"
+                  >
+                    <Edit className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(code.id)}
+                    className="p-2 hover:bg-muted rounded-lg"
+                    title="Delete code"
+                  >
+                    <Trash2 className="h-4 w-4 text-red-600" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Info Row */}
+              <div className="font-medium text-foreground text-sm sm:text-base mb-1">
+                {code.name}
+              </div>
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">
+                {code.description}
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
+                <div className="flex items-center mb-1 sm:mb-0">
+                  <Percent className="h-4 w-4 mr-1" />
+                  {code.discount_type === DiscountType.PERCENTAGE
+                    ? `${code.amount}%`
+                    : `KSH. ${code.amount}`}
+                </div>
+                <div className="flex items-center mb-1 sm:mb-0">
+                  <Clock className="h-4 w-4 mr-1" />
+                  {format(new Date(code.start_date), "MMM d, yyyy")} -{" "}
+                  {format(new Date(code.end_date), "MMM d, yyyy")}
+                </div>
+                {code.max_discount_amount && (
+                  <div className="flex items-center mb-1 sm:mb-0">
+                    <span className="text-xs sm:text-sm text-muted-foreground">
+                      Max: Ksh. {code.max_discount_amount}
+                    </span>
+                  </div>
+                )}
+                {code.min_ticket_count > 1 && (
+                  <div className="flex items-center mb-1 sm:mb-0">
+                    <span className="text-xs sm:text-sm text-muted-foreground">
+                      Min: {code.min_ticket_count} tickets
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Usage Bar */}
+              <div className="mb-2 sm:mb-4">
+                <div className="flex justify-between text-xs sm:text-sm text-muted-foreground mb-1">
+                  <span>Usage</span>
+                  <span>{usagePercentage.toFixed(0)}%</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full ${getUsageColor(
+                      usagePercentage
+                    )}`}
+                    style={{ width: `${usagePercentage}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs sm:text-sm mt-1">
+                  <span className="text-foreground">
+                    {code.current_uses}/{code.max_uses}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {(!discounts?.result?.results ||

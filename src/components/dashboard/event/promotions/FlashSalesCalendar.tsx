@@ -2,19 +2,28 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  Clock,
   DollarSign,
   Edit,
   MoreHorizontal,
-  Plus,
   Trash2,
-  Clock,
+  Repeat,
+  Play,
+  X,
 } from "lucide-react";
-import { useState } from "react";
-import { useFlashSale } from "@/hooks/useFlashSale";
-import { FlashSaleStatus } from "@/types/flashsale";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 import { CreatePromotionModal } from "./CreatePromotionModal";
+import { FlashSaleStatus, type RecurrencePattern } from "@/types/flashsale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { useFlashSale } from "@/hooks/useFlashSale";
+import { useState } from "react";
 
 interface FlashSalesCalendarProps {
   eventId: string;
@@ -32,11 +41,16 @@ export function FlashSalesCalendar({
     null
   );
 
-  const { useFlashSales, useDeleteFlashSale, useCancelFlashSale } =
-    useFlashSale();
+  const {
+    useFlashSales,
+    useDeleteFlashSale,
+    useCancelFlashSale,
+    useActivateFlashSale,
+  } = useFlashSale();
   const { data: flashSales, isLoading } = useFlashSales(eventId);
   const deleteFlashSale = useDeleteFlashSale(eventId);
   const cancelFlashSale = useCancelFlashSale(eventId);
+  const activateFlashSale = useActivateFlashSale(eventId);
 
   const getStatusColor = (status: FlashSaleStatus) => {
     switch (status) {
@@ -51,6 +65,52 @@ export function FlashSalesCalendar({
       default:
         return "bg-muted text-muted-foreground border-border";
     }
+  };
+
+  const formatRecurrencePattern = (
+    pattern: RecurrencePattern | null
+  ): string => {
+    if (!pattern) return "";
+
+    const interval = pattern.interval || 1;
+    const type = pattern.type === "weekly" ? "week" : "month";
+    const intervalText = interval === 1 ? type : `${interval} ${type}s`;
+
+    let endCondition = "";
+    if (pattern.end_after) {
+      endCondition = ` (${pattern.end_after} occurrences)`;
+    } else if (pattern.end_date) {
+      const endDate = new Date(pattern.end_date);
+      endCondition = ` (until ${format(endDate, "MMM d, yyyy")})`;
+    }
+
+    return `Every ${intervalText}${endCondition}`;
+  };
+
+  const getNextOccurrence = (sale: any, baseDate: Date): Date | null => {
+    if (!sale.is_recurring || !sale.recurrence_pattern) return null;
+
+    const pattern = sale.recurrence_pattern;
+    const startDate = new Date(sale.start_date);
+    const interval = pattern.interval || 1;
+
+    // Calculate the next occurrence
+    let nextDate = new Date(startDate);
+
+    while (nextDate <= baseDate) {
+      if (pattern.type === "weekly") {
+        nextDate.setDate(nextDate.getDate() + 7 * interval);
+      } else if (pattern.type === "monthly") {
+        nextDate.setMonth(nextDate.getMonth() + interval);
+      }
+    }
+
+    // Check if we've exceeded the end conditions
+    if (pattern.end_date && nextDate > new Date(pattern.end_date)) {
+      return null;
+    }
+
+    return nextDate;
   };
 
   const getDaysInMonth = (date: Date) => {
@@ -74,11 +134,66 @@ export function FlashSalesCalendar({
   };
 
   const getSalesForDate = (date: string) => {
-    return (
-      flashSales?.result?.results?.filter(
-        (sale) => sale.start_date <= date && sale.end_date >= date
-      ) || []
-    );
+    const sales =
+      flashSales?.result?.results?.filter((sale) => {
+        // Parse the ISO datetime strings and extract just the date portion
+        const saleStartDate = new Date(sale.start_date)
+          .toISOString()
+          .split("T")[0];
+        const saleEndDate = new Date(sale.end_date).toISOString().split("T")[0];
+
+        // Compare date strings (YYYY-MM-DD format)
+        const isInRange = saleStartDate <= date && saleEndDate >= date;
+
+        // For recurring sales, also check if this is a next occurrence date
+        if (sale.is_recurring && !isInRange) {
+          const targetDate = new Date(date);
+          const nextOccurrence = getNextOccurrence(sale, targetDate);
+          if (nextOccurrence) {
+            const nextOccurrenceDate = nextOccurrence
+              .toISOString()
+              .split("T")[0];
+            return nextOccurrenceDate === date;
+          }
+        }
+
+        return isInRange;
+      }) || [];
+
+    return sales;
+  };
+
+  const isUpcomingOccurrence = (sale: any, date: string): boolean => {
+    if (!sale.is_recurring) return false;
+
+    const saleStartDate = new Date(sale.start_date).toISOString().split("T")[0];
+    const saleEndDate = new Date(sale.end_date).toISOString().split("T")[0];
+
+    // If it's within the original date range, it's not upcoming
+    if (saleStartDate <= date && saleEndDate >= date) return false;
+
+    // Check if this is a next occurrence date
+    const targetDate = new Date(date);
+    const nextOccurrence = getNextOccurrence(sale, targetDate);
+    if (nextOccurrence) {
+      const nextOccurrenceDate = nextOccurrence.toISOString().split("T")[0];
+      return nextOccurrenceDate === date;
+    }
+
+    return false;
+  };
+
+  const getNextOccurrenceDate = (sale: any): string | null => {
+    if (!sale.is_recurring) return null;
+
+    const today = new Date();
+    const nextOccurrence = getNextOccurrence(sale, today);
+
+    if (nextOccurrence) {
+      return format(nextOccurrence, "MMM d, yyyy");
+    }
+
+    return null;
   };
 
   const handleEdit = (flashSaleId: string) => {
@@ -95,6 +210,12 @@ export function FlashSalesCalendar({
   const handleCancel = async (flashSaleId: string) => {
     if (window.confirm("Are you sure you want to cancel this flash sale?")) {
       await cancelFlashSale.mutateAsync(flashSaleId);
+    }
+  };
+
+  const handleActivate = async (flashSaleId: string) => {
+    if (window.confirm("Are you sure you want to activate this flash sale?")) {
+      await activateFlashSale.mutateAsync(flashSaleId);
     }
   };
 
@@ -163,33 +284,48 @@ export function FlashSalesCalendar({
       days.push(
         <div
           key={day}
-          className={`h-32 border border-border p-2 ${
-            isToday ? "bg-primary/5" : "bg-card"
-          }`}
+          className={`
+            h-24 sm:h-32 border border-border p-1 sm:p-2
+            ${isToday ? "bg-primary/5" : "bg-card"}
+          `}
         >
           <div
-            className={`text-sm font-medium mb-1 ${
-              isToday ? "text-primary" : "text-foreground"
-            }`}
+            className={`
+              text-xs sm:text-sm font-medium mb-1
+              ${isToday ? "text-primary" : "text-foreground"}
+            `}
           >
             {day}
           </div>
           <div className="space-y-1">
-            {salesForDay.slice(0, 2).map((sale) => (
-              <div
-                key={sale.id}
-                className={`text-xs p-1 rounded border ${getStatusColor(
-                  sale.status
-                )}`}
-              >
-                <div className="font-medium truncate">{sale.name}</div>
-                <div className="text-xs opacity-75">
-                  {sale.discount_type === "PERCENTAGE"
-                    ? `${sale.discount_amount}% off`
-                    : `$${sale.discount_amount} off`}
+            {salesForDay.slice(0, 2).map((sale) => {
+              const isUpcoming = isUpcomingOccurrence(sale, dateString);
+              return (
+                <div
+                  key={sale.id}
+                  className={`text-xs p-1 rounded border ${
+                    isUpcoming
+                      ? "bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-400 border-purple-200 dark:border-purple-800/20 border-dashed"
+                      : getStatusColor(sale.status)
+                  }`}
+                >
+                  <div className="font-medium truncate flex items-center gap-1">
+                    {sale.name}
+                    {sale.is_recurring && (
+                      <Repeat className="h-3 w-3 text-muted-foreground" />
+                    )}
+                    {isUpcoming && (
+                      <span className="text-xs opacity-75">(Next)</span>
+                    )}
+                  </div>
+                  <div className="text-xs opacity-75">
+                    {sale.discount_type === "PERCENTAGE"
+                      ? `${sale.discount_amount}% off`
+                      : `KSH. ${sale.discount_amount} off`}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {salesForDay.length > 2 && (
               <div className="text-xs text-muted-foreground">
                 +{salesForDay.length - 2} more
@@ -201,17 +337,25 @@ export function FlashSalesCalendar({
     }
 
     return (
-      <div className="grid grid-cols-7 gap-0 border border-border rounded-lg overflow-hidden">
-        {/* Day headers */}
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-          <div
-            key={day}
-            className="bg-muted p-3 text-center text-sm font-medium text-muted-foreground border-b border-border"
-          >
-            {day}
-          </div>
-        ))}
-        {days}
+      <div className="w-full max-w-full overflow-x-auto">
+        <div
+          className="
+            grid grid-cols-7 gap-0 border border-border rounded-lg overflow-hidden
+            min-w-[560px] sm:min-w-0
+          "
+        >
+          {/* Day headers */}
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+            <div
+              key={day}
+              className="bg-muted p-1 sm:p-3 text-center text-xs sm:text-sm font-medium text-muted-foreground border-b border-border"
+            >
+              {day}
+            </div>
+          ))}
+          {/* Days of the month */}
+          {days}
+        </div>
       </div>
     );
   };
@@ -223,28 +367,35 @@ export function FlashSalesCalendar({
           {[...Array(3)].map((_, index) => (
             <div
               key={index}
-              className="bg-card rounded-lg shadow-sm border border-border p-6"
+              className="bg-card rounded-lg shadow-sm border border-border p-4 sm:p-6 flex flex-col"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <Skeleton className="h-6 w-48 mb-2" />
-                  <Skeleton className="h-4 w-32 mb-3" />
-                  <div className="flex items-center space-x-6">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-4 w-24" />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-4 gap-2">
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <Skeleton className="h-6 w-48 mb-2" />
+                    <Skeleton className="h-4 w-16" />
                   </div>
+                  <Skeleton className="h-4 w-32 mb-3" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Skeleton className="h-4 w-8" />
+                  <Skeleton className="h-4 w-8" />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-2 sm:mb-4">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="bg-muted rounded-lg p-3">
+                  <div key={i} className="bg-muted rounded-lg p-2 sm:p-3">
                     <Skeleton className="h-4 w-24 mb-2" />
                     <Skeleton className="h-6 w-16" />
                   </div>
                 ))}
               </div>
-              <Skeleton className="h-2 w-full mb-4" />
-              <div className="space-y-2">
+              <Skeleton className="h-2 w-full mb-2 sm:mb-4" />
+              <div className="space-y-1 sm:space-y-2">
                 {[...Array(2)].map((_, i) => (
                   <Skeleton key={i} className="h-4 w-full" />
                 ))}
@@ -276,12 +427,13 @@ export function FlashSalesCalendar({
           return (
             <div
               key={sale.id}
-              className="bg-card rounded-lg shadow-sm border border-border p-6"
+              className="bg-card rounded-lg shadow-sm border border-border p-4 sm:p-6 flex flex-col"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h3 className="text-lg font-semibold text-foreground">
+              {/* Header and Status */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-4 gap-2">
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">
                       {sale.name}
                     </h3>
                     <span
@@ -292,25 +444,26 @@ export function FlashSalesCalendar({
                       {sale.status.charAt(0).toUpperCase() +
                         sale.status.slice(1)}
                     </span>
+                    {sale.is_recurring && (
+                      <span className="px-2 py-1 text-xs font-medium rounded-full border bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-400 border-purple-200 dark:border-purple-800/20">
+                        Recurring
+                      </span>
+                    )}
                   </div>
-                  <p className="text-muted-foreground mb-3">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-1">
                     {sale.description}
                   </p>
-                  <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      {format(new Date(sale.start_date), "MMM d, yyyy")} -{" "}
-                      {format(new Date(sale.end_date), "MMM d, yyyy")}
-                    </div>
-                    <div className="flex items-center">
-                      <DollarSign className="h-4 w-4 mr-1" />
-                      {sale.discount_type === "PERCENTAGE"
-                        ? `${sale.discount_amount}% off`
-                        : `$${sale.discount_amount} off`}
-                    </div>
-                  </div>
                 </div>
                 <div className="flex items-center space-x-2">
+                  {sale.status === FlashSaleStatus.SCHEDULED && (
+                    <button
+                      onClick={() => handleActivate(sale.id)}
+                      className="p-2 hover:bg-muted rounded-lg"
+                      title="Activate"
+                    >
+                      <Play className="h-4 w-4 text-green-600" />
+                    </button>
+                  )}
                   <button
                     onClick={() => handleEdit(sale.id)}
                     className="p-2 hover:bg-muted rounded-lg"
@@ -324,45 +477,102 @@ export function FlashSalesCalendar({
                       className="p-2 hover:bg-muted rounded-lg"
                       title="Cancel"
                     >
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
+                      <X className="h-4 w-4 text-red-600" />
                     </button>
                   )}
-                  <button
-                    className="p-2 hover:bg-muted rounded-lg"
-                    title="More options"
-                  >
-                    <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="p-2 hover:bg-muted rounded-lg"
+                        title="More options"
+                      >
+                        <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleDelete(sale.id)}
+                        className="text-red-600 focus:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Flash Sale
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
+              </div>
+
+              {/* Info Row */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
+                <div className="flex items-center mb-1 sm:mb-0">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  {format(new Date(sale.start_date), "MMM d, yyyy")} (
+                  {format(new Date(sale.start_date), "HH:mm")}pm-
+                  {format(new Date(sale.end_date), "HH:mm")}pm )
+                </div>
+                <div className="flex items-center mb-1 sm:mb-0">
+                  <DollarSign className="h-4 w-4 mr-1" />
+                  {sale.discount_type === "PERCENTAGE"
+                    ? `${sale.discount_amount}% off`
+                    : `KSH. ${sale.discount_amount} off`}
+                </div>
+                {sale.is_recurring && (
+                  <div className="flex items-center mb-1 sm:mb-0">
+                    <Repeat className="h-4 w-4 mr-1" />
+                    {formatRecurrencePattern(sale.recurrence_pattern)}
+                  </div>
+                )}
+                {sale.is_recurring && getNextOccurrenceDate(sale) && (
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    Next: {getNextOccurrenceDate(sale)}
+                  </div>
+                )}
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div className="bg-muted rounded-lg p-3">
-                  <div className="text-sm text-muted-foreground">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-2 sm:mb-4">
+                <div className="bg-muted rounded-lg p-2 sm:p-3">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     Total Allocated
                   </div>
-                  <div className="text-lg font-semibold text-foreground">
+                  <div className="text-base sm:text-lg font-semibold text-foreground">
                     {totalAllocated}
                   </div>
                 </div>
-                <div className="bg-muted rounded-lg p-3">
-                  <div className="text-sm text-muted-foreground">Remaining</div>
-                  <div className="text-lg font-semibold text-foreground">
+                <div className="bg-muted rounded-lg p-2 sm:p-3">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
+                    Remaining
+                  </div>
+                  <div className="text-base sm:text-lg font-semibold text-foreground">
                     {totalRemaining}
                   </div>
                 </div>
-                <div className="bg-muted rounded-lg p-3">
-                  <div className="text-sm text-muted-foreground">Sold</div>
-                  <div className="text-lg font-semibold text-foreground">
+                <div className="bg-muted rounded-lg p-2 sm:p-3">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
+                    Sold
+                  </div>
+                  <div className="text-base sm:text-lg font-semibold text-foreground">
                     {sale.tickets_sold}
                   </div>
                 </div>
+                {sale.is_recurring && (
+                  <div className="bg-muted rounded-lg p-2 sm:p-3">
+                    <div className="text-xs sm:text-sm text-muted-foreground">
+                      Pattern
+                    </div>
+                    <div className="text-xs sm:text-sm font-semibold text-foreground">
+                      {sale.recurrence_pattern?.type === "weekly"
+                        ? "Weekly"
+                        : "Monthly"}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Progress Bar */}
-              <div className="mb-4">
-                <div className="flex justify-between text-sm text-muted-foreground mb-1">
+              <div className="mb-2 sm:mb-4">
+                <div className="flex justify-between text-xs sm:text-sm text-muted-foreground mb-1">
                   <span>Sales Progress</span>
                   <span>{soldPercentage.toFixed(1)}%</span>
                 </div>
@@ -376,14 +586,14 @@ export function FlashSalesCalendar({
 
               {/* Ticket Allocations */}
               <div>
-                <h4 className="text-sm font-medium text-foreground mb-2">
+                <h4 className="text-xs sm:text-sm font-medium text-foreground mb-1 sm:mb-2">
                   Ticket Allocations
                 </h4>
-                <div className="space-y-2">
+                <div className="space-y-1 sm:space-y-2">
                   {sale.ticket_types.map((type) => (
                     <div
                       key={type.id}
-                      className="flex items-center justify-between text-sm"
+                      className="flex items-center justify-between text-xs sm:text-sm"
                     >
                       <span className="text-muted-foreground">
                         {type.ticket_type_name}
@@ -406,58 +616,56 @@ export function FlashSalesCalendar({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => navigateMonth("prev")}
-              className="p-2 hover:bg-muted rounded-lg"
-            >
-              <ChevronLeft className="h-5 w-5 text-muted-foreground" />
-            </button>
-            <h2 className="text-xl font-semibold text-foreground">
-              {currentDate.toLocaleDateString("en-US", {
-                month: "long",
-                year: "numeric",
-              })}
-            </h2>
-            <button
-              onClick={() => navigateMonth("next")}
-              className="p-2 hover:bg-muted rounded-lg"
-            >
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </button>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setViewMode("calendar")}
-              className={`px-3 py-1 text-sm rounded-lg ${
-                viewMode === "calendar"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted"
-              }`}
-            >
-              Calendar
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`px-3 py-1 text-sm rounded-lg ${
-                viewMode === "list"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted"
-              }`}
-            >
-              List
-            </button>
-          </div>
+      <div className="flex flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-2">
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => navigateMonth("prev")}
+            className="p-2 hover:bg-muted rounded-lg"
+          >
+            <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+          </button>
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+            {currentDate.toLocaleDateString("en-US", {
+              month: "long",
+              year: "numeric",
+            })}
+          </h2>
+          <button
+            onClick={() => navigateMonth("next")}
+            className="p-2 hover:bg-muted rounded-lg"
+          >
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </button>
         </div>
-        <button
-          onClick={() => onCreatePromotion("flash-sale")}
-          className="flex items-center px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          New Flash Sale
-        </button>
+        <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+          <button
+            onClick={() => setViewMode("calendar")}
+            className={`px-3 py-1 text-sm rounded-lg ${
+              viewMode === "calendar"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            Calendar
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            className={`px-3 py-1 text-sm rounded-lg ${
+              viewMode === "list"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            List
+          </button>
+          {/* <button
+            onClick={() => onCreatePromotion("flash-sale")}
+            className="flex items-center px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            New Flash Sale
+          </button> */}
+        </div>
       </div>
 
       {/* Content */}

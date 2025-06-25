@@ -1,9 +1,10 @@
 import { Award, Clock, DollarSign, Percent, TrendingUp } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import { FlashSaleStatus } from "@/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
 import { useDiscount } from "@/hooks/useDiscount";
 import { useFlashSale } from "@/hooks/useFlashSale";
-import { format } from "date-fns";
 
 interface PromotionsOverviewProps {
   eventId: string;
@@ -65,7 +66,7 @@ export function PromotionsOverview({
     },
     {
       name: "Revenue from Promotions",
-      value: `$${(
+      value: `KSH. ${(
         (discountStats?.result?.total_amount_saved || 0) +
         (flashSaleStats?.result?.total_revenue || 0)
       ).toLocaleString()}`,
