@@ -1,8 +1,9 @@
+import { PlusCircle, Search } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ROUTES } from "@/lib/constants";
-import { PlusCircle, Search } from "lucide-react";
 import Link from "next/link";
+import { ROUTES } from "@/lib/constants";
 
 export default function EventsLayout({
   children,
@@ -11,9 +12,9 @@ export default function EventsLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col">
-        <div className="flex-1 w-full">
-        <div className="space-y-8 animate-in">
-        {/* Event Selector */}
+      <div className="flex-1 w-full">
+        <div className="space-y-8 animate-in p-6">
+          {/* Event Selector */}
           <div className="flex justify-between items-center">
             <div className="relative w-96">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -29,9 +30,9 @@ export default function EventsLayout({
               </Button>
             </Link>
           </div>
-          <main className="p-6 min-h-screen overflow-y-auto">{children}</main>
+          <main className="min-h-screen overflow-y-auto">{children}</main>
         </div>
-        </div>
+      </div>
     </div>
   );
 }

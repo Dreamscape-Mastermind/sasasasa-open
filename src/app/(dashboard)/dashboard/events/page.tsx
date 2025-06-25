@@ -1,31 +1,34 @@
-'use client'
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+"use client";
+
+import { Calendar, MapPin, Plus, Search } from "lucide-react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Calendar, MapPin, Plus, Search } from 'lucide-react';
-import Link from 'next/link';
-import { useEvent } from '@/hooks/useEvent';
-import { Event } from '@/types';
-import { Suspense } from 'react';
+} from "@/components/ui/card";
 
+import { Button } from "@/components/ui/button";
+import { Event } from "@/types";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { Suspense } from "react";
+import { useEvent } from "@/hooks/useEvent";
 
 // Helper function to format date
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  }).replace(',', '');
+  return date
+    .toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+    .replace(",", "");
 };
 let events: Event[] = [];
 
@@ -38,8 +41,10 @@ function EventsContent() {
   // Helper to parse and compare dates
   const now = new Date();
 
-  const [currentEvents, pastEvents] = events.reduce<[typeof events, typeof events]>(
-    ([current, past]: any, event: { start_date: string | number | Date; }) => {
+  const [currentEvents, pastEvents] = events.reduce<
+    [typeof events, typeof events]
+  >(
+    ([current, past]: any, event: { start_date: string | number | Date }) => {
       const eventDate = new Date(event.start_date);
       if (eventDate >= now) {
         return [[...current, event], past];
@@ -82,7 +87,10 @@ function EventsContent() {
             <p className="text-muted-foreground">No current events.</p>
           )}
           {currentEvents.map((event) => (
-            <Link href={`/dashboard/events/${event.id}/overview`} key={event.id}>
+            <Link
+              href={`/dashboard/events/${event.id}/overview`}
+              key={event.id}
+            >
               <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video relative">
                   <img
@@ -100,7 +108,8 @@ function EventsContent() {
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <MapPin className="h-4 w-4" />
-                      {<div className="flex items-center gap-2 text-sm">
+                      {
+                        <div className="flex items-center gap-2 text-sm">
                           <MapPin className="h-4 w-4" />
                           {event.location ? (
                             <span>{event.location.name}</span>
@@ -108,13 +117,13 @@ function EventsContent() {
                             <span>Location not available</span>
                           )}
                         </div>
-                        }
+                      }
                     </div>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    {event.description}
+                    {event.description.slice(0, 100)}...
                   </p>
                 </CardContent>
               </Card>
@@ -131,7 +140,10 @@ function EventsContent() {
             <p className="text-muted-foreground">No past events.</p>
           )}
           {pastEvents.map((event) => (
-            <Link href={`/dashboard/events/${event.id}/overview`} key={event.id}>
+            <Link
+              href={`/dashboard/events/${event.id}/overview`}
+              key={event.id}
+            >
               <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video relative">
                   <img
@@ -159,7 +171,7 @@ function EventsContent() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    {event.description}
+                    {event.description.slice(0, 100)}...
                   </p>
                 </CardContent>
               </Card>
@@ -170,7 +182,6 @@ function EventsContent() {
     </div>
   );
 }
-
 
 export default function EventsPage() {
   return (
