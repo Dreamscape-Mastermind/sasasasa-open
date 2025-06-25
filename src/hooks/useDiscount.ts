@@ -19,16 +19,18 @@ export const useDiscount = () => {
     });
   };
 
-  const useDiscount = (eventId: string, discountId: string) => {
+  const useSingleDiscount = (eventId: string, discountId: string) => {
     return useQuery({
       queryKey: ["discount", eventId, discountId],
       queryFn: () => discountService.getDiscount(eventId, discountId),
+      enabled: !!eventId && !!discountId,
     });
   };
 
   const useCreateDiscount = (eventId: string) => {
     return useMutation({
-      mutationFn: (data: CreateDiscountRequest) => discountService.createDiscount(eventId, data),
+      mutationFn: (data: CreateDiscountRequest) =>
+        discountService.createDiscount(eventId, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["discounts", eventId] });
       },
@@ -37,17 +39,21 @@ export const useDiscount = () => {
 
   const useUpdateDiscount = (eventId: string, discountId: string) => {
     return useMutation({
-      mutationFn: (data: UpdateDiscountRequest) => discountService.updateDiscount(eventId, discountId, data),
+      mutationFn: (data: UpdateDiscountRequest) =>
+        discountService.updateDiscount(eventId, discountId, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["discounts", eventId] });
-        queryClient.invalidateQueries({ queryKey: ["discount", eventId, discountId] });
+        queryClient.invalidateQueries({
+          queryKey: ["discount", eventId, discountId],
+        });
       },
     });
   };
 
   const useDeleteDiscount = (eventId: string) => {
     return useMutation({
-      mutationFn: (discountId: string) => discountService.deleteDiscount(eventId, discountId),
+      mutationFn: (discountId: string) =>
+        discountService.deleteDiscount(eventId, discountId),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["discounts", eventId] });
       },
@@ -55,10 +61,15 @@ export const useDiscount = () => {
   };
 
   // Discount Usage
-  const useDiscountUsage = (eventId: string, discountId: string, params?: DiscountUsageQueryParams) => {
+  const useDiscountUsage = (
+    eventId: string,
+    discountId: string,
+    params?: DiscountUsageQueryParams
+  ) => {
     return useQuery({
       queryKey: ["discount-usage", eventId, discountId, params],
-      queryFn: () => discountService.getDiscountUsage(eventId, discountId, params),
+      queryFn: () =>
+        discountService.getDiscountUsage(eventId, discountId, params),
     });
   };
 
@@ -70,10 +81,17 @@ export const useDiscount = () => {
     });
   };
 
+  const useDiscountOverallStats = (eventId: string) => {
+    return useQuery({
+      queryKey: ["discount-overall-stats", eventId],
+      queryFn: () => discountService.getDiscountOverallStats(eventId),
+    });
+  };
+
   return {
     // Discounts
     useDiscounts,
-    useDiscount,
+    useSingleDiscount,
     useCreateDiscount,
     useUpdateDiscount,
     useDeleteDiscount,
@@ -81,5 +99,6 @@ export const useDiscount = () => {
     useDiscountUsage,
     // Discount Analytics
     useDiscountAnalytics,
+    useDiscountOverallStats,
   };
 };

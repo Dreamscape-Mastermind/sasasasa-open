@@ -19,16 +19,18 @@ export const useFlashSale = () => {
     });
   };
 
-  const useFlashSale = (eventId: string, flashSaleId: string) => {
+  const useSingleFlashSale = (eventId: string, flashSaleId: string) => {
     return useQuery({
       queryKey: ["flash-sale", eventId, flashSaleId],
       queryFn: () => flashSaleService.getFlashSale(eventId, flashSaleId),
+      enabled: !!eventId && !!flashSaleId,
     });
   };
 
   const useCreateFlashSale = (eventId: string) => {
     return useMutation({
-      mutationFn: (data: CreateFlashSaleRequest) => flashSaleService.createFlashSale(eventId, data),
+      mutationFn: (data: CreateFlashSaleRequest) =>
+        flashSaleService.createFlashSale(eventId, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["flash-sales", eventId] });
       },
@@ -37,17 +39,21 @@ export const useFlashSale = () => {
 
   const useUpdateFlashSale = (eventId: string, flashSaleId: string) => {
     return useMutation({
-      mutationFn: (data: UpdateFlashSaleRequest) => flashSaleService.updateFlashSale(eventId, flashSaleId, data),
+      mutationFn: (data: UpdateFlashSaleRequest) =>
+        flashSaleService.updateFlashSale(eventId, flashSaleId, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["flash-sales", eventId] });
-        queryClient.invalidateQueries({ queryKey: ["flash-sale", eventId, flashSaleId] });
+        queryClient.invalidateQueries({
+          queryKey: ["flash-sale", eventId, flashSaleId],
+        });
       },
     });
   };
 
   const useDeleteFlashSale = (eventId: string) => {
     return useMutation({
-      mutationFn: (flashSaleId: string) => flashSaleService.deleteFlashSale(eventId, flashSaleId),
+      mutationFn: (flashSaleId: string) =>
+        flashSaleService.deleteFlashSale(eventId, flashSaleId),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["flash-sales", eventId] });
       },
@@ -57,7 +63,8 @@ export const useFlashSale = () => {
   // Flash Sale Actions
   const useCancelFlashSale = (eventId: string) => {
     return useMutation({
-      mutationFn: (flashSaleId: string) => flashSaleService.cancelFlashSale(eventId, flashSaleId),
+      mutationFn: (flashSaleId: string) =>
+        flashSaleService.cancelFlashSale(eventId, flashSaleId),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["flash-sales", eventId] });
       },
@@ -66,7 +73,8 @@ export const useFlashSale = () => {
 
   const useActivateFlashSale = (eventId: string) => {
     return useMutation({
-      mutationFn: (flashSaleId: string) => flashSaleService.activateFlashSale(eventId, flashSaleId),
+      mutationFn: (flashSaleId: string) =>
+        flashSaleService.activateFlashSale(eventId, flashSaleId),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["flash-sales", eventId] });
       },
@@ -76,7 +84,8 @@ export const useFlashSale = () => {
   // Flash Sale Validation
   const useValidatePurchase = (eventId: string, flashSaleId: string) => {
     return useMutation({
-      mutationFn: (data: ValidatePurchaseRequest) => flashSaleService.validatePurchase(eventId, flashSaleId, data),
+      mutationFn: (data: ValidatePurchaseRequest) =>
+        flashSaleService.validatePurchase(eventId, flashSaleId, data),
     });
   };
 
@@ -96,10 +105,17 @@ export const useFlashSale = () => {
     });
   };
 
+  const useFlashSaleOverallStats = (eventId: string) => {
+    return useQuery({
+      queryKey: ["flash-sale-overall-stats", eventId],
+      queryFn: () => flashSaleService.getFlashSaleOverallStats(eventId),
+    });
+  };
+
   return {
     // Flash Sales
     useFlashSales,
-    useFlashSale,
+    useSingleFlashSale,
     useCreateFlashSale,
     useUpdateFlashSale,
     useDeleteFlashSale,
@@ -112,5 +128,6 @@ export const useFlashSale = () => {
     useActiveSale,
     // Flash Sale Stats
     useFlashSaleStats,
+    useFlashSaleOverallStats,
   };
 };
