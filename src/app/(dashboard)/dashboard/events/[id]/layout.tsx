@@ -1,6 +1,13 @@
 "use client";
 
-import { BarChart2, CreditCard, Megaphone, Ticket, Users } from "lucide-react";
+import {
+  BarChart2,
+  CheckSquare,
+  CreditCard,
+  Megaphone,
+  Ticket,
+  Users,
+} from "lucide-react";
 
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants";
@@ -68,16 +75,31 @@ export default function EventLayout({
             </p>
           </div>
           <nav className="mb-8 bg-muted border rounded-lg">
-            <div className="flex justify-between px-6 py-3">
+            <div
+              className="
+                flex
+                px-2 py-2
+                gap-2
+                sm:gap-4
+                overflow-x-auto
+                overflow-y-hidden
+                whitespace-nowrap
+                scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent
+                hide-scrollbar
+                sm:overflow-x-visible sm:whitespace-normal sm:justify-between
+              "
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
               <Link
                 href={ROUTES.DASHBOARD_EVENT_DETAILS(eventId)}
-                className={`flex flex-col items-center text-sm hover:text-primary relative ${
-                  pathname === ROUTES.DASHBOARD_EVENT_DETAILS(eventId)
-                    ? "text-primary after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-primary"
-                    : "text-muted-foreground"
-                }`}
+                className={`flex flex-col items-center min-w-max text-xs sm:text-sm px-2 py-1 hover:text-primary relative transition-all
+                  ${
+                    pathname === ROUTES.DASHBOARD_EVENT_DETAILS(eventId)
+                      ? "text-primary after:absolute after:bottom-[-8px] after:left-0 after:w-full after:h-0.5 after:bg-primary"
+                      : "text-muted-foreground"
+                  }`}
               >
-                <BarChart2 className="h-5 w-5 mb-1" />
+                <BarChart2 className="h-5 w-5 mb-0.5 sm:mb-1" />
                 Overview
               </Link>
               <Link
@@ -123,6 +145,17 @@ export default function EventLayout({
               >
                 <CreditCard className="h-5 w-5 mb-1" />
                 Payments
+              </Link>
+              <Link
+                href={ROUTES.DASHBOARD_EVENT_CHECK_IN(eventId)}
+                className={`flex flex-col items-center text-sm hover:text-primary relative ${
+                  pathname === ROUTES.DASHBOARD_EVENT_CHECK_IN(eventId)
+                    ? "text-primary after:absolute after:bottom-[-12px] after:left-0 after:w-full after:h-0.5 after:bg-primary"
+                    : "text-muted-foreground"
+                }`}
+              >
+                <CheckSquare className="h-5 w-5 mb-1" />
+                Check-in
               </Link>
               <Link
                 href={ROUTES.DASHBOARD_EVENT_PROMOTIONS(eventId)}

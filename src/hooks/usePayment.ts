@@ -1,5 +1,6 @@
 import type {
   InitializePaymentRequest,
+  PaymentAnalyticsQueryParams,
   PaymentProviderQueryParams,
   PaymentQueryParams,
   RefundPaymentRequest,
@@ -56,6 +57,14 @@ export const usePayment = () => {
     });
   };
 
+  // Payment Analytics
+  const usePaymentAnalytics = (params?: PaymentAnalyticsQueryParams) => {
+    return useQuery({
+      queryKey: ["payment-analytics", params],
+      queryFn: () => paymentService.analytics(params),
+    });
+  };
+
   // Payment Providers
   const usePaymentProviders = (params?: PaymentProviderQueryParams) => {
     return useQuery({
@@ -94,5 +103,7 @@ export const usePayment = () => {
     usePaymentProvider,
     // Payment Initialization
     useInitializePayment,
+    // Payment Analytics
+    usePaymentAnalytics,
   };
 };

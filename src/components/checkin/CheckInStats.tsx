@@ -13,15 +13,15 @@ export function CheckInStats({ stats, isLoading }: CheckInStatsProps) {
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="bg-white rounded-lg shadow-sm p-6 dark:bg-[#232326]"
+            className="bg-card rounded-lg shadow-sm p-6 border border-border"
           >
             <div className="flex items-center justify-between">
               <div className="space-y-2">
-                <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-4 w-24 bg-muted rounded animate-pulse"></div>
+                <div className="h-8 w-16 bg-muted rounded animate-pulse"></div>
               </div>
-              <div className="p-3 bg-gray-100 rounded-lg dark:bg-[#18181b]">
-                <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              <div className="p-3 bg-muted rounded-lg">
+                <div className="h-6 w-6 bg-muted rounded animate-pulse"></div>
               </div>
             </div>
           </div>
@@ -35,17 +35,17 @@ export function CheckInStats({ stats, isLoading }: CheckInStatsProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div className="bg-white rounded-lg shadow-sm p-6 dark:bg-[#232326]">
+      <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-muted-foreground">
               Total Tickets
             </p>
-            <p className="mt-1 text-3xl font-semibold text-foreground dark:text-white">
+            <p className="mt-1 text-3xl font-semibold text-foreground">
               {stats.total_tickets}
             </p>
           </div>
-          <div className="p-3 bg-gray-100 rounded-lg dark:bg-[#18181b]">
+          <div className="p-3 bg-muted rounded-lg">
             <Users className="h-6 w-6 text-muted-foreground" />
           </div>
         </div>
@@ -57,22 +57,22 @@ export function CheckInStats({ stats, isLoading }: CheckInStatsProps) {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6 dark:bg-[#232326]">
+      <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+            <p className="text-sm font-medium text-muted-foreground">
               Checked In
             </p>
             <p className="mt-1 text-3xl font-semibold text-green-600 dark:text-green-400">
               {stats.checked_in}
             </p>
           </div>
-          <div className="p-3 bg-green-100 rounded-lg dark:bg-green-900">
+          <div className="p-3 bg-green-100 rounded-lg dark:bg-green-950/20">
             <UserCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
           </div>
         </div>
         <div className="mt-4">
-          <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+          <div className="w-full bg-muted rounded-full h-2">
             <div
               className="bg-green-500 h-2 rounded-full transition-all duration-300 dark:bg-green-400"
               style={{ width: `${checkedInPercentage}%` }}
@@ -84,17 +84,15 @@ export function CheckInStats({ stats, isLoading }: CheckInStatsProps) {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6 dark:bg-[#232326]">
+      <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              Pending
-            </p>
+            <p className="text-sm font-medium text-muted-foreground">Pending</p>
             <p className="mt-1 text-3xl font-semibold text-yellow-600 dark:text-yellow-400">
               {stats.pending}
             </p>
           </div>
-          <div className="p-3 bg-yellow-100 rounded-lg dark:bg-yellow-900">
+          <div className="p-3 bg-yellow-100 rounded-lg dark:bg-yellow-950/20">
             <Clock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
           </div>
         </div>
@@ -106,28 +104,28 @@ export function CheckInStats({ stats, isLoading }: CheckInStatsProps) {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6 dark:bg-[#232326]">
+      <div className="bg-card rounded-lg shadow-sm p-6 border border-border">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+            <p className="text-sm font-medium text-muted-foreground">
               Invalid Scans
             </p>
-            <p className="mt-1 text-3xl font-semibold text-red-600 dark:text-[#CC322D]">
+            <p className="mt-1 text-3xl font-semibold text-red-600 dark:text-red-400">
               {stats.invalid}
             </p>
           </div>
-          <div className="p-3 bg-red-100 rounded-lg dark:bg-[#CC322D]">
-            <AlertCircle className="h-6 w-6 text-red-600 dark:text-white" />
+          <div className="p-3 bg-red-100 rounded-lg dark:bg-red-950/20">
+            <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
           </div>
         </div>
         <div className="mt-4">
-          <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+          <div className="w-full bg-muted rounded-full h-2">
             <div
-              className="bg-red-500 h-2 rounded-full transition-all duration-300 dark:bg-[#CC322D]"
+              className="bg-red-500 h-2 rounded-full transition-all duration-300 dark:bg-red-400"
               style={{ width: `${Math.min(invalidPercentage, 100)}%` }}
             ></div>
           </div>
-          <p className="mt-2 text-sm text-red-600 dark:text-[#CC322D]">
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
             {invalidPercentage.toFixed(1)}% error rate
           </p>
         </div>

@@ -10,6 +10,8 @@ import {
   PaymentsResponse,
   RefundPaymentRequest,
   VerifyPaymentRequest,
+  type PaymentAnalyticsQueryParams,
+  type PaymentAnalyticsResponse,
 } from "@/types/payment";
 
 import { apiClient } from "./api.service";
@@ -66,6 +68,17 @@ class PaymentService {
     return apiClient.post<PaymentRefundResponse>(
       `${this.baseUrl}/payments/${id}/refund`,
       data
+    );
+  }
+
+  public async analytics(
+    params?: PaymentAnalyticsQueryParams
+  ): Promise<PaymentAnalyticsResponse> {
+    return apiClient.get<PaymentAnalyticsResponse>(
+      `${this.baseUrl}/payments/analytics`,
+      {
+        params,
+      }
     );
   }
 

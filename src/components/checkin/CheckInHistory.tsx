@@ -74,31 +74,31 @@ export function CheckInHistory({
   const getStatusColor = (status: CheckInStatus) => {
     switch (status) {
       case CheckInStatus.SUCCESS:
-        return "text-green-600 bg-green-50";
+        return "text-green-600 bg-green-50 dark:bg-green-950/20";
       case CheckInStatus.FAILED:
       case CheckInStatus.INVALID_QR:
       case CheckInStatus.WRONG_EVENT:
-        return "text-red-600 bg-red-50";
+        return "text-red-600 bg-red-50 dark:bg-red-950/20";
       case CheckInStatus.DUPLICATE:
-        return "text-yellow-600 bg-yellow-50";
+        return "text-yellow-600 bg-yellow-50 dark:bg-yellow-950/20";
       default:
-        return "text-gray-600 bg-gray-50";
+        return "text-muted-foreground bg-muted";
     }
   };
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm dark:bg-[#232326]">
-        <div className="px-6 py-4 border-b dark:border-gray-700">
-          <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+      <div className="bg-card rounded-lg shadow-sm border border-border">
+        <div className="px-6 py-4 border-b border-border">
+          <div className="h-6 w-32 bg-muted rounded animate-pulse"></div>
         </div>
         <div className="p-6">
           {[1, 2, 3].map((i) => (
             <div key={i} className="flex items-center space-x-4 mb-4">
-              <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+              <div className="h-10 w-10 bg-muted rounded-full animate-pulse"></div>
               <div className="flex-1 space-y-2">
-                <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                <div className="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-4 w-3/4 bg-muted rounded animate-pulse"></div>
+                <div className="h-4 w-1/2 bg-muted rounded animate-pulse"></div>
               </div>
             </div>
           ))}
@@ -108,10 +108,10 @@ export function CheckInHistory({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm dark:bg-[#232326]">
-      <div className="px-6 py-4 border-b dark:border-gray-700">
+    <div className="bg-card rounded-lg shadow-sm border border-border">
+      <div className="px-6 py-4 border-b border-border">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h2 className="text-lg font-semibold text-foreground dark:text-white">
+          <h2 className="text-lg font-semibold text-foreground">
             Recent Check-ins
           </h2>
 
@@ -123,9 +123,9 @@ export function CheckInHistory({
                 placeholder="Search tickets..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full sm:w-64 pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#18181b] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#CC322D]"
+                className="w-full sm:w-64 pl-10 pr-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
             </form>
 
             <select
@@ -133,7 +133,7 @@ export function CheckInHistory({
               onChange={(e) =>
                 handleFilterChange(e.target.value as CheckInStatus | "all")
               }
-              className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#18181b] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#CC322D]"
+              className="px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Status</option>
               <option value={CheckInStatus.SUCCESS}>Checked In</option>
@@ -167,12 +167,9 @@ export function CheckInHistory({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="divide-y divide-border">
             {records.map((record) => (
-              <tr
-                key={record.id}
-                className="hover:bg-muted/50 dark:hover:bg-[#18181b]"
-              >
+              <tr key={record.id} className="hover:bg-muted/50">
                 <td className="px-6 py-4">
                   <div className="flex items-center">
                     {getStatusIcon(record.status)}
@@ -187,28 +184,28 @@ export function CheckInHistory({
                 </td>
                 <td className="px-6 py-4">
                   <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="text-sm font-medium text-foreground">
                       {record.ticket_details.owner.name}
                     </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-300">
+                    <div className="text-sm text-muted-foreground">
                       {record.ticket_details.owner.email}
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 font-mono">
+                <td className="px-6 py-4 text-sm text-foreground font-mono">
                   {record.ticket_details.ticket_number}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                <td className="px-6 py-4 text-sm text-foreground">
                   <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="text-sm font-medium text-foreground">
                       {record.ticket_details.ticket_type.name}
                     </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-300">
+                    <div className="text-sm text-muted-foreground">
                       {record.ticket_details.ticket_type.price}
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
+                <td className="px-6 py-4 text-sm text-muted-foreground">
                   {formatDateTime(record.check_in_time)}
                 </td>
               </tr>
@@ -219,23 +216,23 @@ export function CheckInHistory({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="px-6 py-4 border-t dark:border-gray-700">
+        <div className="px-6 py-4 border-t border-border">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-muted-foreground">
               Page {currentPage} of {totalPages}
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => onPageChange?.(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="px-3 py-1 rounded-lg border border-border text-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
               >
                 Previous
               </button>
               <button
                 onClick={() => onPageChange?.(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="px-3 py-1 rounded-lg border border-border text-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
               >
                 Next
               </button>
@@ -245,12 +242,10 @@ export function CheckInHistory({
       )}
 
       {records.length === 0 && (
-        <div className="text-center py-12 bg-gray-50 dark:bg-[#18181b] rounded-b-lg">
-          <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500 dark:text-gray-300 text-lg">
-            No check-ins found
-          </p>
-          <p className="text-gray-400 dark:text-gray-400">
+        <div className="text-center py-12 bg-muted rounded-b-lg">
+          <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground text-lg">No check-ins found</p>
+          <p className="text-muted-foreground">
             Try adjusting your search or filter criteria
           </p>
         </div>
