@@ -13,7 +13,7 @@ export default function EventsLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex-1 w-full">
-        <div className="space-y-8 animate-in p-6">
+        <div className="space-y-8 animate-in  p-4 sm:p-6">
           {/* Event Selector */}
           <div className="flex justify-between items-center">
             <div className="relative w-96">

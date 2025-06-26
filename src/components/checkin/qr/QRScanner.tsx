@@ -3,6 +3,7 @@
 import { AlertCircle, Camera, RotateCcw } from "lucide-react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useEffect, useRef, useState } from "react";
+
 import { X } from "@/components/social-icons/icons";
 
 interface QRScanResult {
@@ -177,14 +178,14 @@ export function QRScanner({
     <div className={containerClasses}>
       {/* Error Display */}
       {error && (
-        <div className="mb-4 p-4 bg-[#CC322D]/10 border border-[#CC322D] rounded-lg">
+        <div className="mb-4 p-4 bg-destructive/10 border border-destructive rounded-lg">
           <div className="flex items-center">
-            <AlertCircle className="h-5 w-5 mr-2 text-[#CC322D]" />
-            <p className="text-sm text-[#CC322D]">{error}</p>
+            <AlertCircle className="h-5 w-5 mr-2 text-destructive" />
+            <p className="text-sm text-destructive">{error}</p>
           </div>
           <button
             onClick={handleRetry}
-            className="mt-2 flex items-center text-sm text-[#CC322D] hover:text-[#a8231b]"
+            className="mt-2 flex items-center text-sm text-destructive hover:text-destructive/80"
           >
             <RotateCcw className="h-4 w-4 mr-1" />
             Try Again
@@ -220,19 +221,19 @@ export function QRScanner({
 
             {/* Scanning overlay */}
             {isScanning && (
-              <div className="absolute inset-0 border-2 border-[#CC322D] rounded-lg pointer-events-none">
-                <div className="absolute top-4 left-4 w-6 h-6 border-t-4 border-l-4 border-[#CC322D]"></div>
-                <div className="absolute top-4 right-4 w-6 h-6 border-t-4 border-r-4 border-[#CC322D]"></div>
-                <div className="absolute bottom-4 left-4 w-6 h-6 border-b-4 border-l-4 border-[#CC322D]"></div>
-                <div className="absolute bottom-4 right-4 w-6 h-6 border-b-4 border-r-4 border-[#CC322D]"></div>
+              <div className="absolute inset-0 border-2 border-primary rounded-lg pointer-events-none">
+                <div className="absolute top-4 left-4 w-6 h-6 border-t-4 border-l-4 border-primary"></div>
+                <div className="absolute top-4 right-4 w-6 h-6 border-t-4 border-r-4 border-primary"></div>
+                <div className="absolute bottom-4 left-4 w-6 h-6 border-b-4 border-l-4 border-primary"></div>
+                <div className="absolute bottom-4 right-4 w-6 h-6 border-b-4 border-r-4 border-primary"></div>
 
                 {/* Scanning line animation */}
-                <div className="absolute inset-x-4 top-1/2 h-0.5 bg-[#CC322D] opacity-75 animate-pulse"></div>
+                <div className="absolute inset-x-4 top-1/2 h-0.5 bg-primary opacity-75 animate-pulse"></div>
               </div>
             )}
 
             {/* Instructions */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full text-sm bg-[#CC322D] bg-opacity-90 text-white">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full text-sm bg-primary bg-opacity-90 text-primary-foreground">
               {isScanning
                 ? "Scanning for QR codes..."
                 : "Position QR code in frame"}
@@ -244,7 +245,7 @@ export function QRScanner({
                 <select
                   value={selectedDeviceId}
                   onChange={(e) => setSelectedDeviceId(e.target.value)}
-                  className="text-sm rounded px-2 py-1 bg-muted text-primary border border-[#CC322D]"
+                  className="text-sm rounded px-2 py-1 bg-background text-foreground border border-border"
                 >
                   {devices.map((device) => (
                     <option key={device.deviceId} value={device.deviceId}>
@@ -258,8 +259,8 @@ export function QRScanner({
         ) : (
           <div className="w-full h-64 md:h-80 bg-muted rounded-lg flex items-center justify-center">
             <div className="text-center">
-              <Camera className="h-12 w-12 text-primary mx-auto mb-2" />
-              <p className="text-primary mb-3">Camera not active</p>
+              <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+              <p className="text-muted-foreground mb-3">Camera not active</p>
               <p className="text-sm text-muted-foreground">
                 Click "Start Scanner" to begin scanning
               </p>

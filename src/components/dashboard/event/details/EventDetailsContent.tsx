@@ -62,7 +62,7 @@ export function EventDetailsContent({ eventId }: { eventId: string }) {
 
   return (
     <div className="space-y-6 animate-in pb-8">
-      <div className="relative h-[300px] -mx-6 -mt-6">
+      <div className="relative h-[300px]">
         <div className="absolute inset-0">
           <img
             src={currentEvent.cover_image || "https://placehold.co/1200x400/"}
