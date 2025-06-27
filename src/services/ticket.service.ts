@@ -16,6 +16,7 @@ import {
   TicketTypesResponse,
   TicketsResponse,
   UpdateTicketTypeRequest,
+  type ExportTicketsQueryRequest,
 } from "@/types/ticket";
 
 import { apiClient } from "./api.service";
@@ -39,16 +40,33 @@ class TicketService {
   /**
    * Ticket Type operations
    */
-  public async listTicketTypes(eventId: string, params?: TicketTypeQueryParams): Promise<TicketTypesResponse> {
-    return apiClient.get<TicketTypesResponse>(`${this.baseUrl}/events/${eventId}/ticket-types`, { params });
+  public async listTicketTypes(
+    eventId: string,
+    params?: TicketTypeQueryParams
+  ): Promise<TicketTypesResponse> {
+    return apiClient.get<TicketTypesResponse>(
+      `${this.baseUrl}/events/${eventId}/ticket-types`,
+      { params }
+    );
   }
 
-  public async getTicketType(eventId: string, ticketTypeId: string): Promise<TicketTypeResponse> {
-    return apiClient.get<TicketTypeResponse>(`${this.baseUrl}/events/${eventId}/ticket-types/${ticketTypeId}`);
+  public async getTicketType(
+    eventId: string,
+    ticketTypeId: string
+  ): Promise<TicketTypeResponse> {
+    return apiClient.get<TicketTypeResponse>(
+      `${this.baseUrl}/events/${eventId}/ticket-types/${ticketTypeId}`
+    );
   }
 
-  public async createTicketType(eventId: string, data: CreateTicketTypeRequest): Promise<TicketTypeResponse> {
-    return apiClient.post<TicketTypeResponse>(`${this.baseUrl}/events/${eventId}/ticket-types`, data);
+  public async createTicketType(
+    eventId: string,
+    data: CreateTicketTypeRequest
+  ): Promise<TicketTypeResponse> {
+    return apiClient.post<TicketTypeResponse>(
+      `${this.baseUrl}/events/${eventId}/ticket-types`,
+      data
+    );
   }
 
   public async updateTicketType(
@@ -56,26 +74,51 @@ class TicketService {
     ticketTypeId: string,
     data: UpdateTicketTypeRequest
   ): Promise<TicketTypeResponse> {
-    return apiClient.patch<TicketTypeResponse>(`${this.baseUrl}/events/${eventId}/ticket-types/${ticketTypeId}`, data);
+    return apiClient.patch<TicketTypeResponse>(
+      `${this.baseUrl}/events/${eventId}/ticket-types/${ticketTypeId}`,
+      data
+    );
   }
 
-  public async deleteTicketType(eventId: string, ticketTypeId: string): Promise<void> {
-    return apiClient.delete(`${this.baseUrl}/events/${eventId}/ticket-types/${ticketTypeId}`);
+  public async deleteTicketType(
+    eventId: string,
+    ticketTypeId: string
+  ): Promise<void> {
+    return apiClient.delete(
+      `${this.baseUrl}/events/${eventId}/ticket-types/${ticketTypeId}`
+    );
   }
 
   /**
    * Ticket operations
    */
-  public async listTickets(eventId: string, params?: TicketQueryParams): Promise<TicketsResponse> {
-    return apiClient.get<TicketsResponse>(`${this.baseUrl}/events/${eventId}/tickets`, { params });
+  public async listTickets(
+    eventId: string,
+    params?: TicketQueryParams
+  ): Promise<TicketsResponse> {
+    return apiClient.get<TicketsResponse>(
+      `${this.baseUrl}/events/${eventId}/tickets`,
+      { params }
+    );
   }
 
-  public async getTicket(eventId: string, ticketId: string): Promise<TicketResponse> {
-    return apiClient.get<TicketResponse>(`${this.baseUrl}/events/${eventId}/tickets/${ticketId}`);
+  public async getTicket(
+    eventId: string,
+    ticketId: string
+  ): Promise<TicketResponse> {
+    return apiClient.get<TicketResponse>(
+      `${this.baseUrl}/events/${eventId}/tickets/${ticketId}`
+    );
   }
 
-  public async purchaseTickets(eventId: string, data: TicketPurchaseRequest): Promise<TicketPurchaseResponse> {
-    return apiClient.post<TicketPurchaseResponse>(`${this.baseUrl}/events/${eventId}/tickets/purchase`, data);
+  public async purchaseTickets(
+    eventId: string,
+    data: TicketPurchaseRequest
+  ): Promise<TicketPurchaseResponse> {
+    return apiClient.post<TicketPurchaseResponse>(
+      `${this.baseUrl}/events/${eventId}/tickets/purchase`,
+      data
+    );
   }
 
   public async requestRefund(
@@ -89,27 +132,54 @@ class TicketService {
     );
   }
 
-  public async checkInTicket(eventId: string, ticketId: string): Promise<TicketResponse> {
-    return apiClient.post<TicketResponse>(`${this.baseUrl}/events/${eventId}/tickets/${ticketId}/check-in`);
+  public async checkInTicket(
+    eventId: string,
+    ticketId: string
+  ): Promise<TicketResponse> {
+    return apiClient.post<TicketResponse>(
+      `${this.baseUrl}/events/${eventId}/tickets/${ticketId}/check-in`
+    );
   }
 
-  public async sendComplementaryTickets(eventId: string, data: ComplementaryTicketRequest): Promise<TicketResponse> {
-    return apiClient.post<TicketResponse>(`${this.baseUrl}/events/${eventId}/tickets/send-complementary`, data);
+  public async sendComplementaryTickets(
+    eventId: string,
+    data: ComplementaryTicketRequest
+  ): Promise<TicketResponse> {
+    return apiClient.post<TicketResponse>(
+      `${this.baseUrl}/events/${eventId}/tickets/send-complementary`,
+      data
+    );
   }
 
-  public async exportTickets(eventId: string): Promise<TicketExportResponse> {
-    return apiClient.post<TicketExportResponse>(`${this.baseUrl}/events/${eventId}/tickets/export-tickets`);
+  public async exportTickets(
+    data: ExportTicketsQueryRequest
+  ): Promise<TicketExportResponse> {
+    return apiClient.post<TicketExportResponse>(
+      `${this.baseUrl}/events/${data.event_id}/tickets/export_tickets`,
+      data
+    );
   }
 
   /**
    * Refund operations
    */
-  public async listRefunds(eventId: string, params?: TicketRefundQueryParams): Promise<TicketRefundsResponse> {
-    return apiClient.get<TicketRefundsResponse>(`${this.baseUrl}/events/${eventId}/refunds`, { params });
+  public async listRefunds(
+    eventId: string,
+    params?: TicketRefundQueryParams
+  ): Promise<TicketRefundsResponse> {
+    return apiClient.get<TicketRefundsResponse>(
+      `${this.baseUrl}/events/${eventId}/refunds`,
+      { params }
+    );
   }
 
-  public async getRefund(eventId: string, refundId: string): Promise<TicketRefundResponse> {
-    return apiClient.get<TicketRefundResponse>(`${this.baseUrl}/events/${eventId}/refunds/${refundId}`);
+  public async getRefund(
+    eventId: string,
+    refundId: string
+  ): Promise<TicketRefundResponse> {
+    return apiClient.get<TicketRefundResponse>(
+      `${this.baseUrl}/events/${eventId}/refunds/${refundId}`
+    );
   }
 
   public async processRefund(

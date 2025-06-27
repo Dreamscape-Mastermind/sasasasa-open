@@ -73,6 +73,7 @@ const AnimatedMobileNav = ({
   const { useMyEvents } = useEvent();
   const { data: eventsData, isLoading: isLoadingEvents } = useMyEvents({
     page: 1,
+    enabled: isAuthenticated && !!user,
   });
   const events = eventsData?.result?.results || [];
   const [selectedEventId, setSelectedEventId] = useState<string | undefined>(
