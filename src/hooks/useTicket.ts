@@ -1,6 +1,7 @@
 import type {
   ComplementaryTicketRequest,
   CreateTicketTypeRequest,
+  ExportTicketsQueryRequest,
   ProcessRefundRequest,
   RequestRefundRequest,
   TicketPurchaseRequest,
@@ -31,7 +32,10 @@ export const useTicket = () => {
     });
   };
 
-  const useCreateTicketType = (eventId: string, config?: { onSuccess?: () => void }) => {
+  const useCreateTicketType = (
+    eventId: string,
+    config?: { onSuccess?: () => void }
+  ) => {
     return useMutation({
       mutationFn: (data: CreateTicketTypeRequest) =>
         ticketService.createTicketType(eventId, data),
@@ -42,13 +46,15 @@ export const useTicket = () => {
     });
   };
 
-  const useUpdateTicketType = ({eventId}: {eventId: string}, config?: { onSuccess?: () => void }) => {
+  const useUpdateTicketType = (
+    { eventId }: { eventId: string },
+    config?: { onSuccess?: () => void }
+  ) => {
     return useMutation({
-      mutationFn: (data: UpdateTicketTypeRequest) =>
-        {
-          const { ticketTypeId, ...rest } = data;
-          return ticketService.updateTicketType(eventId, data.ticketTypeId, data)
-        },
+      mutationFn: (data: UpdateTicketTypeRequest) => {
+        const { ticketTypeId, ...rest } = data;
+        return ticketService.updateTicketType(eventId, data.ticketTypeId, data);
+      },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["ticket-types", eventId] });
         queryClient.invalidateQueries({
@@ -126,9 +132,10 @@ export const useTicket = () => {
     });
   };
 
-  const useExportTickets = (eventId: string) => {
+  const useExportTickets = () => {
     return useMutation({
-      mutationFn: () => ticketService.exportTickets(eventId),
+      mutationFn: (data: ExportTicketsQueryRequest) =>
+        ticketService.exportTickets(data),
     });
   };
 

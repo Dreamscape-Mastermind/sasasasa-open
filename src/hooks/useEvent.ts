@@ -167,10 +167,12 @@ export const useEvent = () => {
   };
 
   // User's Events
-  const useMyEvents = (params?: EventQueryParams) => {
+  const useMyEvents = (params?: EventQueryParams & { enabled?: boolean }) => {
+    const { enabled = true, ...queryParams } = params || {};
     return useQuery({
-      queryKey: ["my-events", params],
-      queryFn: () => eventService.getMyEvents(params),
+      queryKey: ["my-events", queryParams],
+      queryFn: () => eventService.getMyEvents(queryParams),
+      enabled: enabled,
     });
   };
 

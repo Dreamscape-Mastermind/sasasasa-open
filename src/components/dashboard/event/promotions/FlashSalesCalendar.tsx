@@ -59,7 +59,7 @@ export function FlashSalesCalendar({
       case FlashSaleStatus.SCHEDULED:
         return "bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 border-blue-200 dark:border-blue-800/20";
       case FlashSaleStatus.ENDED:
-        return "bg-muted text-muted-foreground border-border";
+        return "bg-gray-100 dark:bg-gray-900/20 text-gray-800 dark:text-gray-400 border-gray-200 dark:border-gray-800/20";
       case FlashSaleStatus.CANCELLED:
         return "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400 border-red-200 dark:border-red-800/20";
       default:
@@ -164,7 +164,8 @@ export function FlashSalesCalendar({
   };
 
   const isUpcomingOccurrence = (sale: any, date: string): boolean => {
-    if (!sale.is_recurring) return false;
+    if (!sale.is_recurring || sale.status === FlashSaleStatus.ENDED)
+      return false;
 
     const saleStartDate = new Date(sale.start_date).toISOString().split("T")[0];
     const saleEndDate = new Date(sale.end_date).toISOString().split("T")[0];
@@ -300,11 +301,20 @@ export function FlashSalesCalendar({
           <div className="space-y-1">
             {salesForDay.slice(0, 2).map((sale) => {
               const isUpcoming = isUpcomingOccurrence(sale, dateString);
+              // For ENDED recurring sales, only show on original start date, not as upcoming
+              if (
+                sale.is_recurring &&
+                sale.status === FlashSaleStatus.ENDED &&
+                dateString !==
+                  new Date(sale.start_date).toISOString().split("T")[0]
+              ) {
+                return null;
+              }
               return (
                 <div
                   key={sale.id}
                   className={`text-xs p-1 rounded border ${
-                    isUpcoming
+                    isUpcoming && sale.status !== FlashSaleStatus.ENDED
                       ? "bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-400 border-purple-200 dark:border-purple-800/20 border-dashed"
                       : getStatusColor(sale.status)
                   }`}
@@ -314,7 +324,8 @@ export function FlashSalesCalendar({
                     {sale.is_recurring && (
                       <Repeat className="h-3 w-3 text-muted-foreground" />
                     )}
-                    {isUpcoming && (
+                    {/* Only show (Next) for upcoming and not ENDED */}
+                    {isUpcoming && sale.status !== FlashSaleStatus.ENDED && (
                       <span className="text-xs opacity-75">(Next)</span>
                     )}
                   </div>
