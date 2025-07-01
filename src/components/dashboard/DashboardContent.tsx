@@ -46,6 +46,8 @@ import { useEvent } from "@/hooks/useEvent";
 import { useTicket } from "@/hooks/useTicket";
 import { usePayment } from "@/hooks/usePayment";
 import { useCheckin } from "@/hooks/useCheckin";
+import { useDiscount } from "@/hooks/useDiscount";
+import { DiscountStatus } from "@/types/discount";
 
 // Sample data for referral codes (would need actual discount service integration)
 const sampleReferralCodes = [
@@ -133,6 +135,7 @@ export default function DashboardContent() {
   const { useTickets } = useTicket();
   const { usePayments } = usePayment();
   const { useCheckInStats } = useCheckin();
+  const { useDiscounts } = useDiscount();
 
   // Fetch real data
   const { data: eventsData, isLoading: eventsLoading } = useEvents();
@@ -154,6 +157,8 @@ export default function DashboardContent() {
     undefined
   );
 
+  const { data: discountsData, isLoading: discountsLoading } = useDiscounts(selectedEvent?.id || "");
+  console.log({discountsData})
   // Fetch check-in stats for selected event
   const { data: checkinStatsData, isLoading: checkinLoading } = useCheckInStats(
     selectedEvent?.id
@@ -534,16 +539,16 @@ export default function DashboardContent() {
             </CardHeader>
             <CardContent className="pt-4">
               <div className="space-y-4">
-                {sampleRecentAttendees.map((attendee) => (
+                {ticketsData?.result?.results?.map((attendee) => (
                   <div
-                    key={attendee.email}
+                    key={attendee.owner_details.email}
                     className="flex items-center justify-between gap-3 p-3 rounded-xl hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <Avatar className="h-10 w-10 flex-shrink-0 rounded-xl border-2 border-muted/40">
-                        <AvatarImage src={attendee.avatar} />
+                        <AvatarImage src={attendee.owner_details.avatar} />
                         <AvatarFallback className="text-xs rounded-xl font-bold">
-                          {attendee.name
+                          {attendee.owner_details.first_name
                             .split(" ")
                             .map((n) => n[0])
                             .join("")}
@@ -551,15 +556,15 @@ export default function DashboardContent() {
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-sm truncate">
-                          {attendee.name}
+                          {attendee.owner_details.first_name} {attendee.owner_details.last_name}
                         </div>
                         <div className="text-xs text-muted-foreground truncate">
-                          {attendee.ticketType}
+                          {attendee.ticket_type_name}
                         </div>
                       </div>
                     </div>
                     <div className="flex-shrink-0">
-                      {attendee.checkedIn ? (
+                      {attendee.checked_in_at !== null ? (
                         <Badge className="bg-primary/10 text-primary hover:bg-primary/20 rounded-xl font-medium border border-primary/30">
                           <UserCheck className="h-3 w-3 mr-1" />
                           In
@@ -580,7 +585,7 @@ export default function DashboardContent() {
           {/* Event Referral - Better Spacing */}
           <Card className="rounded-xl border-2 border-muted/60 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-muted/40">
-              <CardTitle className="text-lg sm:text-xl font-bold">Referral Codes</CardTitle>
+              <CardTitle className="text-lg sm:text-xl font-bold">Discount Codes</CardTitle>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2 rounded-xl border-2 hover:border-primary/50">
@@ -589,14 +594,14 @@ export default function DashboardContent() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Create new referral code</p>
+                  <p>Create new discount code</p>
                 </TooltipContent>
               </Tooltip>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               {/* Referral Codes List */}
               <div className="space-y-3">
-                {sampleReferralCodes.map((code) => (
+                {discountsData?.result?.results?.map((code) => (
                   <div
                     key={code.id}
                     className="p-4 border-2 border-muted/50 rounded-xl bg-background hover:bg-muted/20 hover:border-muted/70 transition-all"
@@ -607,7 +612,7 @@ export default function DashboardContent() {
                           {code.code}
                         </span>
                         <span className="text-sm text-muted-foreground font-medium">
-                          {code.discount}% off
+                          {code.amount}% off
                         </span>
                       </div>
                       <div className="flex gap-1">
@@ -633,16 +638,16 @@ export default function DashboardContent() {
                           size="icon"
                           className={cn(
                             "h-8 w-8 rounded-xl border-2",
-                            code.status === "active"
+                            code.status === DiscountStatus.ACTIVE
                               ? "text-primary border-primary/30 hover:border-primary/50"
-                              : code.status === "depleted"
+                              : code.status === DiscountStatus.EXPIRED
                               ? "text-muted-foreground border-muted/50"
                               : "text-destructive border-destructive/30 hover:border-destructive/50"
                           )}
                         >
-                          {code.status === "active" ? (
+                          {code.status === DiscountStatus.ACTIVE ? (
                             <Check className="h-3 w-3" />
-                          ) : code.status === "depleted" ? (
+                          ) : code.status === DiscountStatus.EXPIRED ? (
                             <AlertCircle className="h-3 w-3" />
                           ) : (
                             <X className="h-3 w-3" />
@@ -652,10 +657,10 @@ export default function DashboardContent() {
                     </div>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span className="font-medium">
-                        {code.usedCount}/{code.usageLimit} used
+                        {code.current_uses}/{code.max_uses} used
                       </span>
                       <span className="font-medium">
-                        Expires {new Date(code.expiryDate).toLocaleDateString()}
+                        Expires {new Date(code.end_date).toLocaleDateString()}
                       </span>
                     </div>
                   </div>

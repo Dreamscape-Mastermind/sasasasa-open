@@ -62,6 +62,10 @@ interface AuthContextType {
   hasAccessLevel: (level: AccessLevel) => boolean;
   hasAnyAccessLevel: (levels: AccessLevel[]) => boolean;
   hasAllAccessLevels: (levels: AccessLevel[]) => boolean;
+  /**
+   * Directly set the user in context. Use after profile update for instant UI refresh.
+   */
+  setUser: (user: UserProfile | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -705,6 +709,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         hasAccessLevel,
         hasAnyAccessLevel,
         hasAllAccessLevels,
+        setUser,
       }}
     >
       {children}
