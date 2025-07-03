@@ -1,0 +1,49 @@
+/* DatePicker.module.css */
+
+.customDatepicker :global(.react-datepicker__header) {
+  @apply bg-white text-black; /* header background and text */
+  border-bottom: 1px solid #CC322D; /* subtle brand accent */
+}
+
+.customDatepicker :global(.react-datepicker__current-month),
+.customDatepicker :global(.react-datepicker-time__header),
+.customDatepicker :global(.react-datepicker-year-header) {
+  @apply text-black text-sm font-medium;
+}
+
+.customDatepicker :global(.react-datepicker__day),
+.customDatepicker :global(.react-datepicker__day-name) {
+  @apply text-black text-sm transition-colors;
+}
+
+.customDatepicker :global(.react-datepicker__day--selected),
+.customDatepicker :global(.react-datepicker__day--keyboard-selected) {
+  background-color: #CC322D !important;
+  color: white !important;
+  border-radius: 9999px; /* fully rounded for pill look */
+}
+
+.customDatepicker :global(.react-datepicker__day:hover),
+.customDatepicker :global(.react-datepicker__day--keyboard-selected:hover),
+.customDatepicker :global(.react-datepicker__day--selected:hover),
+.customDatepicker :global(.react-datepicker__time-list-item--selected) {
+  background-color: #e04638 !important; /* lighter shade on hover */
+  color: white !important;
+}
+
+.customDatepicker :global(.react-datepicker__triangle) {
+  display: none; /* hides the popover triangle for a clean look */
+}
+
+.customDatepicker :global(.react-datepicker__time-container) {
+  border-left: 1px solid #CC322D; /* accent border for time picker */
+}
+
+.customDatepicker :global(.react-datepicker-time__header) {
+  color: #CC322D;
+}
+
+.customDatepicker :global(.react-datepicker__close-icon::after) {
+  background-color: #CC322D;
+  color: white;
+}

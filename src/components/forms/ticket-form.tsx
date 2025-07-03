@@ -37,6 +37,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useTicket } from "@/hooks/useTicket";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/contexts/AuthContext";
+import styles from '@/components/Datepicker.module.css';
 
 function combineDateTime(date: Date, time: string): Date {
   const [hours, minutes] = time.split(":").map(Number);
@@ -68,7 +69,7 @@ interface Event {
   }>;
 }
 
-export default function TicketForm() {
+export default function TicketForm({ onFormSubmitSuccess }: { onFormSubmitSuccess?: () => void }) {
   const searchParams = useSearchParams();
   const { id } = useParams();
   let eventId = searchParams.get("id") as string;
@@ -163,6 +164,7 @@ export default function TicketForm() {
         await updateTicket.mutateAsync({...ticketData, ticketTypeId: editingTicketId as string});
       } else {
         await createTicketType.mutateAsync(ticketData);
+        onFormSubmitSuccess?.();
       }
     } catch (error) {
       toast.error("Failed to update ticket");
@@ -447,12 +449,13 @@ export default function TicketForm() {
                               <DatePicker
                                 selected={field.value}
                                 onChange={(date) => field.onChange(date)}
-                                className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-zinc-800 rounded-full"
+                                className="border rounded p-2 bg-card rounded-full"
                                 placeholderText="Sale start date and time"
                                 dateFormat="MMM d, yyyy h:mm aa"
                                 showTimeSelect
                                 timeFormat="HH:mm"
                                 timeIntervals={30}
+                                popperClassName={styles.customDatepicker}
                               />
                               <FormMessage />
                             </FormItem>
@@ -468,12 +471,13 @@ export default function TicketForm() {
                               <DatePicker
                                 selected={field.value}
                                 onChange={(date) => field.onChange(date)}
-                                className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-zinc-800 rounded-full"
+                                className="border rounded p-2 bg-card rounded-full"
                                 placeholderText="Sale end date and time"
                                 dateFormat="MMM d, yyyy h:mm aa"
                                 showTimeSelect
                                 timeFormat="HH:mm"
                                 timeIntervals={30}
+                                popperClassName={styles.customDatepicker}
                               />
                               <FormMessage />
                             </FormItem>

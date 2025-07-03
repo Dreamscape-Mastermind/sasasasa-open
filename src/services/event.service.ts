@@ -184,7 +184,7 @@ class EventService {
     params?: TeamMemberQueryParams
   ): Promise<TeamMembersResponse> {
     return apiClient.get<TeamMembersResponse>(
-      `${this.baseUrl}/${eventId}/team`,
+      `${this.baseUrl}/${eventId}/teams`,
       { params }
     );
   }
@@ -194,7 +194,7 @@ class EventService {
     memberId: string
   ): Promise<TeamMemberResponse> {
     return apiClient.get<TeamMemberResponse>(
-      `${this.baseUrl}/${eventId}/team/${memberId}`
+      `${this.baseUrl}/${eventId}/teams/${memberId}`
     );
   }
 
