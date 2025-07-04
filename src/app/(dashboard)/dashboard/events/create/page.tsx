@@ -1,14 +1,12 @@
 'use client'
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, Control, useFieldArray } from "react-hook-form"
-import * as z from "zod"
-import { use, useEffect, useState } from "react"
+
+import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/shadtab"
 import EventForm from "@/components/forms/event-form";
 import TicketForm from "@/components/forms/ticket-form";
 import TeamMembersForm from "@/components/forms/team-members-form";
-import { useSearchParams, useParams } from "next/navigation"
-import { CheckCircle, Edit3, Users, Ticket, Calendar, ArrowRight } from "lucide-react"
+import { useSearchParams } from "next/navigation"
+import { Edit3, Users, Ticket, Calendar, ArrowRight } from "lucide-react"
 import { useEvent } from "@/hooks/useEvent"
 import { Button } from "@/components/ui/button"
 import toast from "react-hot-toast"
@@ -53,7 +51,7 @@ export default function CreateEvent({ eventId }: { eventId: string }) {
           onClick={async () => {
             setIsPublishing(true);
             try {
-              await publishEvent.mutateAsync(eventId);
+              await publishEvent.mutateAsync(eventIds);
               toast.success("Event published successfully!");
             } catch (err) {
               toast.error("Failed to publish event");
