@@ -69,16 +69,9 @@ interface Event {
   }>;
 }
 
-export default function TicketForm({ onFormSubmitSuccess }: { onFormSubmitSuccess?: () => void }) {
-  const searchParams = useSearchParams();
-  const { id } = useParams();
-  let eventId = searchParams.get("id") as string;
+export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSubmitSuccess?: () => void, eventId?: string }) {
   if (!eventId) {
-    if (id) {
-      eventId = id as string;
-    } else {
-      eventId = "null";
-    }
+    eventId = "null";
   }
 
   const {
@@ -89,7 +82,7 @@ export default function TicketForm({ onFormSubmitSuccess }: { onFormSubmitSucces
   } = useTicket();
   const { data: tickets, isLoading: isLoadingTickets } =
     useTicketTypes(eventId);
-  const updateTicket = useUpdateTicketType({eventId}, {
+  const updateTicket = useUpdateTicketType({ eventId }, {
     onSuccess: () => {
       toast.success("Ticket updated successfully");
     },
@@ -102,9 +95,9 @@ export default function TicketForm({ onFormSubmitSuccess }: { onFormSubmitSucces
   const { useEvent: useEventQuery, useUpdateEvent } = useEvent();
   const { data: eventData, error: eventError } = useEventQuery(eventId);
   const createTicketType = useCreateTicketType(eventId, {
-      onSuccess: () => {
-        toast.success("Ticket updated successfully");
-      },
+    onSuccess: () => {
+      toast.success("Ticket updated successfully");
+    },
   });
 
   const form = useForm<TicketFormData>({
@@ -161,7 +154,7 @@ export default function TicketForm({ onFormSubmitSuccess }: { onFormSubmitSucces
       };
 
       if (data.isEdit && editingTicketId) {
-        await updateTicket.mutateAsync({...ticketData, ticketTypeId: editingTicketId as string});
+        await updateTicket.mutateAsync({ ...ticketData, ticketTypeId: editingTicketId as string });
       } else {
         await createTicketType.mutateAsync(ticketData);
         onFormSubmitSuccess?.();
@@ -401,7 +394,7 @@ export default function TicketForm({ onFormSubmitSuccess }: { onFormSubmitSucces
                                 placeholder={user?.beta ? "0.00" : "Free ticket only"}
                                 disabled={!user?.beta}
                                 value={user?.beta ? field.value : 0}
-                                onChange={user?.beta ? field.onChange : () => {}}
+                                onChange={user?.beta ? field.onChange : () => { }}
                               />
                             </FormControl>
                             {!user?.beta && (

@@ -82,11 +82,6 @@ const formSchema = z
   );
 
 export default function EventForm( { onFormSubmitSuccess, eventId }: { onFormSubmitSuccess?: () => void , eventId?: string}) {
-  const searchParams = useSearchParams();
-  // const eventId = searchParams.get("id") as string;
-  console.log({eventId})
-
-
   // State to track image handling
   const [isEditing, setIsEditing] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -106,11 +101,15 @@ export default function EventForm( { onFormSubmitSuccess, eventId }: { onFormSub
     data: eventData,
     error: eventError,
     isLoading: loading,
-  } = useEventQuery(eventId);
+  } = useEventQuery(eventId || '');
 
   const createEvent = useCreateEvent();
-  const updateEvent = useUpdateEvent(eventId);
+  const updateEvent = useUpdateEvent(eventId ||'');
 
+  if(eventId){
+    setIsEditing(true);
+  }
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {

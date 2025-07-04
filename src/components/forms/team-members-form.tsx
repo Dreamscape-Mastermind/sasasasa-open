@@ -11,7 +11,7 @@ import { Label } from "../ui/label";
 import { TeamMemberRole } from "@/types/event";
 import toast from "react-hot-toast";
 import { useEvent } from "@/hooks/useEvent";
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 
 const teamSchema = z.object({
   user_email: z.string().email("Please enter a valid email address"),
@@ -27,6 +27,7 @@ interface TeamMemberFormData {
 
 export default function TeamMembersForm({ onFormSubmitSuccess, eventId }: { onFormSubmitSuccess?: () => void, eventId?: string }) {
   const searchParams = useSearchParams();
+  let eventIdd = eventId ? eventId : searchParams.get("id") as string;
 
   const [teamMembers, setTeamMembers] = useState<TeamMemberFormData[]>([
     { email: "", role: TeamMemberRole.EVENT_TEAM },
@@ -38,9 +39,9 @@ export default function TeamMembersForm({ onFormSubmitSuccess, eventId }: { onFo
     useEvent();
 
   const { data: teamMembersData, error: teamMembersError } =
-    useTeamMembers(eventId);
-  const inviteTeamMember = useInviteTeamMember(eventId);
-  const removeTeamMember = useRemoveTeamMember(eventId);
+    useTeamMembers(eventIdd);
+  const inviteTeamMember = useInviteTeamMember(eventIdd);
+  const removeTeamMember = useRemoveTeamMember(eventIdd);
   const publishEvent = usePublishEvent();
 
   useEffect(() => {

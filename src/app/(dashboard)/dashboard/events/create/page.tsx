@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/shadta
 import EventForm from "@/components/forms/event-form";
 import TicketForm from "@/components/forms/ticket-form";
 import TeamMembersForm from "@/components/forms/team-members-form";
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useParams } from "next/navigation"
 import { CheckCircle, Edit3, Users, Ticket, Calendar, ArrowRight } from "lucide-react"
 import { useEvent } from "@/hooks/useEvent"
 import { Button } from "@/components/ui/button"
@@ -15,25 +15,14 @@ import toast from "react-hot-toast"
 
 export default function CreateEvent({ eventId }: { eventId: string }) {
   const searchParams = useSearchParams();
-  const isEditMode = Boolean(eventId);
+  const eventIds = eventId ? eventId : searchParams.get("id") as string;
+  const isEditMode = Boolean(eventIds);
   const [isPublishing, setIsPublishing] = useState(false);
   const { useEvent: useEventQuery, usePublishEvent } = useEvent();
   const publishEvent = usePublishEvent();
 
   const [activeTab, setActiveTab] = useState("event-details");
-  const { data: eventData, error: eventError, isLoading } = useEventQuery(eventId);
-
-  useEffect(() => {
-    if (eventData) {
-      console.log({ eventdata: eventData.result })
-    }
-    if (eventId) {
-      console.log('Loading event data for ID:', eventId);
-      console.log('Event data:', eventData);
-    } else {
-      console.log('No event ID provided');
-    }
-  }, [eventId]);
+  const { data: eventData, error: eventError, isLoading } = useEventQuery(eventIds);
 
   const handleNext = () => {
     if (activeTab === "event-details") {
@@ -108,15 +97,15 @@ export default function CreateEvent({ eventId }: { eventId: string }) {
         </TabsList>
 
         <TabsContent value="event-details" className="space-y-6">
-          <EventForm onFormSubmitSuccess={handleNext} eventId={eventId} />
+          <EventForm onFormSubmitSuccess={handleNext} eventId={eventIds} />
         </TabsContent>
 
         <TabsContent value="tickets">
-          <TicketForm onFormSubmitSuccess={handleNext} />
+          <TicketForm onFormSubmitSuccess={handleNext} eventId={eventIds}/>
         </TabsContent>
 
         <TabsContent value="team">
-          <TeamMembersForm onFormSubmitSuccess={handleNext} eventId={eventId} />
+          <TeamMembersForm onFormSubmitSuccess={handleNext} eventId={eventIds} />
         </TabsContent>
       </Tabs>
 
