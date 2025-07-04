@@ -26,7 +26,6 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { useEvent } from "@/hooks/useEvent";
-import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { EventDetailsForm } from "./event-form-parts/EventDetailsForm";
@@ -106,10 +105,6 @@ export default function EventForm( { onFormSubmitSuccess, eventId }: { onFormSub
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent(eventId ||'');
 
-  if(eventId){
-    setIsEditing(true);
-  }
-  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -138,6 +133,7 @@ export default function EventForm( { onFormSubmitSuccess, eventId }: { onFormSub
   // Populate the form with event data if available
   useEffect(() => {
     if (eventData?.result) {
+      setIsLoading(true);
       form.reset({
         title: eventData.result.title,
         description: eventData.result.description,
