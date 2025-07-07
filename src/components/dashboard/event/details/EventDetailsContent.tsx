@@ -86,9 +86,23 @@ export function EventDetailsContent({ eventId }: { eventId: string }) {
                 </div>
               </div>
             </div>
-            <Button variant="outline" size="icon">
-              <Share2 className="h-4 w-4" />
-            </Button>
+            <div className="flex justify-between items-center gap-2">
+              <Button
+                variant="default"
+                size="default"
+                className="ml-2"
+                onClick={() => {
+                  if (currentEvent?.id) {
+                    window.location.href = `/dashboard/events/edit/${currentEvent.id}`;
+                  }
+                }}
+              >
+                Edit Event
+              </Button>
+              <Button variant="outline" size="icon">
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

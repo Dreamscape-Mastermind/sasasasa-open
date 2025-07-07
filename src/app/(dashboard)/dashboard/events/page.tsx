@@ -59,24 +59,6 @@ function EventsContent() {
     <div className="space-y-6 animate-in">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Events</h1>
-        <Link href="/dashboard/events/create">
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            Create Event
-          </Button>
-        </Link>
-      </div>
-
-      <div className="flex gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search events..."
-            className="w-full pl-9"
-            type="search"
-          />
-        </div>
-        <Button variant="outline">Filters</Button>
       </div>
 
       {/* Current Events */}
