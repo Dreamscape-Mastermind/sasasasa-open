@@ -13,6 +13,7 @@ import { Toaster } from "react-hot-toast";
 import siteMetadata from "@/config/siteMetadata";
 import { CookieBanner } from "@/components/ui/cookie-banner";
 import GlobalShortcutWrapper from "@/components/GlobalShortcutWrapper";
+import TopLoadingBarClient from "@/components/TopLoadingBarClient";
 
 const sen = Sen({
   subsets: ["latin"],
@@ -82,6 +83,7 @@ export default function RootLayout({
       <body
         className={`${sen.variable} ${anton.variable} antialiased bg-white text-black dark:bg-gray-950 dark:text-white`}
       >
+        <TopLoadingBarClient />
         <AppProviders>
           {!children?.toString().includes("DashboardLayout") ? (
             <SectionContainer>
