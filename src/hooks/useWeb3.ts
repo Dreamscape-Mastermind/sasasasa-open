@@ -32,10 +32,15 @@ export const useWeb3 = () => {
     allWallets: "SHOW", // default to SHOW
   });
 
-  const appKit = useAppKit();
+  const { open , close} = useAppKit();
 
   const initializeAppKitButton = () => {
-    appKit.open();
+    try {
+      open({ view: "Connect" });
+    } catch (error) {
+      console.log("error with appkit", error);
+      console.error(error);
+    }
   };
 
   return {
