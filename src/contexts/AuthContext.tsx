@@ -18,6 +18,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useMemo,
 } from "react";
 import {
   useAppKitAccount,
@@ -686,32 +687,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const contextValue = useMemo(() => ({
+    user,
+    roles: rolesData?.result?.roles || null,
+    availableRoles: availableRolesData?.result?.roles || null,
+    isLoading,
+    isAuthenticated: !!user,
+    loginWithEmail,
+    completeOtpVerification,
+    resendOtp,
+    loginWithWallet,
+    loginWithSIWEReCap,
+    linkWallet,
+    logout,
+    getAccessToken,
+    refreshAccessToken,
+    hasRole,
+    hasAnyRole,
+    hasAllRoles,
+    hasAccessLevel,
+    hasAnyAccessLevel,
+    hasAllAccessLevels,
+    setUser,
+  }), [
+    user,
+    rolesData,
+    availableRolesData,
+    isLoading,
+    loginWithEmail,
+    completeOtpVerification,
+    resendOtp,
+    loginWithWallet,
+    loginWithSIWEReCap,
+    linkWallet,
+    logout,
+    getAccessToken,
+    refreshAccessToken,
+    hasRole,
+    hasAnyRole,
+    hasAllRoles,
+    hasAccessLevel,
+    hasAnyAccessLevel,
+    hasAllAccessLevels,
+    setUser,
+  ]);
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        roles: rolesData?.result?.roles || null,
-        availableRoles: availableRolesData?.result?.roles || null,
-        isLoading,
-        isAuthenticated: !!user,
-        loginWithEmail,
-        completeOtpVerification,
-        resendOtp,
-        loginWithWallet,
-        loginWithSIWEReCap,
-        linkWallet,
-        logout,
-        getAccessToken,
-        refreshAccessToken,
-        hasRole,
-        hasAnyRole,
-        hasAllRoles,
-        hasAccessLevel,
-        hasAnyAccessLevel,
-        hasAllAccessLevels,
-        setUser,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
