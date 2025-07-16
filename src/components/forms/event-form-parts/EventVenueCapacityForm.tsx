@@ -1,7 +1,8 @@
 import * as z from "zod";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, useWatch } from "react-hook-form";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import LocationSearchMap from "./LocationSearchMap";
 
 const formSchema = z.object({
   venue: z.string().min(2, {
@@ -11,7 +12,8 @@ const formSchema = z.object({
 });
 
 export function EventVenueCapacityForm() {
-  const { control } = useFormContext();
+  const { control, setValue } = useFormContext();
+  const venueValue = useWatch({ control, name: "venue" });
 
   return (
     <>
@@ -22,16 +24,27 @@ export function EventVenueCapacityForm() {
           <FormItem>
             <FormLabel>Venue</FormLabel>
             <FormControl>
-              <Input
+              {/* <Input
                 placeholder="Enter event Venue"
                 {...field}
                 className="bg-card rounded-lg "
-              />
+              /> */}
             </FormControl>
             <FormMessage className="text-red-500" />
           </FormItem>
         )}
       />
+
+      {/* Location Search Map for Venue Selection */}
+      <div className="my-4">
+        <LocationSearchMap
+          initialName={venueValue}
+          onSelect={(location) => {
+            setValue("venue", location.name);
+            console.log({location})
+          }}
+        />
+      </div>
 
       <FormField
         control={control}
@@ -53,6 +66,9 @@ export function EventVenueCapacityForm() {
           </FormItem>
         )}
       />
+      {/* Hidden fields for lat/lng if not already in the form UI */}
+      <input type="hidden" {...control.register("venue_lat")} />
+      <input type="hidden" {...control.register("venue_lng")} />
     </>
   );
 }

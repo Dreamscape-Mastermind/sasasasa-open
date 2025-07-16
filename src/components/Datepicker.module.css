@@ -47,3 +47,30 @@
   background-color: #CC322D;
   color: white;
 }
+
+@media (max-width: 420px) {
+    .customDatepicker :global(.react-datepicker) {
+      width: 280px !important;
+    }
+    .customDatepicker :global(.react-datepicker__month) {
+        margin: 0.2rem;
+    }
+    .customDatepicker :global(.react-datepicker__day),
+    .customDatepicker :global(.react-datepicker__day-name) {
+        margin: 0.1rem;
+        font-size: 0.7rem;
+        line-height: 1.2rem;
+        width: 1.2rem;
+    }
+    .customDatepicker :global(.react-datepicker__time-container) {
+        width: 80px;
+    }
+    .customDatepicker :global(.react-datepicker__time-list) {
+        width: 100%;
+    }
+    .customDatepicker :global(.react-datepicker__time-list-item) {
+        font-size: 0.7rem;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+  }

@@ -85,13 +85,14 @@ export function EventDateTimeForm() {
                       );
                     }
                   }}
-                  className="border rounded p-2 bg-card rounded-full "
-                  placeholderText="Select start date and time"
+                  className="border bg-card rounded p-2 rounded-full w-full max-w-full sm:max-w-xs"
+                  placeholderText="Start date and time"
                   dateFormat="MMM d, yyyy h:mm aa"
                   showTimeSelect
                   timeFormat="HH:mm"
                   timeIntervals={30}
                   popperClassName={styles.customDatepicker}
+                  withPortal={window.innerWidth < 290}
                 />
                 <FormMessage />
               </FormItem>
@@ -119,13 +120,14 @@ export function EventDateTimeForm() {
                       );
                     }
                   }}
-                  className="border bg-card rounded p-2 rounded-full "
-                  placeholderText="Select end date and time"
+                  className="border bg-card rounded p-2 rounded-full w-full max-w-full sm:max-w-xs"
+                  placeholderText="End date and time"
                   dateFormat="MMM d, yyyy h:mm aa"
                   showTimeSelect
                   timeFormat="HH:mm"
                   timeIntervals={30}
                   popperClassName={styles.customDatepicker}
+                  withPortal={window.innerWidth < 290}
                 />
                 <FormMessage />
               </FormItem>
