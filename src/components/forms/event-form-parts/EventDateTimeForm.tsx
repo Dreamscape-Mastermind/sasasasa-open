@@ -92,7 +92,6 @@ export function EventDateTimeForm() {
                   timeFormat="HH:mm"
                   timeIntervals={30}
                   popperClassName={styles.customDatepicker}
-                  withPortal={window.innerWidth < 290}
                 />
                 <FormMessage />
               </FormItem>
@@ -127,7 +126,6 @@ export function EventDateTimeForm() {
                   timeFormat="HH:mm"
                   timeIntervals={30}
                   popperClassName={styles.customDatepicker}
-                  withPortal={window.innerWidth < 290}
                 />
                 <FormMessage />
               </FormItem>

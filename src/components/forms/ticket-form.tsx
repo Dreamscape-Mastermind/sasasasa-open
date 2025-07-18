@@ -217,14 +217,12 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Existing Tickets Section */}
         <div>
-          <div className="mb-4 flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <div>
-                <h2 className="text-2xl font-bold">Tickets</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  All tickets created for this event
-                </p>
-              </div>
+          <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h2 className="text-2xl font-bold">Tickets</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                All tickets created for this event
+              </p>
             </div>
             <Button
               onClick={() => {
@@ -237,6 +235,7 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
                 }
               }}
               variant="default"
+              className="w-full md:w-auto"
             >
               {showForm ? "Hide Form" : "Add New Ticket"}
             </Button>
@@ -370,7 +369,7 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
                       )}
                     />
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="price"
@@ -432,7 +431,7 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
                     </div>
 
                     <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="sale_start_date"
@@ -480,18 +479,18 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
                     </div>
                   </div>
 
-                  <div className="flex justify-between">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={handleClearForm}
-                      className="flex items-center"
+                      className="flex items-center w-full"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Cancel
                     </Button>
 
-                    <Button type="submit" disabled={isLoading}>
+                    <Button type="submit" disabled={isLoading} className="w-full">
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

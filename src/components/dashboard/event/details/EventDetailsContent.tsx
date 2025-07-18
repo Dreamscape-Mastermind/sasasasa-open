@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { TicketType } from "@/types/ticket";
 import moment from "moment-timezone";
 import { useEvent } from "@/hooks/useEvent";
+import { useRouter } from "next/navigation";
 
 export function EventDetailsContent({ eventId }: { eventId: string }) {
   const { useEvent: useEventQuery } = useEvent();
@@ -60,6 +61,8 @@ export function EventDetailsContent({ eventId }: { eventId: string }) {
       0
     ) || 0;
 
+  const router = useRouter();
+
   return (
     <div className="space-y-6 animate-in pb-8">
       <div className="relative h-[300px]">
@@ -93,7 +96,7 @@ export function EventDetailsContent({ eventId }: { eventId: string }) {
                 className="ml-2"
                 onClick={() => {
                   if (currentEvent?.id) {
-                    window.location.href = `/dashboard/events/edit/${currentEvent.id}`;
+                    router.push(`/dashboard/events/edit/${currentEvent.id}`);
                   }
                 }}
               >

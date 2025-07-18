@@ -32,7 +32,7 @@ export default function CreateEvent({ eventId }: { eventId: string }) {
 
   return (
     <div className="max-w-6xl mx-auto rounded-lg">
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           {isEditMode ? (
             <>
