@@ -8,6 +8,7 @@ import { Event } from "@/types";
 import { truncateText } from "@/lib/utils";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
+import { useState } from "react";
 
 interface EventCardProps {
   item: Event;
@@ -21,6 +22,7 @@ const truncateDescription = (description: string, maxLength: number = 150): stri
 
 export default function EventCard({ item, className = "" }: EventCardProps) {
 
+  const [hasError, setHasError] = useState(false);
   const analytics = useAnalytics();
   const logger = useLogger({ context: "EventCard" });
 
@@ -45,17 +47,20 @@ export default function EventCard({ item, className = "" }: EventCardProps) {
     }
   };
   // Default poster image if no cover image is provided
-  const defaultPoster = "/images/poster_1.jpeg";
+  const defaultPoster = '/images/placeholdere.jpeg';
   
   return (
     <Link href={`/e/${item.short_url || item.id}`} className={`block ${className}`} onClick={handleClick}>
         <div className="h-[220px] w-full overflow-hidden relative group">
           <Image
-            src={item.cover_image || defaultPoster}
+            src={hasError ? defaultPoster : item.cover_image || defaultPoster}
             height={560}
             width={560} 
             alt={`${item.title} poster`}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            onError={(e) => {
+              setHasError(true);
+            }}
           />
           <div className="absolute top-3 right-3 bg-red-600 text-white text-xs font-medium px-2.5 py-0.5 rounded-full animate-fadeIn animation-delay-300">
             {"Event"}

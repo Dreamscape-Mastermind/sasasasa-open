@@ -21,6 +21,7 @@ import { useAnalytics } from "@/hooks/useAnalytics";
 import { useEvent } from "@/hooks/useEvent";
 import { useLogger } from "@/hooks/useLogger";
 import { ROUTES } from "@/lib/constants";
+import image from "public/images/placeholdere.jpeg";
 
 type EventDetailsProps = {
   slug: string;
@@ -36,7 +37,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
   const { useEvent: useSingleEvent } = useEvent();
 
   const { data: eventResponse, isLoading, error } = useSingleEvent(slug);
-
+  const [hasError, setHasError] = useState(false);
   const event = eventResponse?.result as Event | undefined;
 
   useEffect(() => {
@@ -273,6 +274,9 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
     });
   };
 
+
+
+
   return (
     <div className="mx-auto px-4 sm:px-14">
       <div className="full-w overflow-hidden max-w-6xl mx-auto">
@@ -281,7 +285,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
             {event.cover_image ? (
               <div className="relative w-full h-full">
                 <Image
-                  src={event.cover_image}
+                  src={hasError ? '/images/placeholdere.jpeg' : event.cover_image}
                   alt={`${event.title} event poster`}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -289,15 +293,14 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
                   className="transition-opacity duration-300 ease-in-out"
                   priority
                   onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "/default-event-image.jpg";
+                    setHasError(true);
                   }}
                 />
               </div>
             ) : (
               <div className="relative w-full h-full">
                 <Image
-                  src="/default-event-image.jpg"
+                  src='/images/placeholdere.jpeg'
                   alt="Default event image"
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"

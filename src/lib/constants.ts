@@ -131,11 +131,11 @@ export const NAV_ITEMS = {
     { label: "Dashboard", href: ROUTES.DASHBOARD, icon: Layout },
     { label: "Events", href: ROUTES.DASHBOARD_EVENTS, icon: Calendar },
     { label: "Settings", href: ROUTES.DASHBOARD_SETTINGS, icon: Settings },
-    {
-      label: "My Purchases",
-      icon: Ticket,
-      href: "/dashboard/purchases",
-    },
+    // {
+    //   label: "My Purchases",
+    //   icon: Ticket,
+    //   href: "/dashboard/purchases",
+    // },
   ],
   DASHBOARD_EVENT_ORGANIZER: [
     {

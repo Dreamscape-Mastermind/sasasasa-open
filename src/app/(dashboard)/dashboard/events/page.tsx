@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Event } from "@/types";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { useEvent } from "@/hooks/useEvent";
 
 // Helper function to format date
@@ -33,6 +33,7 @@ const formatDate = (dateString: string) => {
 let events: Event[] = [];
 
 function EventsContent() {
+  const [imageErrors, setImageErrors] = useState({});
   const { data: userEvents, isLoading, isError } = useEvent().useMyEvents();
   if (!isLoading && userEvents) {
     events = userEvents.result ? [...userEvents.result.results] : [];
@@ -76,9 +77,15 @@ function EventsContent() {
               <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video relative">
                   <img
-                    src={event.cover_image ? event.cover_image : undefined}
+                    src={imageErrors[event.id] ? '/images/placeholdere.jpeg' : event.cover_image || '/images/placeholdere.jpeg'}
                     alt={event.title}
                     className="object-cover w-full h-full"
+                    onError={(e) => {
+                      setImageErrors(prev => ({
+                        ...prev,
+                        [event.id]: true
+                      }));
+                    }}
                   />
                 </div>
                 <CardHeader>
@@ -128,10 +135,16 @@ function EventsContent() {
             >
               <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video relative">
-                  <img
-                    src={event.cover_image ? event.cover_image : undefined}
+                <img
+                    src={imageErrors[event.id] ? '/images/placeholdere.jpeg' : event.cover_image || '/images/placeholdere.jpeg'}
                     alt={event.title}
                     className="object-cover w-full h-full"
+                    onError={(e) => {
+                      setImageErrors(prev => ({
+                        ...prev,
+                        [event.id]: true
+                      }));
+                    }}
                   />
                 </div>
                 <CardHeader>
