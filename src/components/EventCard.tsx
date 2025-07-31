@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Calendar, Clock, MapPin, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import moment from "moment-timezone";
@@ -13,6 +13,7 @@ import { useState } from "react";
 interface EventCardProps {
   item: Event;
   className?: string;
+  variant?: "default" | "compact";
 }
 
 // Helper function to truncate description
@@ -20,7 +21,7 @@ const truncateDescription = (description: string, maxLength: number = 150): stri
   return truncateText(description, maxLength);
 };
 
-export default function EventCard({ item, className = "" }: EventCardProps) {
+export default function EventCard({ item, className = "", variant = "default" }: EventCardProps) {
 
   const [hasError, setHasError] = useState(false);
   const analytics = useAnalytics();
@@ -46,8 +47,59 @@ export default function EventCard({ item, className = "" }: EventCardProps) {
       });
     }
   };
+
   // Default poster image if no cover image is provided
   const defaultPoster = '/images/placeholdere.jpeg';
+
+  // Compact variant for dashboard
+  if (variant === "compact") {
+    return (
+      <div className={`flex items-center gap-4 p-4 rounded-xl border border-muted/50 hover:bg-muted/30 transition-all cursor-pointer ${className}`}>
+        <div className="relative w-14 h-14 flex-shrink-0">
+          <Image
+            src={hasError ? defaultPoster : item.cover_image || defaultPoster}
+            alt={`${item.title} poster`}
+            width={56}
+            height={56}
+            className="w-full h-full object-cover rounded-lg border border-muted/30"
+            onError={() => setHasError(true)}
+          />
+          {/* Status indicator */}
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
+        </div>
+        <div className="flex-1 min-w-0 space-y-1">
+          <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100 leading-tight line-clamp-2">
+            {item.title}
+          </h4>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">
+              {moment(item.start_date).format('MMM D, YYYY')}
+            </span>
+          </div>
+          {item.venue && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">{item.venue}</span>
+            </div>
+          )}
+          {item.start_date && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Clock className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">
+                {item.timezone 
+                  ? moment(item.start_date).tz(item.timezone).format('h:mm A')
+                  : moment(item.start_date).format('h:mm A')}
+              </span>
+            </div>
+          )}
+        </div>
+        <div className="flex-shrink-0">
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
   
   return (
     <Link href={`/e/${item.short_url || item.id}`} className={`block ${className}`} onClick={handleClick}>

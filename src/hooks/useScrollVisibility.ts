@@ -21,6 +21,10 @@ export function useScrollVisibility({
     const controlNavbar = () => {
       const currentScrollY = window.scrollY;
       
+      // Add minimum scroll delta to prevent false positives
+      const scrollDelta = Math.abs(currentScrollY - lastScrollY);
+      const isSignificantScroll = scrollDelta > 5;  // Add minimum scroll threshold
+      
       // Clear any existing timeout
       if (scrollTimeout) {
         clearTimeout(scrollTimeout);
@@ -32,7 +36,7 @@ export function useScrollVisibility({
         setIsScrollingDown(false);
       }
       // Hide when scrolling down (after threshold to avoid accidental triggers)
-      else if (currentScrollY > lastScrollY && currentScrollY > threshold) {
+      else if (isSignificantScroll && currentScrollY > lastScrollY && currentScrollY > threshold) {
         setIsVisible(false);
         setIsScrollingDown(true);
         // Clear scrolling down flag after delay

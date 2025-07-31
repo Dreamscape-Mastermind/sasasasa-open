@@ -38,6 +38,7 @@ import { useTicket } from "@/hooks/useTicket";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/contexts/AuthContext";
 import styles from '@/components/Datepicker.module.css';
+import BetaProgramPopup from "@/components/dashboard/event/tickets/BetaProgramPopup";
 
 function combineDateTime(date: Date, time: string): Date {
   const [hours, minutes] = time.split(":").map(Number);
@@ -397,9 +398,11 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
                               />
                             </FormControl>
                             {!user?.beta && (
-                              <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
-                                💡 Join our beta program to unlock paid ticketing features
-                              </p>
+                              <BetaProgramPopup>
+                                <p className="text-sm text-amber-600 dark:text-amber-400 mt-1 cursor-pointer hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
+                                  💡 Join our beta program to unlock paid ticketing features
+                                </p>
+                              </BetaProgramPopup>
                             )}
                             <FormMessage />
                           </FormItem>

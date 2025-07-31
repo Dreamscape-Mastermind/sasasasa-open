@@ -48,6 +48,7 @@ import { usePayment } from "@/hooks/usePayment";
 import { useCheckin } from "@/hooks/useCheckin";
 import { useDiscount } from "@/hooks/useDiscount";
 import { DiscountStatus } from "@/types/discount";
+import EventCard from "@/components/EventCard";
 
 // Sample data for referral codes (would need actual discount service integration)
 const sampleReferralCodes = [
@@ -128,8 +129,6 @@ const socialLinks = [
 ];
 
 export default function DashboardContent() {
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  
   // Hooks for real data
   const { useEvents } = useEvent();
   const { useTickets } = useTicket();
@@ -141,15 +140,10 @@ export default function DashboardContent() {
   const { data: eventsData, isLoading: eventsLoading } = useEvents();
   const { data: paymentsData, isLoading: paymentsLoading } = usePayments();
 
-  // Get the currently selected event or first event
+  // Get the first event as default selected event
   const selectedEvent: Event | undefined = useMemo(() => {
-    if (!eventsData?.result?.results || !selectedEventId) {
-      return eventsData?.result?.results[0];
-    }
-    return eventsData.result.results.find(
-      (event) => event.id === selectedEventId
-    );
-  }, [eventsData, selectedEventId]);
+    return eventsData?.result?.results?.[0];
+  }, [eventsData]);
 
   // Fetch tickets for selected event
   const { data: ticketsData, isLoading: ticketsLoading } = useTickets(
@@ -161,7 +155,7 @@ export default function DashboardContent() {
   console.log({discountsData})
   // Fetch check-in stats for selected event
   const { data: checkinStatsData, isLoading: checkinLoading } = useCheckInStats(
-    selectedEvent?.id
+    selectedEvent?.id ?? ""
   );
 
   // Calculate dashboard statistics from real data
@@ -309,26 +303,28 @@ export default function DashboardContent() {
       <div className="space-y-6 sm:space-y-8 animate-in p-4 sm:p-6">
         {/* Header with Search and Create Event */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div className="relative w-full sm:w-96">
+          <div className="relative w-full sm:w-96 hidden sm:block">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search events, attendees..."
               className="pl-10 h-12 sm:h-10 text-base sm:text-sm rounded-xl border-2 border-muted/40 focus:border-primary/60 transition-colors"
             />
           </div>
-          <Link href={ROUTES.DASHBOARD_EVENT_CREATE()}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button className="gap-2 h-12 sm:h-10 w-full sm:w-auto text-base sm:text-sm font-medium rounded-xl shadow-sm hover:shadow-md transition-all">
-                  <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
-                  Create Event
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Create a new event</p>
-              </TooltipContent>
-            </Tooltip>
-          </Link>
+          <div className="hidden sm:block">
+            <Link href={ROUTES.DASHBOARD_EVENT_CREATE()}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button className="gap-2 h-12 sm:h-10 w-full sm:w-auto text-base sm:text-sm font-medium rounded-xl shadow-sm hover:shadow-md transition-all">
+                    <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
+                    Create Event
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Create a new event</p>
+                </TooltipContent>
+              </Tooltip>
+            </Link>
+          </div>
         </div>
 
         {/* Bento Grid Stats - Real Data */}
@@ -496,6 +492,71 @@ export default function DashboardContent() {
           </Card>
         </div>
 
+        {/* Quick Event Access - Mobile Only */}
+        <div className="lg:hidden">
+          <Card className="rounded-xl border-2 border-muted/60 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+            <CardHeader className="pb-4 border-b border-muted/40">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg sm:text-xl font-bold">Recent Events</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">Quick access to your events</p>
+                </div>
+                <Link href={ROUTES.DASHBOARD_EVENT_CREATE()}>
+                  <Button size="sm" variant="outline" className="gap-2 rounded-lg">
+                    <Plus className="h-4 w-4" />
+                    New
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              {!eventsData?.result?.results || eventsData.result.results.length === 0 ? (
+                <div className="text-center p-6 border-2 border-dashed border-muted/40 rounded-xl bg-gradient-to-br from-muted/20 to-muted/10">
+                  <div className="w-12 h-12 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Calendar className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground mb-1">No events yet</p>
+                  <p className="text-xs text-muted-foreground mb-3">Start by creating your first event</p>
+                  <Link href={ROUTES.DASHBOARD_EVENT_CREATE()}>
+                    <Button size="sm" className="gap-2 rounded-lg">
+                      <Plus className="h-4 w-4" />
+                      Create Event
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {eventsData.result.results.slice(0, 3).map((event) => (
+                    <Link
+                      key={event.id}
+                      href={ROUTES.DASHBOARD_EVENT_DETAILS(event.id)}
+                      className="block"
+                    >
+                      <EventCard
+                        item={event}
+                        variant="compact"
+                        className="w-full hover:bg-muted/50 transition-all"
+                      />
+                    </Link>
+                  ))}
+                  {eventsData.result.results.length > 3 && (
+                    <div className="text-center pt-3 border-t border-muted/40">
+                      <Link href={ROUTES.DASHBOARD_EVENTS}>
+                        <Button variant="outline" size="sm" className="w-full rounded-lg gap-2">
+                          <span>View All Events</span>
+                          <Badge variant="secondary" className="text-xs">
+                            {eventsData.result.results.length}
+                          </Badge>
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Bottom Section - Event Categories, Attendees, Referrals */}
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
           {/* Event Categories - Real Data */}
@@ -546,7 +607,7 @@ export default function DashboardContent() {
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <Avatar className="h-10 w-10 flex-shrink-0 rounded-xl border-2 border-muted/40">
-                        <AvatarImage src={attendee.owner_details.avatar} />
+                        
                         <AvatarFallback className="text-xs rounded-xl font-bold">
                           {attendee.owner_details.first_name
                             .split(" ")

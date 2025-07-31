@@ -70,6 +70,34 @@ export default function ShortcutButton({
   const [showMainTooltip, setShowMainTooltip] = useState(false);
   const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
+  // New state to control menu visibility
+  const [isOpen, setIsOpen] = useState(false);
+  const [menuActive, setMenuActive] = useState(false);
+
+  // Reference to the main container for outside click detection
+  const containerRef = useRef<HTMLDivElement>(null); 
+  
+  // Add delay before closing when scrolling
+  const [delayedForceClose, setDelayedForceClose] = useState(false);
+  
+  const lastTouchTimeRef = useRef<number>(0); // Track last touch time
+  const [interactionLock, setInteractionLock] = useState(false);
+
+  useEffect(() => {
+    if (forceClose) {
+      // Only set delayedForceClose to true if the menu is NOT currently hovered. 
+      // This ensures the menu stays open while the user is interacting with it.
+      if (!isOpen) { // If menu is not manually open (by hover or tap)
+        const timer = setTimeout(() => {
+          setDelayedForceClose(true);
+        }, 300); // 300ms delay
+        return () => clearTimeout(timer);
+      }
+    } else {
+      setDelayedForceClose(false);
+    }
+  }, [forceClose, isOpen]); // Depend on forceClose and isOpen
+
   // Memoize static style object to prevent re-renders
   const pointerEventsStyle = { pointerEvents: 'auto' as const };
 
@@ -90,6 +118,84 @@ export default function ShortcutButton({
       }
     };
   }, []);
+
+  const handleMouseEnter = () => {
+    setIsOpen(true); // Open menu on hover
+    setShowMainTooltip(true);
+  };
+  const handleMouseLeave = () => {
+    // If a touch event happened very recently, ignore this mouseleave (likely synthetic)
+    if (Date.now() - lastTouchTimeRef.current < 500) return;
+    setIsOpen(false);
+    setShowMainTooltip(false);
+  };
+
+  // Handle touch start for the main button
+  const handleMainButtonTouchStart = () => {
+    setShowMainTooltip(true); // Show tooltip on touch
+  };
+
+  // When opening by touch
+  const handleMainButtonTouchEnd = () => {
+    setIsOpen(prev => !prev);
+    setInteractionLock(true); // Lock interaction
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+    }
+    touchTimeoutRef.current = setTimeout(() => {
+      setShowMainTooltip(false);
+    }, 1500);
+    lastTouchTimeRef.current = Date.now(); // Mark the time of this touch
+  };
+
+  // When closing (outside click or action)
+  const closeMenu = () => {
+    setIsOpen(false);
+    setShowMainTooltip(false);
+    setInteractionLock(false); // Release lock
+  };
+
+  // Handle outside clicks/touches to close the menu on mobile
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      // Correctly check if the click/touch is outside the component's DOM element
+      if (
+        containerRef.current && 
+        event.target instanceof Node && 
+        !containerRef.current.contains(event.target) && 
+        isOpen
+      ) {
+        closeMenu();
+        if (touchTimeoutRef.current) {
+          clearTimeout(touchTimeoutRef.current);
+        }
+      }
+    };
+
+    if (isOpen) {
+      // Add event listener to capture clicks/touches outside
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isOpen]); // Depend only on isOpen
+
+  useEffect(() => {
+    if (forceClose && !menuActive) {
+      setIsOpen(false);
+      setShowMainTooltip(false);
+    }
+  }, [forceClose, menuActive]);
+
+  const handleMenuInteractionStart = () => setMenuActive(true);
+  const handleMenuInteractionEnd = () => setTimeout(() => setMenuActive(false), 200); // Small delay for tap chains
 
   const getAnimation = () => {
     switch (direction) {
@@ -124,13 +230,6 @@ export default function ShortcutButton({
     }
   };
 
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-  };
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-  };
-
   const getButtonClasses = () => {
     return cn(
       "bg-card hover:bg-accent text-card-foreground border shadow-sm rounded-[4rem]",
@@ -146,7 +245,13 @@ export default function ShortcutButton({
 
   return (
     <div
-      onMouseLeave={handleMouseLeave}
+      ref={containerRef} // ADDED: Attach the ref here
+      onMouseEnter={handleMenuInteractionStart}
+      onMouseLeave={handleMenuInteractionEnd}
+      onTouchStart={handleMenuInteractionStart}
+      onTouchEnd={handleMenuInteractionEnd}
+      onFocus={handleMenuInteractionStart}
+      onBlur={handleMenuInteractionEnd}
       className={`relative flex w-fit items-end gap-4 ${
         direction === "up" || direction === "down" ? "flex-col-reverse" : "flex-row"
       }`}
@@ -154,23 +259,10 @@ export default function ShortcutButton({
       {/* Main Navigation Button with Smart Tooltip */}
               <div className="relative">
         <button
-          onMouseEnter={() => {
-            handleMouseEnter();
-            setShowMainTooltip(true);
-          }}
-          onMouseLeave={() => {
-            setShowMainTooltip(false);
-          }}
-          onTouchStart={() => {
-            setShowMainTooltip(true);
-          }}
-          onTouchEnd={() => {
-            // Clear any existing timeout to prevent memory leaks
-            if (touchTimeoutRef.current) {
-              clearTimeout(touchTimeoutRef.current);
-            }
-            touchTimeoutRef.current = setTimeout(() => setShowMainTooltip(false), 1500);
-          }}
+          onMouseEnter={handleMouseEnter} // Use new handleMouseEnter
+          onMouseLeave={handleMouseLeave} // Use new handleMouseLeave
+          onTouchStart={handleMainButtonTouchStart} // New touch handler
+          onTouchEnd={handleMainButtonTouchEnd} // New touch handler
           className={cn(getButtonClasses(), "p-4")}
           aria-label={mainLabel}
           style={pointerEventsStyle}
@@ -206,8 +298,14 @@ export default function ShortcutButton({
       {/* Speed Dial Actions */}
       <div
         className={`${
-          isHovered && !forceClose ? "scale-100 opacity-100" : "scale-0 opacity-0"
+          isOpen && !delayedForceClose ? "scale-100 opacity-100" : "scale-0 opacity-0" // Use isOpen for menu visibility
         } flex items-end gap-4 transition-all duration-500 ease-in-out relative z-40 ${getAnimation()}`}
+        onMouseEnter={handleMenuInteractionStart}
+        onMouseLeave={handleMenuInteractionEnd}
+        onTouchStart={handleMenuInteractionStart}
+        onTouchEnd={handleMenuInteractionEnd}
+        onFocus={handleMenuInteractionStart}
+        onBlur={handleMenuInteractionEnd}
       >
         {actionButtons.map((action, index) => (
           <ActionPill
@@ -215,6 +313,7 @@ export default function ShortcutButton({
             text={action.label}
             onClick={action.action}
             position={position}
+            // Removed: onMouseEnter, onMouseLeave, onTouchStart, onTouchEnd, onFocus, onBlur
           >
             {action.icon}
           </ActionPill>

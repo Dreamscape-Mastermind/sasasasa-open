@@ -32,6 +32,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { useTicket } from "@/hooks/useTicket";
 import { zodResolver } from "@hookform/resolvers/zod";
+import BetaProgramPopup from "./BetaProgramPopup";
 
 const ticketSchema = z.object({
   name: z.string().min(1, "Ticket name is required"),
@@ -219,10 +220,12 @@ export default function TicketFormPopup({
                       />
                     </FormControl>
                     {!user?.beta && (
-                      <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
-                        💡 Join our beta program to unlock paid ticketing
-                        features
-                      </p>
+                      <BetaProgramPopup>
+                        <p className="text-sm text-amber-600 dark:text-amber-400 mt-1 cursor-pointer hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
+                          💡 Join our beta program to unlock paid ticketing
+                          features
+                        </p>
+                      </BetaProgramPopup>
                     )}
                     <FormMessage />
                   </FormItem>
@@ -313,6 +316,36 @@ export default function TicketFormPopup({
                 )}
               />
             </div>
+
+            {!user?.beta && (
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mt-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/50 rounded-full flex items-center justify-center">
+                      <span className="text-amber-600 dark:text-amber-400 text-sm">💡</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-amber-800 dark:text-amber-200 mb-1">
+                      Unlock Paid Ticketing
+                    </h4>
+                    <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
+                      Join our beta program to create paid tickets and start monetizing your events.
+                    </p>
+                    <BetaProgramPopup>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        className="border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-600 dark:text-amber-300 dark:hover:bg-amber-900/50"
+                      >
+                        Join Beta Program
+                      </Button>
+                    </BetaProgramPopup>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-end gap-3 pt-4">
               <Button type="button" variant="outline" onClick={onClose}>

@@ -94,7 +94,7 @@ export default function GlobalShortcutWrapper() {
   return (
     <div 
       className={`fixed bottom-4 right-4 z-30 sm:hidden transition-transform duration-300 ease-in-out ${
-        !isVisible ? 'translate-y-full' : 'translate-y-0'
+        !isVisible ? 'translate-y-[150%]' : 'translate-y-0'
       }`}
       style={pointerEventsStyle}
     >

@@ -15,11 +15,11 @@ export default function EventsLayout({
       <div className="flex-1 w-full">
         <div className="space-y-8 animate-in  p-4 sm:p-6">
           {/* Event Selector */}
-          <div className="flex justify-between items-center">
+          {/* <div className="flex justify-between items-center">
             <div className="relative w-96">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search events, attendees, or tickets..."
+                placeholder="Search your events, attendees, or tickets..."
                 className="pl-10"
               />
             </div>
@@ -29,7 +29,7 @@ export default function EventsLayout({
                 Create Event
               </Button>
             </Link>
-          </div>
+          </div> */}
           <main className="min-h-screen overflow-y-auto">{children}</main>
         </div>
       </div>
