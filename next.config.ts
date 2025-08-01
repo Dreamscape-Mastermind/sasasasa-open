@@ -54,7 +54,7 @@ const nextConfig: NextConfig = {
           {
             key: "Access-Control-Allow-Origin",
             value:
-              "https://stage.sasasasa.co, http://localhost, https://sasasasa.co, https://ra.sasasasa.co, https://v1.sasasasa.co, https://staging.sasasasa.co", // Set your origin
+              "https://stage.sasasasa.co, http://localhost, https://sasasasa.co, https://ra.sasasasa.co, https://v1.sasasasa.co, https://staging.sasasasa.co, https://staging-api.sasasasa.co", // Set your origin
           },
           {
             key: "Access-Control-Allow-Methods",
@@ -83,6 +83,9 @@ const nextConfig: NextConfig = {
       },
       {
         hostname: "staging.sasasasa.co",
+      },
+      {
+        hostname: "staging-api.sasasasa.co",
       },
       {
         hostname: "v1.sasasasa.co",
