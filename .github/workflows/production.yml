@@ -1,23 +1,22 @@
-name: Staging Deployment
+name: Production Deployment
 
 on:
   push:
     branches:
-      - develop
+      - main
 
 jobs:
-  deploy-to-staging:
+  deploy-to-production:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4  # Updated to the latest version
+        uses: actions/checkout@v4
 
       - name: Install SSH Key
-        uses: webfactory/ssh-agent@v0.8.0  # Updated to the latest version
+        uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
 
       - name: Copy Files to VPS
         run: |
@@ -26,12 +25,12 @@ jobs:
             --exclude='.github' \
             --exclude='node_modules' \
             --exclude='.next' \
-            . ${{ secrets.SSH_USER }}@${{ secrets.VPS_IP }}:/var/www/sasasasa/staging
+            . ${{ secrets.SSH_USER }}@${{ secrets.VPS_IP }}:/var/www/sasasasa/production
 
       - name: Upload Environment Variables
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.VPS_IP }} << 'EOF'
-            echo "${{ secrets.STAGING_FRONTEND_ENV }}" | sudo tee /var/www/sasasasa/staging/.env.production > /dev/null || { echo "Failed to create .env.production file"; exit 1; }
+            echo "${{ secrets.PRODUCTION_FRONTEND_ENV }}" | sudo tee /var/www/sasasasa/production/.env.production > /dev/null || { echo "Failed to create .env.production file"; exit 1; }
           EOF
 
       - name: Run Deployment Script on VPS
@@ -45,13 +44,13 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-            # Explicitly set PROJECT_PATH for staging
-            export PROJECT_PATH="/var/www/sasasasa/staging"
+            # Explicitly set PROJECT_PATH for production
+            export PROJECT_PATH="/var/www/sasasasa/production"
 
             export NEXT_PUBLIC_REOWN_PROJECT_ID="${{ secrets.NEXT_PUBLIC_REOWN_PROJECT_ID }}"
 
-            # Set environment for staging
-            export NODE_ENV="staging"
+            # Set environment for production
+            export NODE_ENV="production"
 
             # Verify PROJECT_PATH is set
             if [ -z "$PROJECT_PATH" ]; then

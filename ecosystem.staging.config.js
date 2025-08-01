@@ -1,8 +1,8 @@
 module.exports = {
   apps: [
     {
-      name: "sasasasa-production", // Name of your app in PM2
-      cwd: "/var/www/sasasasa/production", // Working directory
+      name: "sasasasa-staging", // Name of your app in PM2
+      cwd: "/var/www/sasasasa/staging", // Working directory
       script: "yarn", // Command to run
       args: "start", // Arguments for the command
       env: {

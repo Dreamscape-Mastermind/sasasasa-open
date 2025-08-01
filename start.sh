@@ -24,9 +24,26 @@ yarn install
 # Build the application
 yarn build
 
-# Restart the application
-if pm2 list | grep -q "ecosystem.config.js"; then
-    pm2 restart ecosystem.config.js
+# Determine environment and select appropriate ecosystem config
+if [ "${NODE_ENV:-}" = "staging" ]; then
+    ECOSYSTEM_CONFIG="ecosystem.staging.config.js"
+    APP_NAME="sasasasa-staging"
+elif [ "${NODE_ENV:-}" = "production" ]; then
+    ECOSYSTEM_CONFIG="ecosystem.config.js"
+    APP_NAME="sasasasa-production"
 else
-    pm2 start ecosystem.config.js
+    # Default to production if NODE_ENV is not set
+    ECOSYSTEM_CONFIG="ecosystem.config.js"
+    APP_NAME="sasasasa-production"
+    echo "WARNING: NODE_ENV not set, defaulting to production"
+fi
+
+echo "Using ecosystem config: ${ECOSYSTEM_CONFIG}"
+echo "App name: ${APP_NAME}"
+
+# Restart the application
+if pm2 list | grep -q "${APP_NAME}"; then
+    pm2 restart "${ECOSYSTEM_CONFIG}"
+else
+    pm2 start "${ECOSYSTEM_CONFIG}"
 fi
