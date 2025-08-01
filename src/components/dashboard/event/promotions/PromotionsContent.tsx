@@ -1,166 +1,146 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs2";
+import { Calendar, Clock, Percent, Plus, TrendingUp } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { CreatePromotionModal } from "./CreatePromotionModal";
+import { DiscountCodesTable } from "./DiscountCodesTable";
+import { FlashSalesCalendar } from "./FlashSalesCalendar";
+import { PromotionAnalytics } from "./PromotionAnalytics";
+import { PromotionsOverview } from "./PromotionsOverview";
 import { useState } from "react";
 
-// Mock data for active promotions
-const activePromotions = [
-  {
-    id: 1,
-    name: "Summer Sale",
-    discount: "20%",
-    type: "Percentage Off",
-    expiration: "2023-08-31",
-  },
-  {
-    id: 2,
-    name: "Buy One Get One Free",
-    discount: "BOGO",
-    type: "Buy One Get One",
-    expiration: "2023-09-15",
-  },
-  {
-    id: 3,
-    name: "Early Bird Special",
-    discount: "$10",
-    type: "Fixed Amount",
-    expiration: "2023-08-25",
-  },
-];
-
 export function PromotionsContent({ eventId }: { eventId: string }) {
-  const [expirationDate, setExpirationDate] = useState(new Date());
-  const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [promotionType, setPromotionType] = useState<"discount" | "flash-sale">(
+    "discount"
+  );
+
+  const handleCreatePromotion = (type: "discount" | "flash-sale") => {
+    setPromotionType(type);
+    setIsCreateModalOpen(true);
+  };
 
   return (
-    <div className="space-y-6 animate-in">
-      <div>
-        <h1 className="text-3xl font-bold">Promotions</h1>
-        <p className="text-muted-foreground">
-          Manage your event promotions and discounts. We offer a variety of
-          deals, special offers, and price reductions available to customers,
-          often highlighting limited-time discounts, percentage off sales,
-          buy-one-get-one promotions, and other incentives to encourage
-          purchases.
-        </p>
+    <>
+      <div className="space-y-6 animate-in">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              Promotions
+            </h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
+              Manage your event promotions and discounts.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+            <button
+              onClick={() => handleCreatePromotion("discount")}
+              className="flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium w-full sm:w-auto border-2"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Discount Code
+            </button>
+            <button
+              onClick={() => handleCreatePromotion("flash-sale")}
+              className="flex items-center justify-center px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 font-medium w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Flash Sale
+            </button>
+          </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="bg-card rounded-lg shadow-sm mb-8">
+          <div className="border-b border-border">
+            <nav className="flex overflow-x-auto no-scrollbar">
+              <button
+                onClick={() => setActiveTab("overview")}
+                className={`flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium flex items-center ${
+                  activeTab === "overview"
+                    ? "border-b-2 border-primary bg-destructive/20 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Overview
+              </button>
+              <button
+                onClick={() => setActiveTab("discount-codes")}
+                className={`flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium flex items-center ${
+                  activeTab === "discount-codes"
+                    ? "border-b-2 border-primary bg-destructive/20 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Percent className="h-4 w-4 mr-2" />
+                Discount Codes
+              </button>
+              <button
+                onClick={() => setActiveTab("flash-sales")}
+                className={`flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium flex items-center ${
+                  activeTab === "flash-sales"
+                    ? "border-b-2 border-primary bg-destructive/20 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Clock className="h-4 w-4 mr-2" />
+                Flash Sales
+              </button>
+              <button
+                onClick={() => setActiveTab("analytics")}
+                className={`flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium flex items-center ${
+                  activeTab === "analytics"
+                    ? "border-b-2 border-primary bg-destructive/20 text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Analytics
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        <div>
+          {activeTab === "overview" && (
+            <PromotionsOverview
+              onCreatePromotion={handleCreatePromotion}
+              eventId={eventId}
+            />
+          )}
+          {activeTab === "discount-codes" && (
+            <DiscountCodesTable
+              onCreatePromotion={handleCreatePromotion}
+              eventId={eventId}
+            />
+          )}
+          {activeTab === "flash-sales" && (
+            <FlashSalesCalendar
+              onCreatePromotion={handleCreatePromotion}
+              eventId={eventId}
+            />
+          )}
+          {activeTab === "analytics" && (
+            <PromotionAnalytics
+              onCreatePromotion={handleCreatePromotion}
+              eventId={eventId}
+            />
+          )}
+        </div>
       </div>
-
-      <Tabs defaultValue="promotions" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="promotions">Promotions</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="promotions" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Create Promotion</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Promotion Name</Label>
-                  <Input id="name" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="type">Promotion Type</Label>
-                  <select id="type" className="border rounded p-2">
-                    <option value="discount">Discount</option>
-                    <option value="flash-sale">Flash Sale</option>
-                  </select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="discount">Discount</Label>
-                  <Input id="discount" type="number" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="expiration">Expiration Date</Label>
-                  <Popover open={isOpen} onOpenChange={setIsOpen}>
-                    <PopoverTrigger asChild>
-                      <Input
-                        id="expiration"
-                        value={expirationDate.toLocaleDateString()}
-                        readOnly
-                        onClick={() => setIsOpen(true)}
-                      />
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80" align="end">
-                      <Calendar
-                        selected={expirationDate}
-                        onSelect={(date) => {
-                          setExpirationDate(date);
-                          setIsOpen(false);
-                        }}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Input
-                    id="description"
-                    placeholder="Enter promotion details..."
-                  />
-                </div>
-              </div>
-              <Button>Create Promotion</Button>
-            </CardContent>
-          </Card>
-
-          {/* List of Active Promotions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Promotions</CardTitle>
-              <CardDescription>
-                Current deals, special offers, and price reductions available to
-                customers.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {activePromotions.map((promotion) => (
-                  <div key={promotion.id} className="border p-4 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-semibold">{promotion.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {promotion.type} - {promotion.discount}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Expires on: {promotion.expiration}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+      {/* Create Promotion Modal */}
+      <CreatePromotionModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        type={promotionType}
+        discountId={undefined}
+        flashSaleId={undefined}
+        eventId={eventId}
+      />
+    </>
   );
 }

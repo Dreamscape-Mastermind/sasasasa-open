@@ -20,13 +20,18 @@ export const useEvent = () => {
     return useQuery({
       queryKey: ["events", params],
       queryFn: () => eventService.listEvents(params),
+      staleTime: 5 * 60 * 1000, // 5 minutes - data is considered fresh for 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes - cache garbage collection time
     });
   };
 
   const useEvent = (id: string) => {
     return useQuery({
       queryKey: ["event", id],
+      enabled: !!id,
       queryFn: () => eventService.getEvent(id),
+      staleTime: 5 * 60 * 1000, // 5 minutes - data is considered fresh for 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes - cache garbage collection time
     });
   };
 
@@ -39,13 +44,14 @@ export const useEvent = () => {
     });
   };
 
-  const useUpdateEvent = (id: string) => {
+  const useUpdateEvent = (id: string, config?: { onSuccess?: () => void }) => {
     return useMutation({
       mutationFn: (data: UpdateEventRequest) =>
         eventService.updateEvent(id, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["events"] });
         queryClient.invalidateQueries({ queryKey: ["event", id] });
+        config?.onSuccess?.();
       },
     });
   };
@@ -161,10 +167,12 @@ export const useEvent = () => {
   };
 
   // User's Events
-  const useMyEvents = (params?: EventQueryParams) => {
+  const useMyEvents = (params?: EventQueryParams & { enabled?: boolean }) => {
+    const { enabled = true, ...queryParams } = params || {};
     return useQuery({
-      queryKey: ["my-events", params],
-      queryFn: () => eventService.getMyEvents(params),
+      queryKey: ["my-events", queryParams],
+      queryFn: () => eventService.getMyEvents(queryParams),
+      enabled: enabled,
     });
   };
 

@@ -15,7 +15,6 @@ export function OverviewContent({ eventId }: { eventId: string }) {
     try {
       if (eventId) {
         await publishEvent.mutateAsync(eventId);
-        console.log("Event published successfully!");
       }
     } catch (error) {
       console.error("Error publishing event:", error);

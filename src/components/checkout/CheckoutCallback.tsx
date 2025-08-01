@@ -7,12 +7,15 @@ import { PaymentStatus } from "@/types/payment";
 import { PaymentStatusDialog } from "./PaymentStatusDialog";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { usePaymentVerification } from "@/hooks/usePaymentVerification";
+import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
 
 export function CheckoutCallback({ reference }: { reference: string }) {
   const analytics = useAnalytics();
   const { trackEvent } = analytics;
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
+  const { searchParams } = useSearchParamsContext();
+  const searchReference = searchParams.get("reference");
 
   const { transaction, loading, verifyPayment } = usePaymentVerification({
     context: "CheckoutCallback",
@@ -40,6 +43,9 @@ export function CheckoutCallback({ reference }: { reference: string }) {
 
     if (reference) {
       verifyPayment(reference);
+    }
+    if (!reference && searchReference) {
+      verifyPayment(searchReference);
     }
   }, [reference]);
 

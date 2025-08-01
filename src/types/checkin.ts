@@ -1,4 +1,3 @@
-import { Ticket } from "./ticket";
 import {
   TimeStamp,
   type Nullable,
@@ -20,11 +19,51 @@ export interface BaseCheckInEntity extends TimeStamp {
   id: string;
 }
 
+export interface TicketType {
+  id: string;
+  name: string;
+  price: string;
+}
+
+export interface TicketOwner {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface TicketDetails {
+  id: string;
+  ticket_type: TicketType;
+  owner: TicketOwner;
+  ticket_number: string;
+  status: string;
+  checked_in_at: string;
+  checked_in_by: string;
+  purchase_price: string;
+  created_at: string;
+}
+
+export interface EventDetails {
+  id: string;
+  title: string;
+  start_date: string;
+  end_date: string;
+  venue: string;
+}
+
+export interface CheckInByDetails {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export interface CheckIn extends BaseCheckInEntity {
-  ticket: string; // Ticket ID
-  ticket_details: Ticket; // Read-only field from serializer
-  event: string; // Event ID
-  checked_in_by: string; // User ID
+  ticket: string;
+  ticket_details: TicketDetails;
+  event: string;
+  event_details: EventDetails;
+  checked_in_by: string;
+  checked_in_by_details: CheckInByDetails;
   status: CheckInStatus;
   check_in_time: string;
   device_info: Nullable<{
@@ -109,6 +148,7 @@ export interface CheckInQueryParams {
   search?: string;
   ordering?: string;
   page?: number;
+  page_size?: number;
 }
 
 export interface CheckInDeviceQueryParams {

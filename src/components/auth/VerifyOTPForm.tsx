@@ -30,6 +30,7 @@ import { useForm } from "react-hook-form";
 import { useUser } from "@/hooks/useUser";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import siteMetadata from "@/config/siteMetadata";
 
 const otpSchema = z.object({
   otp: z
@@ -146,6 +147,7 @@ export function VerifyOTPForm() {
         setTimeout(() => {
           setShowConfetti(false);
         }, 5000);
+        return
       } else {
         // For login type, redirect to dashboard after successful verification
         router.replace(redirectTo);
@@ -181,7 +183,7 @@ export function VerifyOTPForm() {
       <div className="max-w-md w-full space-y-2">
         <div className="text-center">
           <Image
-            src="/images/sasasasaLogo.png"
+            src={siteMetadata.siteLogo}
             alt="Sasasasa Logo"
             width={120}
             height={40}

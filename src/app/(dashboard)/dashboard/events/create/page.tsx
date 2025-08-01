@@ -1,99 +1,118 @@
 'use client'
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, Control, useFieldArray } from "react-hook-form"
-import * as z from "zod"
-import { useEffect, useState } from "react"
-import Image from "next/image"
+
+import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/shadtab"
-import { EventForm, TicketForm, TeamMembersForm } from "@/components/dashboard/LazyDashboardComponents"
-import { format } from "date-fns";
+import EventForm from "@/components/forms/event-form";
+import TicketForm from "@/components/forms/ticket-form";
+import TeamMembersForm from "@/components/forms/team-members-form";
 import { useSearchParams } from "next/navigation"
+import { Edit3, Users, Ticket, Calendar, ArrowRight } from "lucide-react"
+import { useEvent } from "@/hooks/useEvent"
+import { Button } from "@/components/ui/button"
+import toast from "react-hot-toast"
 
-// First, define the role type and schema
-const ROLES = {
-  EVENT_ORGANIZER: "EVENT_ORGANIZER",
-  EVENT_TEAM: "EVENT_TEAM",
-  SELLER: "SELLER",
-  CUSTOMER: "CUSTOMER",
-} as const;
-
-type Role = keyof typeof ROLES;
-
-const teamSchema = z.object({
-  team: z.array(z.object({
-    user_email: z.string().email("Please enter a valid email address"),
-    role: z.enum(["EVENT_ORGANIZER", "EVENT_TEAM", "SELLER", "CUSTOMER"], {
-      required_error: "Please select a role",
-    }),
-  })).min(1, "At least one team member is required"),
-});
-
-
-
-export default function CreateEvent() {
+export default function CreateEvent({ eventId }: { eventId: string }) {
   const searchParams = useSearchParams();
-  const eventId = searchParams.get('eventId');
+  const eventIds = eventId ? eventId : searchParams.get("id") as string;
+  const isEditMode = Boolean(eventIds);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const { useEvent: useEventQuery, usePublishEvent } = useEvent();
+  const publishEvent = usePublishEvent();
 
-  const [activeTab, setActiveTab] = useState("event-details"); // State for active tab
- 
-  // Initialize the form
-  const teamForm = useForm<z.infer<typeof teamSchema>>({
-    resolver: zodResolver(teamSchema),
-    defaultValues: {
-      team: [{ user_email: "", role: "EVENT_TEAM" }],
-    },
-  });
+  const [activeTab, setActiveTab] = useState("event-details");
+  const { data: eventData, error: eventError, isLoading } = useEventQuery(eventIds);
 
-  // Setup field array for dynamic team members
-  const { fields, append, remove } = useFieldArray({
-    control: teamForm.control,
-    name: "team",
-  });
-
+  const handleNext = () => {
+    if (activeTab === "event-details") {
+      setActiveTab("tickets");
+    } else if (activeTab === "tickets") {
+      setActiveTab("team");
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-900 text-gray-900 dark:text-gray-200 p-6">
-      <div className="max-w-6xl mx-auto">
-        <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="event-details" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-gray-100 dark:bg-zinc-800 rounded-none">
-            <TabsTrigger 
-              value="event-details"
-              className="data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900"
-            >
-              Event Details
-            </TabsTrigger>
-            <TabsTrigger 
-              value="tickets"
-              className="data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900"
-              disabled={!eventId}
-            >
-              Ticket Types
-            </TabsTrigger>
-            <TabsTrigger 
-              value="team"
-              className="data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900"
-              disabled={!eventId}
-            >
-              Team & Publishing
-            </TabsTrigger>
-          </TabsList>
+    <div className="max-w-6xl mx-auto rounded-lg">
+      <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          {isEditMode ? (
+            <>
+              <Edit3 className="w-6 h-6" />
+              Edit Event
+            </>
+          ) : (
+            <>
+              <Calendar className="w-6 h-6" />
+              Create Event
+            </>
+          )}
+        </h1>
+        <Button variant="default" 
+          disabled={eventData?.result?.status === "PUBLISHED" || isPublishing || publishEvent.isPending }
+          onClick={async () => {
+            setIsPublishing(true);
+            try {
+              await publishEvent.mutateAsync(eventIds);
+              toast.success("Event published successfully!");
+            } catch (err) {
+              toast.error("Failed to publish event");
+            } finally {
+              setIsPublishing(false);
+            }
+          }}
+        >Publish Event</Button>
+      </div>
 
-          <TabsContent value="event-details" className="space-y-6">
-            <EventForm/>
-          </TabsContent>
+      <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="event-details" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 bg-muted p-1 rounded-lg">
+          <TabsTrigger
+            value="event-details"
+            className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md py-2"
+          >
+            <Calendar className="w-4 h-4" />
+            <span className="hidden sm:inline">Event Information</span>
+            <span className="sm:hidden">Details</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="tickets"
+            disabled={activeTab === "event-details" && !isEditMode}
+            className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md py-2"
+            aria-label={`Ticket Options  ${activeTab === "event-details" && !isEditMode ? '(Create event first)' : ''}`}
+          >
+            <Ticket className="w-4 h-4" />
+            <span className="hidden sm:inline">Event Tickets</span>
+            <span className="sm:hidden">Tickets</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="team"
+            disabled={(activeTab === "event-details" || activeTab === "tickets") && !isEditMode}
+            className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md py-2"
+            aria-label={`Team & Publishing ${(activeTab === "event-details" || activeTab === "tickets") && !isEditMode ? '(Create event first)' : ''}`}
+          >
+            <Users className="w-4 h-4" />
+            <span className="hidden sm:inline">Event Team</span>
+            <span className="sm:hidden">Team</span>
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="tickets">
-            <TicketForm/>
-          </TabsContent>
+        <TabsContent value="event-details" className="space-y-6">
+          <EventForm onFormSubmitSuccess={handleNext} eventId={eventIds} />
+        </TabsContent>
 
-          <TabsContent value="team">
-            <TeamMembersForm/>
-          </TabsContent>
-        </Tabs>
+        <TabsContent value="tickets">
+          <TicketForm onFormSubmitSuccess={handleNext} eventId={eventIds}/>
+        </TabsContent>
 
-        {/* Navigation Buttons */}
-        <div className="flex justify-end space-x-4 mt-6">
-        </div>
+        <TabsContent value="team">
+          <TeamMembersForm onFormSubmitSuccess={handleNext} eventId={eventIds} />
+        </TabsContent>
+      </Tabs>
+
+      <div className="mt-6 flex justify-end">
+        {activeTab !== 'team' && (
+          <Button onClick={handleNext}>
+            Next <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        )}
       </div>
     </div>
   );

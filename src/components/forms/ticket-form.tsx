@@ -20,7 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Loader2, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { CreateTicketTypeRequest } from "@/types/ticket";
@@ -32,10 +32,13 @@ import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { useEvent } from "@/hooks/useEvent";
 import { useForm } from "react-hook-form";
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 // import { TimePicker } from "@/components/ui/time-picker"
 import { useTicket } from "@/hooks/useTicket";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "@/contexts/AuthContext";
+import styles from '@/components/Datepicker.module.css';
+import BetaProgramPopup from "@/components/dashboard/event/tickets/BetaProgramPopup";
 
 function combineDateTime(date: Date, time: string): Date {
   const [hours, minutes] = time.split(":").map(Number);
@@ -52,6 +55,7 @@ const ticketSchema = z.object({
   sale_start_date: z.date(),
   sale_end_date: z.date(),
   is_active: z.boolean().default(true),
+  isEdit: z.boolean().optional().default(false),
 });
 
 type TicketFormData = z.infer<typeof ticketSchema>;
@@ -66,9 +70,10 @@ interface Event {
   }>;
 }
 
-export default function TicketForm() {
-  const searchParams = useSearchParams();
-  const eventId = searchParams.get("id") as string;
+export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSubmitSuccess?: () => void, eventId?: string }) {
+  if (!eventId) {
+    eventId = "null";
+  }
 
   const {
     useTicketTypes,
@@ -78,23 +83,29 @@ export default function TicketForm() {
   } = useTicket();
   const { data: tickets, isLoading: isLoadingTickets } =
     useTicketTypes(eventId);
-  const createTicket = useCreateTicketType(eventId);
-  const updateTicket = useUpdateTicketType(eventId, ""); // We'll set the ticketId when editing
+  const updateTicket = useUpdateTicketType({ eventId }, {
+    onSuccess: () => {
+      toast.success("Ticket updated successfully");
+    },
+  }); // We'll set the ticketId when editing
   const deleteTicket = useDeleteTicketType(eventId);
-  console.log({ "tickets data": tickets });
   const formRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
 
   const { useEvent: useEventQuery, useUpdateEvent } = useEvent();
-
   const { data: eventData, error: eventError } = useEventQuery(eventId);
-  const updateEvent = useUpdateEvent(eventId);
+  const createTicketType = useCreateTicketType(eventId, {
+    onSuccess: () => {
+      toast.success("Ticket updated successfully");
+    },
+  });
 
   const form = useForm<TicketFormData>({
     resolver: zodResolver(ticketSchema),
     defaultValues: {
       name: "",
-      price: 0,
+      price: 0, // Always default to 0, will be enforced by useEffect for non-beta users
       quantity: 1,
       description: "",
       sale_start_date: new Date(),
@@ -103,7 +114,7 @@ export default function TicketForm() {
     },
   });
 
-  const [editingTicketId, setEditingTicketId] = useState(null);
+  const [editingTicketId, setEditingTicketId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
@@ -112,7 +123,7 @@ export default function TicketForm() {
       const ticket = eventData.result.available_tickets[0];
       form.reset({
         name: ticket.name,
-        price: ticket.price,
+        price: user?.beta ? parseInt(ticket.price.toString(), 10) : 0,
         quantity: ticket.quantity,
         description: ticket.description,
         sale_start_date: new Date(ticket.sale_start_date),
@@ -120,7 +131,14 @@ export default function TicketForm() {
         is_active: ticket.is_active,
       });
     }
-  }, [eventData, form]);
+  }, [eventData, form, user?.beta]);
+
+  // Enforce free tickets for non-beta users
+  useEffect(() => {
+    if (!user?.beta) {
+      form.setValue("price", 0);
+    }
+  }, [user?.beta, form]);
 
   const handleSubmit = async (data: TicketFormData) => {
     setIsLoading(true);
@@ -128,18 +146,20 @@ export default function TicketForm() {
     try {
       const ticketData: CreateTicketTypeRequest = {
         name: data.name,
-        price: data.price,
-        quantity: data.quantity,
+        price: user?.beta ? parseInt(data.price.toString(), 10) : 0, // Enforce free tickets for non-beta users
+        quantity: parseInt(data.quantity.toString(), 10) || 0,
         description: data.description,
         sale_start_date: data.sale_start_date,
         sale_end_date: data.sale_end_date,
         is_active: data.is_active,
       };
 
-      await updateEvent.mutateAsync({
-        available_tickets: [ticketData],
-      } as any); // Type assertion needed due to API type mismatch
-      toast.success("Ticket updated successfully");
+      if (data.isEdit && editingTicketId) {
+        await updateTicket.mutateAsync({ ...ticketData, ticketTypeId: editingTicketId as string });
+      } else {
+        await createTicketType.mutateAsync(ticketData);
+        onFormSubmitSuccess?.();
+      }
     } catch (error) {
       toast.error("Failed to update ticket");
     } finally {
@@ -150,10 +170,11 @@ export default function TicketForm() {
   const handleEditTicket = (ticket) => {
     form.setValue("name", ticket.name);
     form.setValue("description", ticket.description);
-    form.setValue("price", ticket.price);
-    form.setValue("quantity", ticket.quantity);
+    form.setValue("price", parseInt(ticket.price.toString(), 10));
+    form.setValue("quantity", parseInt(ticket.quantity.toString(), 10));
     form.setValue("sale_start_date", new Date(ticket.sale_start_date));
     form.setValue("sale_end_date", new Date(ticket.sale_end_date));
+    form.setValue("isEdit", true);
     setEditingTicketId(ticket.id);
     setIsEditing(true);
     setShowForm(true);
@@ -169,6 +190,7 @@ export default function TicketForm() {
       sale_start_date: new Date(),
       sale_end_date: new Date(),
       is_active: true,
+      isEdit: false,
     });
     setIsEditing(false);
     setShowForm(false); // Hide form when clearing
@@ -192,18 +214,16 @@ export default function TicketForm() {
   }
 
   return (
-    <div className="bg-whi.te dark:bg-zinc-900 text-gray-900 dark:text-gray-200 p-6">
+    <div className="p-0">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Existing Tickets Section */}
         <div>
-          <div className="mb-4 flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <div>
-                <h2 className="text-2xl font-bold">Ticket Types</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  All tickets created for this event
-                </p>
-              </div>
+          <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h2 className="text-2xl font-bold">Tickets</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                All tickets created for this event
+              </p>
             </div>
             <Button
               onClick={() => {
@@ -216,6 +236,7 @@ export default function TicketForm() {
                 }
               }}
               variant="default"
+              className="w-full md:w-auto"
             >
               {showForm ? "Hide Form" : "Add New Ticket"}
             </Button>
@@ -249,7 +270,7 @@ export default function TicketForm() {
                         </p>
                       </div>
                     </div>
-                    <div className="space-y-2 bg-gray-50 dark:bg-zinc-800 p-2 rounded-lg border-b border-b-black-500">
+                    <div className="space-y-2  p-2 rounded-lg border-b border-b-black-500">
                       <div>
                         <p className="text-sm font-medium">Sale Start</p>
                         <p className="text-sm">
@@ -349,21 +370,40 @@ export default function TicketForm() {
                       )}
                     />
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="price"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Price</FormLabel>
+                            <FormLabel className="flex items-center gap-2">
+                              Price
+                              {!user?.beta && (
+                                <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-2 py-1 rounded-full text-xs font-medium">
+                                  Beta Only
+                                </span>
+                              )}
+                            </FormLabel>
                             <FormControl>
                               <Input
-                                className="rounded-full"
+                                className={cn(
+                                  "rounded-full",
+                                  !user?.beta && "bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+                                )}
                                 type="number"
-                                placeholder="0.00"
-                                {...field}
+                                placeholder={user?.beta ? "0.00" : "Free ticket only"}
+                                disabled={!user?.beta}
+                                value={user?.beta ? field.value : 0}
+                                onChange={user?.beta ? field.onChange : () => { }}
                               />
                             </FormControl>
+                            {!user?.beta && (
+                              <BetaProgramPopup>
+                                <p className="text-sm text-amber-600 dark:text-amber-400 mt-1 cursor-pointer hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
+                                  💡 Join our beta program to unlock paid ticketing features
+                                </p>
+                              </BetaProgramPopup>
+                            )}
                             <FormMessage />
                           </FormItem>
                         )}
@@ -380,7 +420,11 @@ export default function TicketForm() {
                                 className="rounded-full"
                                 type="number"
                                 placeholder="100"
-                                {...field}
+                                value={field.value}
+                                onChange={(e) => {
+                                  const value = e.target.value === '' ? 0 : parseInt(e.target.value);
+                                  field.onChange(isNaN(value) ? 0 : value);
+                                }}
                               />
                             </FormControl>
                             <FormMessage />
@@ -390,7 +434,7 @@ export default function TicketForm() {
                     </div>
 
                     <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="sale_start_date"
@@ -400,12 +444,13 @@ export default function TicketForm() {
                               <DatePicker
                                 selected={field.value}
                                 onChange={(date) => field.onChange(date)}
-                                className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-zinc-800 rounded-full"
+                                className="border rounded p-2 bg-card rounded-full"
                                 placeholderText="Sale start date and time"
                                 dateFormat="MMM d, yyyy h:mm aa"
                                 showTimeSelect
                                 timeFormat="HH:mm"
                                 timeIntervals={30}
+                                popperClassName={styles.customDatepicker}
                               />
                               <FormMessage />
                             </FormItem>
@@ -421,12 +466,13 @@ export default function TicketForm() {
                               <DatePicker
                                 selected={field.value}
                                 onChange={(date) => field.onChange(date)}
-                                className="border border-gray-300 dark:border-gray-600 rounded p-2 bg-white dark:bg-zinc-800 rounded-full"
+                                className="border rounded p-2 bg-card rounded-full"
                                 placeholderText="Sale end date and time"
                                 dateFormat="MMM d, yyyy h:mm aa"
                                 showTimeSelect
                                 timeFormat="HH:mm"
                                 timeIntervals={30}
+                                popperClassName={styles.customDatepicker}
                               />
                               <FormMessage />
                             </FormItem>
@@ -436,18 +482,18 @@ export default function TicketForm() {
                     </div>
                   </div>
 
-                  <div className="flex justify-between">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={handleClearForm}
-                      className="flex items-center"
+                      className="flex items-center w-full"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Cancel
                     </Button>
 
-                    <Button type="submit" disabled={isLoading}>
+                    <Button type="submit" disabled={isLoading} className="w-full">
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

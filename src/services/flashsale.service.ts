@@ -8,6 +8,7 @@ import {
   UpdateFlashSaleRequest,
   ValidatePurchaseRequest,
   ValidatePurchaseResponse,
+  type FlashSaleOverallStatsResponse,
 } from "@/types/flashsale";
 
 import { apiClient } from "./api.service";
@@ -31,16 +32,33 @@ class FlashSaleService {
   /**
    * Flash sale operations
    */
-  public async listFlashSales(eventId: string, params?: FlashSaleQueryParams): Promise<FlashSalesResponse> {
-    return apiClient.get<FlashSalesResponse>(`${this.baseUrl}/events/${eventId}/flash-sales`, { params });
+  public async listFlashSales(
+    eventId: string,
+    params?: FlashSaleQueryParams
+  ): Promise<FlashSalesResponse> {
+    return apiClient.get<FlashSalesResponse>(
+      `${this.baseUrl}/events/${eventId}/flash-sales`,
+      { params }
+    );
   }
 
-  public async getFlashSale(eventId: string, flashSaleId: string): Promise<FlashSaleResponse> {
-    return apiClient.get<FlashSaleResponse>(`${this.baseUrl}/events/${eventId}/flash-sales/${flashSaleId}`);
+  public async getFlashSale(
+    eventId: string,
+    flashSaleId: string
+  ): Promise<FlashSaleResponse> {
+    return apiClient.get<FlashSaleResponse>(
+      `${this.baseUrl}/events/${eventId}/flash-sales/${flashSaleId}`
+    );
   }
 
-  public async createFlashSale(eventId: string, data: CreateFlashSaleRequest): Promise<FlashSaleResponse> {
-    return apiClient.post<FlashSaleResponse>(`${this.baseUrl}/events/${eventId}/flash-sales`, data);
+  public async createFlashSale(
+    eventId: string,
+    data: CreateFlashSaleRequest
+  ): Promise<FlashSaleResponse> {
+    return apiClient.post<FlashSaleResponse>(
+      `${this.baseUrl}/events/${eventId}/flash-sales`,
+      data
+    );
   }
 
   public async updateFlashSale(
@@ -48,22 +66,40 @@ class FlashSaleService {
     flashSaleId: string,
     data: UpdateFlashSaleRequest
   ): Promise<FlashSaleResponse> {
-    return apiClient.patch<FlashSaleResponse>(`${this.baseUrl}/events/${eventId}/flash-sales/${flashSaleId}`, data);
+    return apiClient.patch<FlashSaleResponse>(
+      `${this.baseUrl}/events/${eventId}/flash-sales/${flashSaleId}`,
+      data
+    );
   }
 
-  public async deleteFlashSale(eventId: string, flashSaleId: string): Promise<void> {
-    return apiClient.delete(`${this.baseUrl}/events/${eventId}/flash-sales/${flashSaleId}`);
+  public async deleteFlashSale(
+    eventId: string,
+    flashSaleId: string
+  ): Promise<void> {
+    return apiClient.delete(
+      `${this.baseUrl}/events/${eventId}/flash-sales/${flashSaleId}`
+    );
   }
 
   /**
    * Flash sale status operations
    */
-  public async cancelFlashSale(eventId: string, flashSaleId: string): Promise<FlashSaleResponse> {
-    return apiClient.post<FlashSaleResponse>(`${this.baseUrl}/events/${eventId}/flash-sales/${flashSaleId}/cancel`);
+  public async cancelFlashSale(
+    eventId: string,
+    flashSaleId: string
+  ): Promise<FlashSaleResponse> {
+    return apiClient.post<FlashSaleResponse>(
+      `${this.baseUrl}/events/${eventId}/flash-sales/${flashSaleId}/cancel`
+    );
   }
 
-  public async activateFlashSale(eventId: string, flashSaleId: string): Promise<FlashSaleResponse> {
-    return apiClient.get<FlashSaleResponse>(`${this.baseUrl}/events/${eventId}/flash-sales/${flashSaleId}/activate`);
+  public async activateFlashSale(
+    eventId: string,
+    flashSaleId: string
+  ): Promise<FlashSaleResponse> {
+    return apiClient.get<FlashSaleResponse>(
+      `${this.baseUrl}/events/${eventId}/flash-sales/${flashSaleId}/activate`
+    );
   }
 
   /**
@@ -80,15 +116,33 @@ class FlashSaleService {
     );
   }
 
-  public async getActiveSale(params: ActiveFlashSaleQueryParams): Promise<FlashSaleResponse> {
-    return apiClient.get<FlashSaleResponse>(`${this.baseUrl}/flash-sales/active`, { params });
+  public async getActiveSale(
+    params: ActiveFlashSaleQueryParams
+  ): Promise<FlashSaleResponse> {
+    return apiClient.get<FlashSaleResponse>(
+      `${this.baseUrl}/flash-sales/active`,
+      { params }
+    );
   }
 
   /**
    * Flash sale analytics operations
    */
-  public async getFlashSaleStats(eventId: string, flashSaleId: string): Promise<FlashSaleStatsResponse> {
-    return apiClient.get<FlashSaleStatsResponse>(`${this.baseUrl}/events/${eventId}/flash-sales/${flashSaleId}/stats`);
+  public async getFlashSaleStats(
+    eventId: string,
+    flashSaleId: string
+  ): Promise<FlashSaleStatsResponse> {
+    return apiClient.get<FlashSaleStatsResponse>(
+      `${this.baseUrl}/events/${eventId}/flash-sales/${flashSaleId}/stats`
+    );
+  }
+
+  public async getFlashSaleOverallStats(
+    eventId: string
+  ): Promise<FlashSaleOverallStatsResponse> {
+    return apiClient.get<FlashSaleOverallStatsResponse>(
+      `${this.baseUrl}/events/${eventId}/flash-sales/overall_stats`
+    );
   }
 }
 

@@ -77,17 +77,17 @@ const serverLogger = {
             name: error.name,
           }
         : {};
-      console.error(`[API Error] ${message}`, errorDetails);
+      console.log(`[API Error] ${message}`, errorDetails);
     }
   },
   warn: (message: string, details?: any) => {
     if (process.env.NODE_ENV === "development") {
-      console.warn(`[API Warning] ${message}`, details);
+      console.log(`[API Warning] ${message}`, details);
     }
   },
   info: (message: string, details?: any) => {
     if (process.env.NODE_ENV === "development") {
-      console.info(`[API Info] ${message}`, details);
+      console.log(`[API Info] ${message}`, details);
     }
   },
 };
@@ -275,6 +275,36 @@ class ApiClient {
     try {
       const response = await this.api.delete<T>(url, {
         ...config,
+      });
+      return response.data;
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
+  public async postFormData<T>(url: string, formData: FormData, config?: any): Promise<T> {
+    try {
+      const response = await this.api.post<T>(url, formData, {
+        ...config,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...config?.headers,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      return handleApiError(error);
+    }
+  }
+
+  public async patchFormData<T>(url: string, formData: FormData, config?: any): Promise<T> {
+    try {
+      const response = await this.api.patch<T>(url, formData, {
+        ...config,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...config?.headers,
+        },
       });
       return response.data;
     } catch (error) {

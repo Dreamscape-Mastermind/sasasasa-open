@@ -11,6 +11,9 @@ import SectionContainer from "@/components/SectionContainer";
 import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "react-hot-toast";
 import siteMetadata from "@/config/siteMetadata";
+import { CookieBanner } from "@/components/ui/cookie-banner";
+import GlobalShortcutWrapper from "@/components/GlobalShortcutWrapper";
+import TopLoadingBarClient from "@/components/TopLoadingBarClient";
 
 const sen = Sen({
   subsets: ["latin"],
@@ -55,8 +58,8 @@ export const metadata: Metadata = {
     title: siteMetadata.title,
     card: "summary_large_image",
     images: [siteMetadata.socialBanner],
-  },
-};
+      },
+  };
 
 export default function RootLayout({
   children,
@@ -80,6 +83,7 @@ export default function RootLayout({
       <body
         className={`${sen.variable} ${anton.variable} antialiased bg-white text-black dark:bg-gray-950 dark:text-white`}
       >
+        <TopLoadingBarClient />
         <AppProviders>
           {!children?.toString().includes("DashboardLayout") ? (
             <SectionContainer>
@@ -95,6 +99,10 @@ export default function RootLayout({
               <Toaster />
             </>
           )}
+          <CookieBanner />
+          
+          {/* Global Quick Navigation Wrapper */}
+          <GlobalShortcutWrapper />
         </AppProviders>
       </body>
       <GoogleAnalytics gaId={siteMetadata.googleAnalyticsId} />

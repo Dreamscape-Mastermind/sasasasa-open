@@ -1,46 +1,51 @@
-'use client'
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+"use client";
+
+import { Calendar, MapPin, Plus, Search } from "lucide-react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Calendar, MapPin, Plus, Search } from 'lucide-react';
-import Link from 'next/link';
-import { useEvent } from '@/hooks/useEvent';
-import { Event } from '@/types';
-import { Suspense } from 'react';
+} from "@/components/ui/card";
 
+import { Button } from "@/components/ui/button";
+import { Event } from "@/types";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { Suspense, useState } from "react";
+import { useEvent } from "@/hooks/useEvent";
 
 // Helper function to format date
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  }).replace(',', '');
+  return date
+    .toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+    .replace(",", "");
 };
 let events: Event[] = [];
 
 function EventsContent() {
+  const [imageErrors, setImageErrors] = useState({});
   const { data: userEvents, isLoading, isError } = useEvent().useMyEvents();
   if (!isLoading && userEvents) {
     events = userEvents.result ? [...userEvents.result.results] : [];
-    console.log({ userEvents: userEvents.result});
   }
 
   // Helper to parse and compare dates
   const now = new Date();
 
-  const [currentEvents, pastEvents] = events.reduce<[typeof events, typeof events]>(
-    ([current, past]: any, event: { start_date: string | number | Date; }) => {
+  const [currentEvents, pastEvents] = events.reduce<
+    [typeof events, typeof events]
+  >(
+    ([current, past]: any, event: { start_date: string | number | Date }) => {
       const eventDate = new Date(event.start_date);
       if (eventDate >= now) {
         return [[...current, event], past];
@@ -55,24 +60,6 @@ function EventsContent() {
     <div className="space-y-6 animate-in">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Events</h1>
-        <Link href="/dashboard/events/create">
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            Create Event
-          </Button>
-        </Link>
-      </div>
-
-      <div className="flex gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search events..."
-            className="w-full pl-9"
-            type="search"
-          />
-        </div>
-        <Button variant="outline">Filters</Button>
       </div>
 
       {/* Current Events */}
@@ -83,13 +70,22 @@ function EventsContent() {
             <p className="text-muted-foreground">No current events.</p>
           )}
           {currentEvents.map((event) => (
-            <Link href={`/dashboard/events/${event.id}/overview`} key={event.id}>
+            <Link
+              href={`/dashboard/events/${event.id}/overview`}
+              key={event.id}
+            >
               <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video relative">
                   <img
-                    src={event.cover_image ? event.cover_image : undefined}
+                    src={imageErrors[event.id] ? '/images/placeholdere.jpeg' : event.cover_image || '/images/placeholdere.jpeg'}
                     alt={event.title}
                     className="object-cover w-full h-full"
+                    onError={(e) => {
+                      setImageErrors(prev => ({
+                        ...prev,
+                        [event.id]: true
+                      }));
+                    }}
                   />
                 </div>
                 <CardHeader>
@@ -101,7 +97,8 @@ function EventsContent() {
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <MapPin className="h-4 w-4" />
-                      {<div className="flex items-center gap-2 text-sm">
+                      {
+                        <div className="flex items-center gap-2 text-sm">
                           <MapPin className="h-4 w-4" />
                           {event.location ? (
                             <span>{event.location.name}</span>
@@ -109,13 +106,13 @@ function EventsContent() {
                             <span>Location not available</span>
                           )}
                         </div>
-                        }
+                      }
                     </div>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    {event.description}
+                    {event.description.slice(0, 100)}...
                   </p>
                 </CardContent>
               </Card>
@@ -132,13 +129,22 @@ function EventsContent() {
             <p className="text-muted-foreground">No past events.</p>
           )}
           {pastEvents.map((event) => (
-            <Link href={`/dashboard/events/${event.id}/overview`} key={event.id}>
+            <Link
+              href={`/dashboard/events/${event.id}/overview`}
+              key={event.id}
+            >
               <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video relative">
-                  <img
-                    src={event.cover_image ? event.cover_image : undefined}
+                <img
+                    src={imageErrors[event.id] ? '/images/placeholdere.jpeg' : event.cover_image || '/images/placeholdere.jpeg'}
                     alt={event.title}
                     className="object-cover w-full h-full"
+                    onError={(e) => {
+                      setImageErrors(prev => ({
+                        ...prev,
+                        [event.id]: true
+                      }));
+                    }}
                   />
                 </div>
                 <CardHeader>
@@ -160,7 +166,7 @@ function EventsContent() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    {event.description}
+                    {event.description.slice(0, 100)}...
                   </p>
                 </CardContent>
               </Card>
@@ -171,7 +177,6 @@ function EventsContent() {
     </div>
   );
 }
-
 
 export default function EventsPage() {
   return (

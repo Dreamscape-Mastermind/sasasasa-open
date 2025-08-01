@@ -35,6 +35,7 @@ class UserService {
   private static instance: UserService;
   private readonly baseUrl = "/api/v1/accounts";
   private readonly web3BaseUrl = "/api/v1/web3";
+  private readonly siweBaseUrl = "/api/web3/siwe";
 
   private constructor() {}
 
@@ -95,11 +96,27 @@ class UserService {
    * Web3 authentication methods
    */
   public async getWeb3Nonce(data: Web3NonceRequest): Promise<Web3NonceResponse> {
+    return apiClient.post<Web3NonceResponse>(`${this.siweBaseUrl}/nonce`, data, { baseURL: process.env.NEXT_PUBLIC_APP_URL });
+  }
+
+  private async _getWeb3Nonce(data: Web3NonceRequest): Promise<Web3NonceResponse> {
     return apiClient.post<Web3NonceResponse>(`${this.web3BaseUrl}/nonce`, data);
   }
 
   public async verifyWeb3Signature(data: Web3VerifyRequest): Promise<AuthResponse> {
+    return apiClient.post<AuthResponse>(`${this.siweBaseUrl}/verify`, data, { baseURL: process.env.NEXT_PUBLIC_APP_URL });
+  }
+
+  private async _verifyWeb3Signature(data: Web3VerifyRequest): Promise<AuthResponse> {
     return apiClient.post<AuthResponse>(`${this.web3BaseUrl}/verify`, data);
+  }
+
+  public async getNonce(data: Web3NonceRequest): Promise<Web3NonceResponse> {
+    return this._getWeb3Nonce(data);
+  }
+
+  public async verifySignature(data: Web3VerifyRequest): Promise<AuthResponse> {
+    return this._verifyWeb3Signature(data);
   }
 
   public async getWeb3RecapNonce(data: Web3RecapRequest): Promise<Web3RecapNonceResponse> {

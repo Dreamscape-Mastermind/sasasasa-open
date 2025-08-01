@@ -38,6 +38,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useEvent } from "@/hooks/useEvent";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserRole } from "@/types/user";
 
 interface MenuItem {
   label: string;
@@ -117,6 +119,8 @@ export function Sidebar() {
     page: 1,
   });
   const events = eventsData?.result?.results || [];
+  const { hasRole } = useAuth();
+  const isAdmin = hasRole(UserRole.ADMIN) || hasRole(UserRole.SUPER_ADMIN);
 
   useEffect(() => {
     if (
@@ -264,38 +268,40 @@ export function Sidebar() {
           )}
 
           {/* Blog Menus Section */}
-          <div className="px-3">
-            <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
-              <h3 className="font-bold text-lg text-foreground">
-                Blog Management
-              </h3>
-              <ScrollArea className="flex-1">
-                <div className="p-3 space-y-1">
-                  {NAV_ITEMS.DASHBOARD_BLOG_ADMIN.map((menu: MenuItem) => (
-                    <Link key={menu.href} href={menu.href}>
-                      <Button
-                        variant={pathname === menu.href ? "secondary" : "ghost"}
-                        className={cn(
-                          "w-full justify-start gap-2",
-                          pathname === menu.href &&
-                            "bg-primary text-primary-foreground font-medium"
-                        )}
-                      >
-                        {menu.icon && <menu.icon className="h-4 w-4" />}
-                        <span>{menu.label}</span>
-                      </Button>
-                    </Link>
-                  ))}
-                </div>
-              </ScrollArea>
+          {isAdmin && (
+            <div className="px-3">
+              <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
+                <h3 className="font-bold text-lg text-foreground">
+                  Stories
+                </h3>
+                <ScrollArea className="flex-1">
+                  <div className="p-3 space-y-1">
+                    {NAV_ITEMS.DASHBOARD_BLOG_ADMIN.map((menu: MenuItem) => (
+                      <Link key={menu.href} href={menu.href}>
+                        <Button
+                          variant={pathname === menu.href ? "secondary" : "ghost"}
+                          className={cn(
+                            "w-full justify-start gap-2",
+                            pathname === menu.href &&
+                              "bg-primary text-primary-foreground font-medium"
+                          )}
+                        >
+                          {menu.icon && <menu.icon className="h-4 w-4" />}
+                          <span>{menu.label}</span>
+                        </Button>
+                      </Link>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* User Menus Section */}
           <div className="px-3">
             <div className="p-4 rounded-lg bg-transparent border border-border">
               <h3 className="font-bold text-lg text-foreground">
-                User Settings
+                My Account
               </h3>
               <div className="space-y-1">
                 {NAV_ITEMS.DASHBOARD_ADMIN.map((menu) => (

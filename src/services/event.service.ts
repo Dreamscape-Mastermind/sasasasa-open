@@ -46,15 +46,75 @@ class EventService {
     return apiClient.get<EventResponse>(`${this.baseUrl}/${id}`);
   }
 
+  /**
+   * Helper function to create FormData for event creation/update
+   */
+  private createEventFormData(
+    data: CreateEventRequest | UpdateEventRequest, 
+    originalImageUrl?: string
+  ): FormData | any {
+    const hasNewFile = data.cover_image && data.cover_image instanceof File;
+    const hasExistingImage = typeof data.cover_image === 'string' && data.cover_image.length > 0;
+    const shouldRemoveImage = data.cover_image === null || data.cover_image === '';
+    
+    // If we have a new file to upload, use FormData
+    if (hasNewFile) {
+      const formData = new FormData();
+      
+      // Add all non-file fields
+      Object.entries(data).forEach(([key, value]) => {
+        if (key === 'cover_image') {
+          if (value instanceof File) {
+            formData.append('cover_image', value);
+          }
+        } else if (value !== null && value !== undefined) {
+          formData.append(key, String(value));
+        }
+      });
+
+      return formData;
+    }
+    
+    // For non-file updates, create regular object
+    const processedData = { ...data };
+    
+    // Handle image field based on state
+    if (shouldRemoveImage) {
+      // Explicitly set to null to remove existing image
+      processedData.cover_image = null;
+    } else if (hasExistingImage) {
+      // Keep existing image URL (don't send cover_image field to avoid overwriting)
+      delete processedData.cover_image;
+    } else {
+      // No image specified, don't include the field
+      delete processedData.cover_image;
+    }
+
+    return processedData;
+  }
+
   public async createEvent(data: CreateEventRequest): Promise<EventResponse> {
-    return apiClient.post<EventResponse>(this.baseUrl, data);
+    const processedData = this.createEventFormData(data);
+    
+    if (processedData instanceof FormData) {
+      return apiClient.postFormData<EventResponse>(this.baseUrl, processedData);
+    } else {
+      return apiClient.post<EventResponse>(this.baseUrl, processedData);
+    }
   }
 
   public async updateEvent(
     id: string,
-    data: UpdateEventRequest
+    data: UpdateEventRequest,
+    originalImageUrl?: string
   ): Promise<EventResponse> {
-    return apiClient.patch<EventResponse>(`${this.baseUrl}/${id}`, data);
+    const processedData = this.createEventFormData(data, originalImageUrl);
+    
+    if (processedData instanceof FormData) {
+      return apiClient.patchFormData<EventResponse>(`${this.baseUrl}/${id}`, processedData);
+    } else {
+      return apiClient.patch<EventResponse>(`${this.baseUrl}/${id}`, processedData);
+    }
   }
 
   public async deleteEvent(id: string): Promise<void> {
@@ -124,7 +184,7 @@ class EventService {
     params?: TeamMemberQueryParams
   ): Promise<TeamMembersResponse> {
     return apiClient.get<TeamMembersResponse>(
-      `${this.baseUrl}/${eventId}/team`,
+      `${this.baseUrl}/${eventId}/teams`,
       { params }
     );
   }
@@ -134,7 +194,7 @@ class EventService {
     memberId: string
   ): Promise<TeamMemberResponse> {
     return apiClient.get<TeamMemberResponse>(
-      `${this.baseUrl}/${eventId}/team/${memberId}`
+      `${this.baseUrl}/${eventId}/teams/${memberId}`
     );
   }
 

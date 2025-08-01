@@ -46,11 +46,8 @@ export function AnalyticsContent({ eventId }: AnalyticsContentProps) {
   const { data: ticketsData, isLoading: isLoadingTickets } =
     useTickets(eventId);
 
-  useEffect(() => {
-    console.log("eventId", eventId);
-  }, [eventId]);
 
-  console.log({ eventData, ticketsData, eventError });
+
 
   const currentEvent = eventData?.result;
   const tickets = ticketsData?.result?.results || [];

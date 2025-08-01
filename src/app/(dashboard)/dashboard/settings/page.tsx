@@ -46,6 +46,9 @@ import WalletSettings from "./WalletSettings";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSearchParams } from "next/navigation";
+import { useUser } from "@/hooks/useUser";
+import toast from "react-hot-toast";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function SettingsPage() {
   return (
@@ -71,14 +74,91 @@ function SettingsContent() {
   const initTab = searchParams.get("tab") || "account";
   const [tab, setTab] = useState(initTab);
   const action = searchParams.get("action");
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
+  const { useUpdateProfile, useProfile } = useUser();
+  const updateProfile = useUpdateProfile();
+  const { refetch: refetchProfile } = useProfile();
+
+  // Editable fields state
+  const [profile, setProfile] = useState({
+    bio: user?.bio || "",
+    avatar: user?.avatar || "",
+    location: (user as any)?.location || "",
+    instagram_handle: user?.instagram_handle || "",
+    twitter_handle: user?.twitter_handle || "",
+    linkedin_handle: user?.linkedin_handle || "",
+    tiktok_handle: user?.tiktok_handle || "",
+    youtube_handle: user?.youtube_handle || "",
+    website: user?.website || "",
+    date_of_birth: (user as any)?.date_of_birth || "",
+    gender: (user as any)?.gender || "",
+    timezone: user?.timezone || "",
+    first_name: user?.first_name || "",
+    last_name: user?.last_name || "",
+    email: user?.email || "",
+  });
+
+  // Bank details state
+  const [bankDetails, setBankDetails] = useState({
+    bankName: "KCB",
+    bankBranch: "Nairobi",
+    accountName: "John Doe",
+    accountNumber: "1234567890",
+    currency: "KES",
+  });
 
   useEffect(() => {
-    const currentTab = searchParams.get("tab");
-    if (currentTab) {
-      setTab(currentTab);
-    }
-  }, [searchParams]);
+    setProfile({
+      bio: user?.bio || "",
+      avatar: user?.avatar || "",
+      location: (user as any)?.location || "",
+      instagram_handle: user?.instagram_handle || "",
+      twitter_handle: user?.twitter_handle || "",
+      linkedin_handle: user?.linkedin_handle || "",
+      tiktok_handle: user?.tiktok_handle || "",
+      youtube_handle: user?.youtube_handle || "",
+      website: user?.website || "",
+      date_of_birth: (user as any)?.date_of_birth || "",
+      gender: (user as any)?.gender || "",
+      timezone: user?.timezone || "",
+      first_name: user?.first_name || "",
+      last_name: user?.last_name || "",
+      email: user?.email || "",
+    });
+  }, [user]);
+
+  const handleChange: React.ChangeEventHandler<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement> = (e) => {
+    const { name, value } = e.target;
+    setProfile((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { first_name, last_name, email, ...rest } = profile;
+    updateProfile.mutate(rest, {
+      onSuccess: async () => {
+        toast.success("Profile updated successfully");
+        // Refetch user profile and update AuthContext
+        const { data } = await refetchProfile();
+        if (data && data.result) {
+          setUser(data.result);
+        }
+      },
+      onError: () => {
+        toast.error("Failed to update profile");
+      },
+    });
+  };
+
+  const handleBankChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setBankDetails((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleBankSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.success("Bank details updated (not yet saved to backend)");
+  };
 
   const listVariants = {
     hidden: { opacity: 0 },
@@ -138,16 +218,20 @@ function SettingsContent() {
             <User className="w-4 h-4" />
             General
           </TabsTrigger>
-          <TabsTrigger
+          {/* <TabsTrigger
             value="notifications"
             className="flex items-center gap-2"
           >
             <Bell className="w-4 h-4" />
             Notifications
-          </TabsTrigger>
+          </TabsTrigger> */}
           <TabsTrigger value="billing" className="flex items-center gap-2">
             <CreditCard className="w-4 h-4" />
             Billing
+          </TabsTrigger>
+          <TabsTrigger value="bank" className="flex items-center gap-2">
+            <CreditCard className="w-4 h-4" />
+            Bank Details
           </TabsTrigger>
           <TabsTrigger value="security" className="flex items-center gap-2">
             <Shield className="w-4 h-4" />
@@ -188,39 +272,73 @@ function SettingsContent() {
                   <User className="w-5 h-5" />
                   Profile Information
                 </CardTitle>
-                <CardDescription>View your profile information</CardDescription>
+                <CardDescription>Edit your profile information</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="grid gap-2">
-                    <Label>Name</Label>
-                    <Input
-                      value={
-                        user?.first_name
-                          ? `${user.first_name} ${user.last_name}`
-                          : "Not set"
-                      }
-                      className="bg-muted"
-                      disabled
-                    />
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label>First Name</Label>
+                      <Input name="first_name" value={profile.first_name} onChange={handleChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Last Name</Label>
+                      <Input name="last_name" value={profile.last_name} onChange={handleChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Email</Label>
+                      <Input name="email" value={profile.email} onChange={handleChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Avatar URL</Label>
+                      <Input name="avatar" value={profile.avatar} onChange={handleChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2 md:col-span-2">
+                      <Label>Bio</Label>
+                      <Textarea name="bio" value={profile.bio} onChange={(e) => handleChange(e)} className="rounded-lg min-h-[120px]" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Location</Label>
+                      <Input name="location" value={profile.location} onChange={handleChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Instagram</Label>
+                      <Input name="instagram_handle" value={profile.instagram_handle} onChange={handleChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Twitter</Label>
+                      <Input name="twitter_handle" value={profile.twitter_handle} onChange={handleChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>LinkedIn</Label>
+                      <Input name="linkedin_handle" value={profile.linkedin_handle} onChange={handleChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>TikTok</Label>
+                      <Input name="tiktok_handle" value={profile.tiktok_handle} onChange={handleChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>YouTube</Label>
+                      <Input name="youtube_handle" value={profile.youtube_handle} onChange={handleChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Website</Label>
+                      <Input name="website" value={profile.website} onChange={handleChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Date of Birth</Label>
+                      <Input name="date_of_birth" type="date" value={profile.date_of_birth || ""} onChange={handleChange} className="rounded-lg" />
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label>Timezone</Label>
+                      <Input name="timezone" value={profile.timezone} onChange={handleChange} className="rounded-lg" />
+                    </div>
                   </div>
-                  <div className="grid gap-2">
-                    <Label>Email</Label>
-                    <Input
-                      value={user?.email || "Not set"}
-                      className="bg-muted"
-                      disabled
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Bio</Label>
-                    <Input
-                      value={user?.bio || "Not set"}
-                      className="bg-muted"
-                      disabled
-                    />
-                  </div>
-                </div>
+                  <Button type="submit" disabled={updateProfile.status === 'pending'}>
+                    {updateProfile.status === 'pending' ? "Saving..." : "Save Changes"}
+                  </Button>
+                </form>
               </CardContent>
             </Card>
 
@@ -283,7 +401,7 @@ function SettingsContent() {
           </motion.div>
         </TabsContent>
 
-        <TabsContent value="notifications" className="space-y-6">
+        {/* <TabsContent value="notifications" className="space-y-6">
           <motion.div
             variants={listVariants}
             initial="hidden"
@@ -343,7 +461,7 @@ function SettingsContent() {
               </CardContent>
             </Card>
           </motion.div>
-        </TabsContent>
+        </TabsContent> */}
 
         <TabsContent value="billing" className="space-y-6">
           <motion.div
@@ -392,6 +510,59 @@ function SettingsContent() {
                     </div>
                   </motion.div>
                 </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </TabsContent>
+
+        <TabsContent value="bank" className="space-y-6">
+          <motion.div
+            variants={listVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5" />
+                  Bank Details
+                </CardTitle>
+                <CardDescription>
+                  Edit your bank details
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <form className="space-y-4" onSubmit={handleBankSubmit}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label>Bank Name</Label>
+                      <Input name="bankName" value={bankDetails.bankName} onChange={handleBankChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Bank Branch</Label>
+                      <Input name="bankBranch" value={bankDetails.bankBranch} onChange={handleBankChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Account Name</Label>
+                      <Input name="accountName" value={bankDetails.accountName} onChange={handleBankChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Account Number</Label>
+                      <Input name="accountNumber" value={bankDetails.accountNumber} onChange={handleBankChange} className="rounded-lg" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Currency</Label>
+                      <select name="currency" value={bankDetails.currency} onChange={handleBankChange} className="bg-background border rounded-lg px-2 py-1">
+                        <option value="KES">KES (KSH)</option>
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
+                        <option value="CAD">CAD ($)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <Button type="submit">Save Changes</Button>
+                </form>
               </CardContent>
             </Card>
           </motion.div>

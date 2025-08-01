@@ -79,6 +79,7 @@ export const useUser = () => {
       queryKey: ["roles"],
       queryFn: () => userService.getRoles(),
       enabled: options?.enabled ?? true,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     });
   };
 

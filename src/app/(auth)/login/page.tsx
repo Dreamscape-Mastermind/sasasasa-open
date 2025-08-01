@@ -4,12 +4,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
 
 export default function LoginPage() {
+  const logoURL = process.env.NEXT_PUBLIC_LOGO_URL || "/logo.png";
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <Image
-            src="/images/sasasasaLogo.png"
+            src={logoURL}
             alt="Sasasasa Logo"
             width={150}
             height={50}

@@ -9,14 +9,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LayoutDashboard, LogOut, Settings } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { LayoutDashboard, LogOut, Settings, Crown } from "lucide-react";
 import { getAvatarUrl, getRoleName } from "@/lib/utils";
+import { memo } from "react";
 
 import { Button } from "@/components/ui/button";
 import Link from "@/components/Link";
 import { ROUTES } from "@/lib/constants";
 import type { UserRole } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
+
+// Memoized beta crown component with tooltip
+const BetaCrown = memo(() => (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Crown className="h-2.5 w-2.5 text-amber-300 shimmer-crown cursor-help" />
+      </TooltipTrigger>
+      <TooltipContent side="top" className="text-xs">
+        Beta Program
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+));
+BetaCrown.displayName = "BetaCrown";
 
 export function ProfileDropdown() {
   const { user, roles, logout } = useAuth();
@@ -80,9 +102,10 @@ export function ProfileDropdown() {
               {user?.email}
             </p>
             {roles && roles.length > 0 && (
-              <p className="text-xs leading-none text-muted-foreground">
-                {getRoleName(roles[0].name as unknown as UserRole)}
-              </p>
+              <div className="flex items-center gap-1.5 text-xs leading-none text-muted-foreground">
+                <span>{getRoleName(roles[0].name as unknown as UserRole)}</span>
+                {user?.beta && <BetaCrown />}
+              </div>
             )}
           </div>
         </DropdownMenuLabel>

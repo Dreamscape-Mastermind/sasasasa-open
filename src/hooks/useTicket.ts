@@ -1,6 +1,7 @@
 import type {
   ComplementaryTicketRequest,
   CreateTicketTypeRequest,
+  ExportTicketsQueryRequest,
   ProcessRefundRequest,
   RequestRefundRequest,
   TicketPurchaseRequest,
@@ -31,25 +32,35 @@ export const useTicket = () => {
     });
   };
 
-  const useCreateTicketType = (eventId: string) => {
+  const useCreateTicketType = (
+    eventId: string,
+    config?: { onSuccess?: () => void }
+  ) => {
     return useMutation({
       mutationFn: (data: CreateTicketTypeRequest) =>
         ticketService.createTicketType(eventId, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["ticket-types", eventId] });
+        config?.onSuccess?.();
       },
     });
   };
 
-  const useUpdateTicketType = (eventId: string, ticketTypeId: string) => {
+  const useUpdateTicketType = (
+    { eventId }: { eventId: string },
+    config?: { onSuccess?: () => void }
+  ) => {
     return useMutation({
-      mutationFn: (data: UpdateTicketTypeRequest) =>
-        ticketService.updateTicketType(eventId, ticketTypeId, data),
+      mutationFn: (data: UpdateTicketTypeRequest) => {
+        const { ticketTypeId, ...rest } = data;
+        return ticketService.updateTicketType(eventId, data.ticketTypeId, data);
+      },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["ticket-types", eventId] });
         queryClient.invalidateQueries({
-          queryKey: ["ticket-type", eventId, ticketTypeId],
+          queryKey: ["ticket-type", eventId],
         });
+        config?.onSuccess?.();
       },
     });
   };
@@ -68,6 +79,7 @@ export const useTicket = () => {
   const useTickets = (eventId: string, params?: TicketQueryParams) => {
     return useQuery({
       queryKey: ["tickets", eventId, params],
+      enabled: !!eventId,
       queryFn: () => ticketService.listTickets(eventId, params),
     });
   };
@@ -120,9 +132,10 @@ export const useTicket = () => {
     });
   };
 
-  const useExportTickets = (eventId: string) => {
+  const useExportTickets = () => {
     return useMutation({
-      mutationFn: () => ticketService.exportTickets(eventId),
+      mutationFn: (data: ExportTicketsQueryRequest) =>
+        ticketService.exportTickets(data),
     });
   };
 

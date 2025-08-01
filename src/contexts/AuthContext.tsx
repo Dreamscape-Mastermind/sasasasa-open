@@ -18,6 +18,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useMemo,
 } from "react";
 import {
   useAppKitAccount,
@@ -62,6 +63,10 @@ interface AuthContextType {
   hasAccessLevel: (level: AccessLevel) => boolean;
   hasAnyAccessLevel: (levels: AccessLevel[]) => boolean;
   hasAllAccessLevels: (levels: AccessLevel[]) => boolean;
+  /**
+   * Directly set the user in context. Use after profile update for instant UI refresh.
+   */
+  setUser: (user: UserProfile | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -682,31 +687,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const contextValue = useMemo(() => ({
+    user,
+    roles: rolesData?.result?.roles || null,
+    availableRoles: availableRolesData?.result?.roles || null,
+    isLoading,
+    isAuthenticated: !!user,
+    loginWithEmail,
+    completeOtpVerification,
+    resendOtp,
+    loginWithWallet,
+    loginWithSIWEReCap,
+    linkWallet,
+    logout,
+    getAccessToken,
+    refreshAccessToken,
+    hasRole,
+    hasAnyRole,
+    hasAllRoles,
+    hasAccessLevel,
+    hasAnyAccessLevel,
+    hasAllAccessLevels,
+    setUser,
+  }), [
+    user,
+    rolesData,
+    availableRolesData,
+    isLoading,
+    loginWithEmail,
+    completeOtpVerification,
+    resendOtp,
+    loginWithWallet,
+    loginWithSIWEReCap,
+    linkWallet,
+    logout,
+    getAccessToken,
+    refreshAccessToken,
+    hasRole,
+    hasAnyRole,
+    hasAllRoles,
+    hasAccessLevel,
+    hasAnyAccessLevel,
+    hasAllAccessLevels,
+    setUser,
+  ]);
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        roles: rolesData?.result?.roles || null,
-        availableRoles: availableRolesData?.result?.roles || null,
-        isLoading,
-        isAuthenticated: !!user,
-        loginWithEmail,
-        completeOtpVerification,
-        resendOtp,
-        loginWithWallet,
-        loginWithSIWEReCap,
-        linkWallet,
-        logout,
-        getAccessToken,
-        refreshAccessToken,
-        hasRole,
-        hasAnyRole,
-        hasAllRoles,
-        hasAccessLevel,
-        hasAnyAccessLevel,
-        hasAllAccessLevels,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

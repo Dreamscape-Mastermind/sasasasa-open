@@ -111,7 +111,7 @@ export default function HomeContent() {
     (featuredEvents?.result?.results?.length || 0) > 1;
 
   return (
-    <main className="container mx-auto px-4">
+    <main className="container mx-auto px-2">
       <div className="min-h-screen">
         <Hero />
         {isLoadingFeatured ? (
@@ -133,7 +133,7 @@ export default function HomeContent() {
             </div>
           </div>
         ) : hasMultipleFeaturedEvents ? (
-          <div className="my-8 relative px-1 md:px-12">
+          <div className="my-8 relative px-1 md:px-2">
             <FeaturedCarousel
               events={featuredEvents?.result?.results?.slice(0, 3) || []}
             />

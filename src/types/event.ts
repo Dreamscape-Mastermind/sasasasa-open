@@ -137,25 +137,22 @@ export interface Event extends BaseEventEntity {
 export interface CreateEventRequest {
   title: string;
   description: string;
-  start_date: string;
-  end_date: string;
-  venue: string;
-  location?: Partial<Location>;
-  capacity: number;
-  price: number;
-  cover_image?: string;
-  facebook_url?: string;
-  twitter_url?: string;
-  instagram_url?: string;
-  linkedin_url?: string;
-  website_url?: string;
+  start_date: string; // ISO string
+  end_date: string;   // ISO string
   timezone: string;
-  featured?: boolean;
-  featured_until?: string;
-  performers?: Partial<Performer>[];
+  venue: string;
+  capacity: number;
+  cover_image?: File | string | null; // File for new upload, string for existing URL, null to remove
+  facebook_url?: string;
+  website_url?: string;
+  linkedin_url?: string;
+  instagram_url?: string;
+  twitter_url?: string;
 }
 
-export interface UpdateEventRequest extends Partial<CreateEventRequest> {}
+export interface UpdateEventRequest extends Partial<CreateEventRequest> {
+  cover_image?: File | string | null; // File for new upload, string to keep existing, null to remove
+}
 
 export interface InviteTeamMemberRequest {
   user_email: string;

@@ -2,15 +2,14 @@
 
 import { FormProvider, useForm } from "react-hook-form";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { SearchParamsProvider } from "./SearchParamsProvider";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProviders } from "@/providers/theme-providers";
-import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
+import { ConsentProvider } from "@/contexts/ConsentContext";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -67,52 +66,28 @@ const queryClient = new QueryClient({
   },
 });
 
-// Analytics Provider
-const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
-  const analytics = useAnalytics();
-
-  // Track page views on route changes
-  useEffect(() => {
-    const handleRouteChange = (url: string) => {
-      analytics.trackPageView(url);
-    };
-
-    // Track initial page view
-    analytics.trackPageView(window.location.pathname, document.title);
-
-    // Add route change listener
-    window.addEventListener("popstate", () =>
-      handleRouteChange(window.location.pathname)
-    );
-
-    return () => {
-      window.removeEventListener("popstate", () =>
-        handleRouteChange(window.location.pathname)
-      );
-    };
-  }, [analytics]);
-
-  return <>{children}</>;
-};
-
-// Logger Provider
+// Fixed LoggerProvider - keep this as it's not causing issues
 const LoggerProvider = ({ children }: { children: ReactNode }) => {
   const logger = useLogger({ context: "App" });
+  const loggerRef = useRef(logger);
+  
+  useEffect(() => {
+    loggerRef.current = logger;
+  }, [logger]);
 
-  // Log unhandled errors
   useEffect(() => {
     const handleError = (error: ErrorEvent) => {
-      logger.error("Unhandled error occurred", error);
+      loggerRef.current.error("Unhandled error occurred", error);
     };
 
     window.addEventListener("error", handleError);
     return () => window.removeEventListener("error", handleError);
-  }, [logger]);
+  }, []);
 
   return <>{children}</>;
 };
 
-// Combined Providers
+// Combined Providers - REMOVED AnalyticsProvider completely
 export function AppProviders({ children }: { children: ReactNode }) {
   const methods = useForm();
 
@@ -120,7 +95,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <SearchParamsProvider>
         <LoggerProvider>
-          <AnalyticsProvider>
+          <ConsentProvider>
             <AuthProvider>
               <ThemeProviders>
                 <FormProvider {...methods}>
@@ -128,8 +103,8 @@ export function AppProviders({ children }: { children: ReactNode }) {
                 </FormProvider>
               </ThemeProviders>
             </AuthProvider>
-            <ReactQueryDevtools initialIsOpen={false} />
-          </AnalyticsProvider>
+          </ConsentProvider>
+          {/* <ReactQueryDevtools initialIsOpen={false} /> */}
         </LoggerProvider>
       </SearchParamsProvider>
     </QueryClientProvider>

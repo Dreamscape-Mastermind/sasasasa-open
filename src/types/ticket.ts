@@ -68,6 +68,14 @@ export interface Ticket extends BaseTicketEntity {
   checked_in_at: Nullable<string>;
   checked_in_by: Nullable<string>; // User ID
   purchase_price: number;
+  owner_details: Owner;
+}
+
+export interface Owner {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
 }
 
 export interface TicketEnhanced {
@@ -119,7 +127,9 @@ export interface CreateTicketTypeRequest {
 }
 
 export interface UpdateTicketTypeRequest
-  extends Partial<CreateTicketTypeRequest> {}
+  extends Partial<CreateTicketTypeRequest> {
+  ticketTypeId: string;
+}
 
 export interface TicketPurchaseItem {
   ticket_type_id: string;
@@ -180,7 +190,10 @@ export interface TicketRefundsResponse
 
 export interface TicketExportResponse
   extends SuccessResponse<{
-    job_id: string;
+    download_url: string; // Direct download link
+    file_name: string; // Suggested filename
+    file_size: number; // File size in bytes
+    expires_at: string; // URL expiration time
   }> {}
 
 export interface TicketExportListResponse
@@ -214,6 +227,7 @@ export interface TicketQueryParams {
   search?: string;
   ordering?: string;
   page?: number;
+  page_size?: number;
 }
 
 export interface TicketRefundQueryParams {
@@ -224,4 +238,19 @@ export interface TicketRefundQueryParams {
   search?: string;
   ordering?: string;
   page?: number;
+  page_size?: number;
 }
+
+export interface ExportTicketsQueryRequest {
+  event_id: string;
+  format: ExportFormat;
+  filters: {
+    search?: string;
+    status?: string;
+    date_from?: string;
+    date_to?: string;
+  };
+  include_fields: string[];
+}
+
+export type ExportFormat = "excel" | "csv";

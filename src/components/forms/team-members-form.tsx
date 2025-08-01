@@ -11,7 +11,7 @@ import { Label } from "../ui/label";
 import { TeamMemberRole } from "@/types/event";
 import toast from "react-hot-toast";
 import { useEvent } from "@/hooks/useEvent";
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 
 const teamSchema = z.object({
   user_email: z.string().email("Please enter a valid email address"),
@@ -25,22 +25,24 @@ interface TeamMemberFormData {
   role: TeamMemberRole;
 }
 
-export default function TeamMembersForm() {
+export default function TeamMembersForm({ onFormSubmitSuccess, eventId }: { onFormSubmitSuccess?: () => void, eventId?: string }) {
   const searchParams = useSearchParams();
-  const eventId = searchParams.get("id") as string;
+  let eventIdd = eventId ? eventId : searchParams.get("id") as string;
 
   const [teamMembers, setTeamMembers] = useState<TeamMemberFormData[]>([
     { email: "", role: TeamMemberRole.EVENT_TEAM },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
-  const { useTeamMembers, useInviteTeamMember, useRemoveTeamMember } =
+  const { useTeamMembers, useInviteTeamMember, useRemoveTeamMember, usePublishEvent } =
     useEvent();
 
   const { data: teamMembersData, error: teamMembersError } =
-    useTeamMembers(eventId);
-  const inviteTeamMember = useInviteTeamMember(eventId);
-  const removeTeamMember = useRemoveTeamMember(eventId);
+    useTeamMembers(eventIdd);
+  const inviteTeamMember = useInviteTeamMember(eventIdd);
+  const removeTeamMember = useRemoveTeamMember(eventIdd);
+  const publishEvent = usePublishEvent();
 
   useEffect(() => {
     if (teamMembersData?.result?.results) {
@@ -99,6 +101,7 @@ export default function TeamMembersForm() {
 
       await Promise.all(invitePromises);
       toast.success("Team members invited successfully");
+      onFormSubmitSuccess?.();
     } catch (error) {
       toast.error("Failed to invite team members");
     } finally {
@@ -143,7 +146,7 @@ export default function TeamMembersForm() {
                 onChange={(e) =>
                   handleMemberChange(index, "role", e.target.value)
                 }
-                className="w-full p-2 border rounded-md"
+                className="w-full bg-card p-2 border rounded-md"
                 required
               >
                 {Object.values(TeamMemberRole).map((role) => (
@@ -180,16 +183,18 @@ export default function TeamMembersForm() {
           Add Team Member
         </Button>
 
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            "Save Changes"
-          )}
-        </Button>
+        <div className="flex items-center gap-x-4">
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
+        </div>
       </div>
     </form>
   );

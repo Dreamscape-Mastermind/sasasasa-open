@@ -101,6 +101,18 @@ export interface Payment extends BasePaymentEntity {
   last_error_message: Nullable<string>;
   attempts: number;
   provider_status: Nullable<string>;
+  customer_first_name: Nullable<string>;
+  customer_last_name: Nullable<string>;
+  customer_email: Nullable<string>;
+}
+
+export interface TransactionResult {
+  status: PaymentStatus;
+  message: string;
+  reference: string;
+  amount: number;
+  eventId?: string;
+  eventTitle?: string;
 }
 
 /**
@@ -167,10 +179,12 @@ export interface PaymentIntentResponse extends SuccessResponse<PaymentItem> {}
 export interface PaymentAnalyticsResponse
   extends SuccessResponse<{
     total_revenue: number;
-    total_transactions: number;
-    average_transaction_value: number;
-    revenue_by_date: Record<string, number>;
-    payment_methods_distribution: Record<string, number>;
+    pending_payments: number;
+    avg_ticket_price: number;
+    refunds: number;
+    revenue_change: string;
+    pending_transactions: number;
+    refund_count: number;
   }> {}
 
 /**
@@ -187,6 +201,8 @@ export interface PaymentQueryParams {
   search?: string;
   ordering?: string;
   page?: number;
+  page_size?: number;
+  event?: string;
 }
 
 export interface PaymentProviderQueryParams {
@@ -194,4 +210,8 @@ export interface PaymentProviderQueryParams {
   search?: string;
   ordering?: string;
   page?: number;
+}
+
+export interface PaymentAnalyticsQueryParams {
+  event?: string;
 }

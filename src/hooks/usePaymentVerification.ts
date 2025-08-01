@@ -1,15 +1,8 @@
-import { PaymentStatus } from "@/types/payment";
+import { PaymentStatus, TransactionResult } from "@/types/payment";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
 import { usePayment } from "@/hooks/usePayment";
 import { useState } from "react";
-
-interface TransactionResult {
-  status: PaymentStatus;
-  message: string;
-  reference: string;
-  amount: number;
-}
 
 interface UsePaymentVerificationProps {
   context?: string;
@@ -32,7 +25,7 @@ export function usePaymentVerification({
   const [loading, setLoading] = useState(true);
   const logger = useLogger({ context });
 
-  const verifyPayment = async (reference: string) => {
+  const verifyPayment = async (reference) => {
     if (!reference) {
       const error = new Error("Invalid payment reference");
       setTransaction({
@@ -51,6 +44,7 @@ export function usePaymentVerification({
         reference,
       });
 
+
       if (result.result?.status === PaymentStatus.COMPLETED) {
         const successResult = {
           status: result.result?.status,
@@ -59,6 +53,8 @@ export function usePaymentVerification({
             "Payment completed successfully",
           reference: result.result?.reference,
           amount: result.result?.amount,
+          eventId: result.result?.metadata?.event.id,
+          eventTitle: result.result?.metadata?.event.title,
         };
 
         setTransaction(successResult);

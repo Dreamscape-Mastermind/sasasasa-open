@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { TicketType } from "@/types/ticket";
 import moment from "moment-timezone";
 import { useEvent } from "@/hooks/useEvent";
+import { useRouter } from "next/navigation";
 
 export function EventDetailsContent({ eventId }: { eventId: string }) {
   const { useEvent: useEventQuery } = useEvent();
@@ -60,9 +61,11 @@ export function EventDetailsContent({ eventId }: { eventId: string }) {
       0
     ) || 0;
 
+  const router = useRouter();
+
   return (
     <div className="space-y-6 animate-in pb-8">
-      <div className="relative h-[300px] -mx-6 -mt-6">
+      <div className="relative h-[300px]">
         <div className="absolute inset-0">
           <img
             src={currentEvent.cover_image || "https://placehold.co/1200x400/"}
@@ -86,9 +89,23 @@ export function EventDetailsContent({ eventId }: { eventId: string }) {
                 </div>
               </div>
             </div>
-            <Button variant="outline" size="icon">
-              <Share2 className="h-4 w-4" />
-            </Button>
+            <div className="flex justify-between items-center gap-2">
+              <Button
+                variant="default"
+                size="default"
+                className="ml-2"
+                onClick={() => {
+                  if (currentEvent?.id) {
+                    router.push(`/dashboard/events/edit/${currentEvent.id}`);
+                  }
+                }}
+              >
+                Edit Event
+              </Button>
+              <Button variant="outline" size="icon">
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
