@@ -22,6 +22,7 @@ interface EventPaginationProps {
   pageSize: number;
   onPageSizeChange: (pageSize: number) => void;
   className?: string;
+  showPageSizeChanger?: boolean;
 }
 
 export function EventPagination({
@@ -31,6 +32,7 @@ export function EventPagination({
   pageSize,
   onPageSizeChange,
   className,
+  showPageSizeChanger = true,
 }: EventPaginationProps) {
   if (totalPages <= 1) return null;
 
@@ -96,22 +98,24 @@ export function EventPagination({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-end">
-        <Select
-          value={pageSize.toString()}
-          onValueChange={(value) => onPageSizeChange(Number(value))}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select page size" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="10">10 per page</SelectItem>
-            <SelectItem value="20">20 per page</SelectItem>
-            <SelectItem value="50">50 per page</SelectItem>
-            <SelectItem value="100">100 per page</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {showPageSizeChanger && (
+        <div className="flex items-center justify-end">
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(value) => onPageSizeChange(Number(value))}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select page size" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10 per page</SelectItem>
+              <SelectItem value="20">20 per page</SelectItem>
+              <SelectItem value="50">50 per page</SelectItem>
+              <SelectItem value="100">100 per page</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <Pagination className={className}>
         <PaginationContent>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Navigation, ChevronUp, Zap } from "lucide-react";
+import { Navigation, ChevronUp, Zap, Ham } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SpeedialProps {
@@ -61,7 +61,7 @@ const ActionPill: React.FC<{ text: string; children: React.ReactNode; onClick: (
 export default function ShortcutButton({ 
   direction, 
   actionButtons, 
-  mainIcon = <Zap size={24} />,
+  mainIcon = <Ham size={24} />,
   mainLabel = "Quick Navigation",
   position = "bottom-right",
   forceClose = false

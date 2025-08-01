@@ -8,12 +8,12 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import Header from "@/components/Header";
 import { Metadata } from "next";
 import SectionContainer from "@/components/SectionContainer";
-import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "react-hot-toast";
 import siteMetadata from "@/config/siteMetadata";
 import { CookieBanner } from "@/components/ui/cookie-banner";
 import GlobalShortcutWrapper from "@/components/GlobalShortcutWrapper";
 import TopLoadingBarClient from "@/components/TopLoadingBarClient";
+import { Sidebar } from "@/components/Sidebar";
 
 const sen = Sen({
   subsets: ["latin"],

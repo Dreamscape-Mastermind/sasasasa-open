@@ -24,7 +24,7 @@ import Confetti from "react-confetti";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/lib/constants";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { useUser } from "@/hooks/useUser";
@@ -44,7 +44,7 @@ const fadeIn = {
   visible: { opacity: 1, y: 0 },
 };
 
-const checkmarkVariants = {
+const checkmarkVariants: Variants = {
   hidden: { scale: 0, opacity: 0 },
   visible: {
     scale: 1,
