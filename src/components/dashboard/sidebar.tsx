@@ -146,72 +146,75 @@ export function Sidebar() {
 
       <ScrollArea className="flex-1">
         <div className="space-y-4 py-4">
-          {/* Event Dropdown */}
           <div className="px-3 py-2">
+            <h2 className="mb-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Selected Experience
+            </h2>
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   role="combobox"
                   aria-expanded={open}
-                  className="w-full justify-between rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 hover:font-extrabold hover:text-primary-foreground"
+                  className="w-full justify-between rounded-lg bg-transparent px-3 py-5 text-base"
                   disabled={isLoadingEvents || events.length === 0}
                 >
-                  {isLoadingEvents
-                    ? "Loading..."
-                    : selectedEvent
-                    ? selectedEvent.title.length > 20
-                      ? `${selectedEvent.title.slice(0, 20)}...`
-                      : selectedEvent.title
-                    : "No Events"}
+                  <span className="truncate">
+                    {isLoadingEvents
+                      ? "Loading..."
+                      : selectedEvent
+                      ? selectedEvent.title
+                      : "No Event Selected"}
+                  </span>
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent
-                align="end"
-                className="w-full p-0 rounded-xl shadow-lg border-none px-4 text-sm font-medium text-primary-foreground animate-fade-in-scale"
-                sideOffset={8}
+                align="start"
+                className="w-[var(--radix-popover-trigger-width)] p-0 rounded-lg border shadow-md"
               >
-                <Command className="rounded-xl">
+                <Command className="rounded-lg">
                   <CommandInput
                     placeholder="Search events..."
-                    className="border-none focus:ring-0 focus:outline-none"
+                    className="h-9 rounded-md border focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ring"
                   />
                   <CommandList>
-                    <CommandEmpty className="text-muted-foreground">
-                      {isLoadingEvents ? "Loading..." : "No event found."}
+                    <CommandEmpty>
+                      <div className="space-y-2 text-center py-4">
+                        <p className="text-sm text-muted-foreground">
+                          No event found.
+                        </p>
+                        <Link href="/dashboard/events/create">
+                          <Button size="sm" className="rounded-lg">
+                            Create an Event
+                          </Button>
+                        </Link>
+                      </div>
                     </CommandEmpty>
                     <CommandGroup>
-                      {events &&
-                        events.map((event) => (
-                          <CommandItem
-                            key={event.id}
-                            value={event.title}
-                            onSelect={() => {
-                              setSelectedEvent(event);
-                              setOpen(false);
-                              router.push(
-                                `/dashboard/events/${event.id}/analytics`
-                              );
-                            }}
+                      {events.map((event) => (
+                        <CommandItem
+                          key={event.id}
+                          value={event.title}
+                          onSelect={() => {
+                            setSelectedEvent(event);
+                            setOpen(false);
+                            router.push(
+                              `/dashboard/events/${event.id}/analytics`
+                            );
+                          }}
+                        >
+                          <Check
                             className={cn(
-                              "hover:bg-accent focus:bg-accent text-foreground font-medium rounded-lg transition-all cursor-pointer",
-                              selectedEvent &&
-                                selectedEvent.id === event.id &&
-                                "bg-accent font-bold"
+                              "mr-2 h-4 w-4",
+                              selectedEvent?.id === event.id
+                                ? "opacity-100"
+                                : "opacity-0"
                             )}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                selectedEvent && selectedEvent.id === event.id
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                            {event.title}
-                          </CommandItem>
-                        ))}
+                          />
+                          {event.title}
+                        </CommandItem>
+                      ))}
                     </CommandGroup>
                   </CommandList>
                 </Command>
@@ -219,13 +222,12 @@ export function Sidebar() {
             </Popover>
           </div>
 
-          {/* Event Menus Section */}
-          {selectedEvent && (
-            <div className="px-3 bg-transparent">
-              <div className="bg-primary p-4 rounded-lg border border-primary/20">
-                <h3 className="font-bold text-lg text-foreground">
-                  Experiences
-                </h3>
+          <div className="px-3">
+            <h2 className="mb-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Experience Menu
+            </h2>
+            <div className="ml-4">
+              {selectedEvent ? (
                 <div className="space-y-1">
                   {NAV_ITEMS.DASHBOARD_EVENT_ORGANIZER.map((menu: MenuItem) => (
                     <Link
@@ -234,11 +236,10 @@ export function Sidebar() {
                         "{eventId}",
                         selectedEvent.id.toString()
                       )}
-                      className="hover:opacity-80 transition-opacity"
                     >
                       <Button
                         variant={
-                          (pathname ?? "").includes(
+                          pathname.includes(
                             menu.href.replace(
                               "{eventId}",
                               selectedEvent.id.toString()
@@ -247,15 +248,7 @@ export function Sidebar() {
                             ? "secondary"
                             : "ghost"
                         }
-                        className={cn(
-                          "w-full justify-start gap-2",
-                          (pathname ?? "").includes(
-                            menu.href.replace(
-                              "{eventId}",
-                              selectedEvent.id.toString()
-                            )
-                          ) && "bg-primary text-primary-foreground font-medium"
-                        )}
+                        className="w-full justify-start gap-2"
                       >
                         {menu.icon && <menu.icon className="h-4 w-4" />}
                         <span>{menu.label}</span>
@@ -263,71 +256,61 @@ export function Sidebar() {
                     </Link>
                   ))}
                 </div>
-              </div>
+              ) : (
+                <div className="px-3 py-2 text-sm text-muted-foreground">
+                  Select an event to see more options.
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Blog Menus Section */}
           {isAdmin && (
             <div className="px-3">
-              <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
-                <h3 className="font-bold text-lg text-foreground">
-                  Stories
-                </h3>
-                <ScrollArea className="flex-1">
-                  <div className="p-3 space-y-1">
-                    {NAV_ITEMS.DASHBOARD_BLOG_ADMIN.map((menu: MenuItem) => (
-                      <Link key={menu.href} href={menu.href}>
-                        <Button
-                          variant={pathname === menu.href ? "secondary" : "ghost"}
-                          className={cn(
-                            "w-full justify-start gap-2",
-                            pathname === menu.href &&
-                              "bg-primary text-primary-foreground font-medium"
-                          )}
-                        >
-                          {menu.icon && <menu.icon className="h-4 w-4" />}
-                          <span>{menu.label}</span>
-                        </Button>
-                      </Link>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </div>
+            <h2 className="mb-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Blog
+            </h2>
+            <div className="space-y-1">
+              {NAV_ITEMS.DASHBOARD_BLOG_ADMIN.map((menu: MenuItem) => (
+                <Link key={menu.href} href={menu.href}>
+                  <Button
+                    variant={pathname === menu.href ? "secondary" : "ghost"}
+                    className="w-full justify-start gap-2"
+                  >
+                    {menu.icon && <menu.icon className="h-4 w-4" />}
+                    <span>{menu.label}</span>
+                  </Button>
+                </Link>
+              ))}
             </div>
+          </div>
           )}
 
           {/* User Menus Section */}
           <div className="px-3">
-            <div className="p-4 rounded-lg bg-transparent border border-border">
-              <h3 className="font-bold text-lg text-foreground">
-                My Account
-              </h3>
-              <div className="space-y-1">
-                {NAV_ITEMS.DASHBOARD_ADMIN.map((menu) => (
-                  <Link
-                    key={menu.href}
-                    href={menu.href}
-                    onClick={() => {
-                      if (window.innerWidth < 1024) {
-                        toggleSidebar();
-                      }
-                    }}
+            <h2 className="mb-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              My Account
+            </h2>
+            <div className="space-y-1">
+              {NAV_ITEMS.DASHBOARD_ADMIN.map((menu) => (
+                <Link
+                  key={menu.href}
+                  href={menu.href}
+                  onClick={() => {
+                    if (window.innerWidth < 1024) {
+                      toggleSidebar();
+                    }
+                  }}
+                >
+                  <Button
+                    variant={pathname === menu.href ? "secondary" : "ghost"}
+                    className="w-full justify-start gap-2"
                   >
-                    <Button
-                      variant={pathname === menu.href ? "secondary" : "ghost"}
-                      className={cn(
-                        "w-full justify-start gap-2",
-                        pathname === menu.href &&
-                          "bg-primary text-primary-foreground font-medium"
-                      )}
-                    >
-                      <menu.icon className="h-4 w-4" />
-                      <span>{menu.label}</span>
-                    </Button>
-                  </Link>
-                ))}
-              </div>
+                    <menu.icon className="h-4 w-4" />
+                    <span>{menu.label}</span>
+                  </Button>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
@@ -337,16 +320,8 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-60 border-r shrink-0">
-        <div className="sticky top-0 h-screen overflow-y-auto bg-transparent">
-          {sidebarContent}
-        </div>
-      </aside>
-
-      {/* Mobile sidebar */}
       <Sheet open={isOpen} onOpenChange={toggleSidebar}>
-        <SheetContent side="left" className="p-0 w-64">
+        <SheetContent side="right" className="p-0 w-80 lg:w-96">
           {sidebarContent}
         </SheetContent>
       </Sheet>

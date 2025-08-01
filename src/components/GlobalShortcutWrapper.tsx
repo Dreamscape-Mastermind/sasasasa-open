@@ -37,18 +37,6 @@ export default function GlobalShortcutWrapper() {
           action: () => window.location.href = "/dashboard"
         },
         {
-          icon: <Calendar size={18} />,
-          label: "My Experiences",
-          key: "events", 
-          action: () => window.location.href = "/dashboard/events"
-        },
-        {
-          icon: <Ticket size={18} />,
-          label: "My Tickets",
-          key: "tickets", 
-          action: () => window.location.href = "/dashboard/tickets"
-        },
-        {
           icon: <Settings size={18} />,
           label: "Settings",
           key: "settings",

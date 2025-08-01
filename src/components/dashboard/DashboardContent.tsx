@@ -130,7 +130,7 @@ const socialLinks = [
 
 export default function DashboardContent() {
   // Hooks for real data
-  const { useEvents } = useEvent();
+   const { useEvents } = useEvent();
   const { useTickets } = useTicket();
   const { usePayments } = usePayment();
   const { useCheckInStats } = useCheckin();
@@ -303,14 +303,8 @@ export default function DashboardContent() {
       <div className="space-y-6 sm:space-y-8 animate-in p-4 sm:p-6">
         {/* Header with Search and Create Event */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div className="relative w-full sm:w-96 hidden sm:block">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search events, attendees..."
-              className="pl-10 h-12 sm:h-10 text-base sm:text-sm rounded-xl border-2 border-muted/40 focus:border-primary/60 transition-colors"
-            />
-          </div>
-          <div className="hidden sm:block">
+          
+          <div className="hidden md:block">
             <Link href={ROUTES.DASHBOARD_EVENT_CREATE()}>
               <Tooltip>
                 <TooltipTrigger asChild>

@@ -45,7 +45,7 @@ export function Sidebar() {
 
           {/* Your sidebar content here */}
           <div className="mt-8">
-            <Cart />
+            {/* <Cart /> */}
           </div>
         </div>
       </div>

@@ -6,18 +6,22 @@ import { Button } from "@/components/ui/button";
 import { DashboardIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import Link from "./Link";
-import { LogIn } from "lucide-react";
+import { LogIn, Menu, Search as SearchIcon } from "lucide-react";
 import AnimatedMobileNav from "@/components/AnimatedMobileNav";
 import { ProfileDropdown } from "./profile/ProfileDropdown";
 import ThemeSwitch from "@/components/ThemeSwitch";
 import siteMetadata from "@/config/siteMetadata";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 const Header = () => {
+  const { toggleSidebar } = useSidebar();
   const { isAuthenticated, user, isLoading } = useAuth();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
   const redirectTo = searchParams?.get("redirect") || ROUTES.DASHBOARD;
   
   // Scroll state management
@@ -105,31 +109,42 @@ const Header = () => {
     </nav>
   );
 
+  const handleDashboardClick = () => {
+    if (pathname.startsWith("/dashboard")) {
+      toggleSidebar();
+    } else {
+      router.push(ROUTES.DASHBOARD);
+    }
+  };
+
   const renderAuthButtons = () => {
     if (isLoading) return null;
 
     if (isAuthenticated && user) {
       return (
         <>
-          <Link href={ROUTES.DASHBOARD}>
-            <Button className="flex items-center space-x-2">
-              <DashboardIcon className="h-5 w-5" />
-              <span>Go to Dashboard</span>
-            </Button>
-          </Link>
-          {/* <NotificationPopover /> */}
+          <Button
+            variant="ghost"
+            className="hidden md:flex items-center space-x-2 text-muted-foreground"
+            onClick={handleDashboardClick}
+          >
+            <Menu className="h-4 w-4" />
+            <span>Dashboard</span>
+          </Button>
           <ProfileDropdown />
         </>
       );
     }
 
     return (
-      <Link
-        href={`/login?redirect=${encodeURIComponent(redirectTo)}`}
-        className="inline-flex h-11 items-center justify-center gap-2 rounded-full border-2 border-[#CC322D] px-6 py-2 text-lg font-medium text-[#CC322D] hover:bg-[#CC322D]/10"
-      >
-        <LogIn className="h-4 w-4" />
-        <span>Login</span>
+      <Link href={`/login?redirect=${encodeURIComponent(redirectTo)}`}>
+        <Button
+          variant="outline"
+          className="rounded-full border-2 border-[#CC322D] text-[#CC322D] hover:bg-[#CC322D]/10 hover:text-[#CC322D]"
+        >
+          <LogIn className="h-4 w-4" />
+          <span>Login</span>
+        </Button>
       </Link>
     );
   };
@@ -140,11 +155,17 @@ const Header = () => {
       <header className={`${headerClass} hidden sm:flex`}>
         {renderHeaderLogo()}
         <div className="flex items-center space-x-4 leading-5 sm:space-x-6">
+          <Link href={ROUTES.SEARCH}>
+            <Button variant="ghost" className="text-muted-foreground">
+              <SearchIcon className="mr-2 h-4 w-4" />
+              Search
+            </Button>
+          </Link>
           {renderNavigation()}
           <div className="flex items-center space-x-4">
             {renderAuthButtons()}
+            <ThemeSwitch />
           </div>
-          <ThemeSwitch />
         </div>
       </header>
 

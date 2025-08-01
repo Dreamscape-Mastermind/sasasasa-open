@@ -4,29 +4,29 @@ import Spinner from "@/components/ui/spinner";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Events | Dreamscape",
+  title: "Experiences | Sasasasa",
   description:
-    "Discover and explore upcoming events. Browse through our curated collection of events, concerts, and performances.",
+    "Discover and explore upcoming experiences. Browse through our curated collection of experiences, events, concerts, and performances.",
   keywords: [
-    "events",
+    "experiences",
     "concerts",
     "performances",
-    "live events",
+    "live experiences",
     "tickets",
     "entertainment",
   ],
   openGraph: {
-    title: "Events | Dreamscape",
+    title: "Experiences | Sasasasa",
     description:
-      "Discover and explore upcoming events. Browse through our curated collection of events, concerts, and performances.",
+      "Discover and explore upcoming experiences. Browse through our curated collection of experiences, events, concerts, and performances.",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Events | Dreamscape",
+    title: "Experiences | Sasasasa",
     description:
-      "Discover and explore upcoming events. Browse through our curated collection of events, concerts, and performances.",
+      "Discover and explore upcoming experiences. Browse through our curated collection of experiences, events, concerts, and performances.",
   },
 };
 

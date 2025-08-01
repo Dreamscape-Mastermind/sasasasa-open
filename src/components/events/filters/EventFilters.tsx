@@ -71,11 +71,7 @@ export function EventFilters({
   };
 
   return (
-    <Card className={cn("w-full", className)}>
-      <CardHeader>
-        <CardTitle>Filters</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className={cn("space-y-6", className)}>
         {/* Status Filter */}
         <div className="space-y-2">
           <Label>Status</Label>
@@ -234,7 +230,6 @@ export function EventFilters({
             </SelectContent>
           </Select>
         </div>
-      </CardContent>
-    </Card>
+      </div>
   );
 }

@@ -8,7 +8,6 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import Header from "@/components/Header";
 import { Metadata } from "next";
 import SectionContainer from "@/components/SectionContainer";
-import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "react-hot-toast";
 import siteMetadata from "@/config/siteMetadata";
 import { CookieBanner } from "@/components/ui/cookie-banner";
@@ -90,7 +89,6 @@ export default function RootLayout({
               <Header />
               <main className="mb-auto">{children}</main>
               <Footer />
-              <Sidebar />
               <Toaster />
             </SectionContainer>
           ) : (

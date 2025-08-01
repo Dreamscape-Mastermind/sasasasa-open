@@ -62,6 +62,7 @@ export const ROUTES = {
     `/dashboard/events/${id}/promotions`,
   DASHBOARD_EVENT_TICKETS: (id: string) => `/dashboard/events/${id}/tickets`,
   DASHBOARD_EVENT_CHECK_IN: (id: string) => `/dashboard/events/${id}/checkin`,
+  SEARCH: "/search",
 };
 
 // Route protection configuration
@@ -83,6 +84,7 @@ export const ROUTE_PROTECTION = {
     ROUTES.LOGIN,
     ROUTES.VERIFY_OTP,
     ROUTES.UNAUTHORIZED,
+    ROUTES.SEARCH,
   ],
   // Auth routes (login, register, etc.)
   AUTH: [ROUTES.LOGIN, ROUTES.VERIFY_OTP],
@@ -120,7 +122,7 @@ export const ACCESS_LEVELS = {
 export const NAV_ITEMS = {
   MAIN: [
     { label: "Home", href: ROUTES.HOME },
-    { label: "Events", href: ROUTES.EVENTS },
+    { label: "Experiences", href: ROUTES.EVENTS },
     { label: "Blog", href: ROUTES.BLOG },
     { label: "About", href: ROUTES.ABOUT },
     // { label: "Contact", href: ROUTES.CONTACT },

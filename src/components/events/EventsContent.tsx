@@ -1,13 +1,20 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, Suspense } from "react";
 import { EventQueryParams, EventStatus } from "@/types/event";
-import { EventFilters } from "@/components/events/filters/EventFilters";
+import { useEvent } from "@/hooks/useEvent";
 import { EventList } from "@/components/events/list/EventList";
 import { EventPagination } from "@/components/events/pagination/EventPagination";
-import { EventSearch } from "@/components/events/search/EventSearch";
-import { EventSort } from "@/components/events/sort/EventSort";
-import { useEvent } from "@/hooks/useEvent";
+import { EventFilters } from "@/components/events/filters/EventFilters";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Filter, SlidersHorizontal } from "lucide-react";
 import { useLogger } from "@/hooks/useLogger";
 import { useAnalytics } from "@/hooks/useAnalytics";
 
@@ -33,7 +40,6 @@ export function EventsContent() {
         JSON.stringify(newFilters)
       );
 
-      // Clean up empty filters
       const cleanedFilters = Object.fromEntries(
         Object.entries(newFilters).filter(([_, value]) => {
           if (value === null || value === undefined) return false;
@@ -43,44 +49,7 @@ export function EventsContent() {
       );
 
       setFilters(cleanedFilters as EventQueryParams);
-      setPage(1); // Reset to first page when filters change
-    },
-    [logger, analytics]
-  );
-
-  const handleSearch = useCallback(
-    (searchTerm: string) => {
-      logger.info("Searching events", { searchTerm });
-      analytics.trackUserAction("search_events", "search", searchTerm);
-
-      setFilters((prev) => {
-        const newFilters = { ...prev };
-        if (searchTerm.trim()) {
-          newFilters.search = searchTerm;
-        } else {
-          delete newFilters.search;
-        }
-        return newFilters;
-      });
       setPage(1);
-    },
-    [logger, analytics]
-  );
-
-  const handleSort = useCallback(
-    (ordering: string) => {
-      logger.info("Sorting events", { ordering });
-      analytics.trackUserAction("sort_events", "sort", ordering);
-
-      setFilters((prev) => {
-        const newFilters = { ...prev };
-        if (ordering) {
-          newFilters.ordering = ordering;
-        } else {
-          delete newFilters.ordering;
-        }
-        return newFilters;
-      });
     },
     [logger, analytics]
   );
@@ -112,51 +81,77 @@ export function EventsContent() {
     },
     [logger, analytics]
   );
+  
+  const totalPages = data?.result?.count
+    ? Math.ceil(data.result.count / pageSize)
+    : 0;
 
   return (
     <div className="py-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">Events</h1>
+        <h1 className="text-4xl font-bold mb-4">Experiences</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Discover and explore upcoming events
+          Discover and explore upcoming experiences
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-1">
-          <EventFilters
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            className="sticky top-4"
-          />
-        </div>
-
-        <div className="lg:col-span-3">
-          <div className="flex flex-col space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <EventSearch onSearch={handleSearch} />
-              <EventSort onSort={handleSort} />
+      <div className="flex flex-col lg:flex-row gap-8">
+        <aside className="lg:w-1/4 xl:w-1/5">
+          <div className="sticky top-24">
+            <div className="hidden lg:block p-6 bg-muted/30 rounded-2xl border">
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <SlidersHorizontal className="h-5 w-5" /> Filters
+              </h3>
+              <EventFilters
+                filters={filters}
+                onFilterChange={handleFilterChange}
+              />
             </div>
+            <div className="lg:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="w-full rounded-xl">
+                    <Filter className="mr-2 h-4 w-4" />
+                    Show Filters
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Filters</SheetTitle>
+                  </SheetHeader>
+                  <div className="py-6">
+                    <EventFilters
+                      filters={filters}
+                      onFilterChange={handleFilterChange}
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          </div>
+        </aside>
 
+        <main className="flex-1 lg:w-3/4 xl:w-4/5">
+          <div className="flex flex-col space-y-4">
             <EventList
               events={data?.result?.results}
               isLoading={isLoading}
               error={error}
             />
 
-            <EventPagination
-              currentPage={page}
-              totalPages={
-                data?.result?.count
-                  ? Math.ceil(data.result.count / pageSize)
-                  : 0
-              }
-              onPageChange={handlePageChange}
-              pageSize={pageSize}
-              onPageSizeChange={handlePageSizeChange}
-            />
+            {totalPages > 1 && (
+              <div className="mt-12">
+                <EventPagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  pageSize={pageSize}
+                  onPageSizeChange={handlePageSizeChange}
+                />
+              </div>
+            )}
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );

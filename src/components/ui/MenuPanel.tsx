@@ -90,35 +90,7 @@ const MenuPanel = ({
               initial="hidden"
               animate="visible"
             >
-              {/* Event Select for Dashboard */}
-              {pathname?.startsWith("/dashboard") && (
-                <div className="mb-8">
-                  <label className="block text-xs font-semibold mb-1 text-gray-500 dark:text-gray-400">
-                    Select Event
-                  </label>
-                  <select
-                    className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-gray-900 text-sm"
-                    value={selectedEventId}
-                    onChange={(e) => {
-                      setSelectedEventId(e.target.value);
-                      router.push(
-                        `/dashboard/events/${e.target.value}/details`
-                      );
-                      handleMenuExit();
-                    }}
-                    disabled={isLoadingEvents || events.length === 0}
-                  >
-                    {isLoadingEvents && <option>Loading...</option>}
-                    {events.map((event) => (
-                      <option key={event.id} value={event.id}>
-                        {event.title.length > 30
-                          ? event.title.slice(0, 30) + "..."
-                          : event.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              
               {/* Navigation Links */}
               <div className="mb-8">
                 <m.h3
