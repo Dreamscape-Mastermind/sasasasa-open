@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Event } from "@/types/event";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
 import { useRouter } from "next/navigation";
@@ -47,7 +47,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
     return () => clearInterval(timer);
   }, [checkTimeWindow]);
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -58,7 +58,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
@@ -71,7 +71,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
     },
   };
 
-  const flashSaleVariants = {
+  const flashSaleVariants: Variants = {
     hidden: { x: 0 },
     visible: {
       x: [0, -3, 3, -2, 2, 0],

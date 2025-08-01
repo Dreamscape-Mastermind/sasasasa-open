@@ -19,7 +19,6 @@ export const metadata: Metadata = {
 type Props = {
   params: Promise<{ reference: string }>;
   searchParams: Promise<{ reference: string }>;
-  searchParams: Promise<{ reference: string }>;
 };
 
 export default function CheckoutCallbackPage({ searchParams }: Props) {
