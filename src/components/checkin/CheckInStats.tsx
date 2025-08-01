@@ -30,8 +30,12 @@ export function CheckInStats({ stats, isLoading }: CheckInStatsProps) {
     );
   }
 
-  const checkedInPercentage = (stats.checked_in / stats.total_tickets) * 100;
-  const invalidPercentage = (stats.invalid / stats.total_tickets) * 100;
+  const checkedInPercentage =
+    stats.total_tickets > 0
+      ? (stats.checked_in / stats.total_tickets) * 100
+      : 0;
+  const invalidPercentage =
+    stats.total_tickets > 0 ? (stats.invalid / stats.total_tickets) * 100 : 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
