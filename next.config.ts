@@ -49,16 +49,45 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/",
+        source: "/(.*)",
         headers: [
           {
             key: "Access-Control-Allow-Origin",
             value:
-              "https://stage.sasasasa.co, http://localhost, https://sasasasa.co, https://ra.sasasasa.co, https://v1.sasasasa.co, https://staging.sasasasa.co, https://staging-api.sasasasa.co", // Set your origin
+              "https://stage.sasasasa.co, http://localhost, https://sasasasa.co, https://ra.sasasasa.co, https://v1.sasasasa.co, https://staging.sasasasa.co, https://staging-api.sasasasa.co",
           },
           {
             key: "Access-Control-Allow-Methods",
             value: "GET, POST, PUT, PATCH, OPTIONS",
+          },
+          {
+            key: "Access-Control-Allow-Headers",
+            value: "Content-Type, Authorization, X-Requested-With",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+          {
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+        ],
+      },
+      {
+        source: "/_next/static/(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },
@@ -93,6 +122,12 @@ const nextConfig: NextConfig = {
     ],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96],
+  },
+  // Enable trailing slashes for better compatibility
+  trailingSlash: false,
+  // Ensure proper handling of dynamic routes
+  async redirects() {
+    return [];
   },
   // async rewrites() {
   //   return [
