@@ -7,13 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Shield, CreditCard } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
-const Index = () => {
+const Payouts = () => {
   // Demo state - in real app this would come from backend
+  const { user } = useAuth();
   const [currentView, setCurrentView] = useState<"profile" | "withdrawal">("profile");
-  const [kycStatus] = useState<KycStatus>("needs_update"); // Demo: change to test different states
-  const [userName] = useState("John Doe");
+  const [kycStatus] = useState<KycStatus>("verified"); // Demo: change to test different states
+  const [userName] = useState(`${user?.first_name} ${user?.last_name}}`);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  console.log(user?.first_name);
 
   const handleWithdrawalSubmit = async (data: any) => {
     setIsSubmitting(true);
@@ -138,7 +142,7 @@ const Index = () => {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-gradient-success"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   <span className="font-medium text-sm">Verified</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -148,7 +152,7 @@ const Index = () => {
 
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-gradient-primary"></div>
+                  <div className="w-3 h-3 rounded-full bg-gray-500"></div>
                   <span className="font-medium text-sm">Pending</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -158,7 +162,7 @@ const Index = () => {
 
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-gradient-warning"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                   <span className="font-medium text-sm">Needs Update</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -168,7 +172,7 @@ const Index = () => {
 
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-destructive"></div>
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
                   <span className="font-medium text-sm">Rejected</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -178,10 +182,10 @@ const Index = () => {
             </div>
           </CardContent>
         </Card>
-        <WithdrawalHistory />
+        {canAccessWithdrawal && <WithdrawalHistory />}
       </div>
     </div>
   );
 };
 
-export default Index;
+export default Payouts;

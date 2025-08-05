@@ -146,8 +146,6 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
                     <SelectContent>
                       <SelectItem value="mpesa">M-Pesa</SelectItem>
                       <SelectItem value="airtel_money">Airtel Money</SelectItem>
-                      {/* <SelectItem value="mtn_money">MTN Mobile Money</SelectItem>
-                      <SelectItem value="orange_money">Orange Money</SelectItem> */}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -282,6 +280,16 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
                       onClick={() => {
                         setPaymentMethod(method.value as PaymentMethod);
                         form.setValue("payment_method", method.value as PaymentMethod);
+                       
+                        form.setValue("wallet_address", "");
+                        form.setValue("crypto_currency", "");
+                        form.setValue("phone_number", "");
+                        form.setValue("account_holder_name", "");
+                        form.setValue("bank_name", "");
+                        form.setValue("account_number", "");
+                        form.setValue("routing_number", "");
+                        
+                        console.log(form.getValues());
                       }}
                     >
                       <Icon className="h-6 w-6" />
@@ -297,8 +305,9 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
             </div>
 
             <Button 
+              variant="default"
               type="submit" 
-              className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+              className="w-full"
               disabled={isLoading}
             >
               {isLoading ? "Processing..." : "Submit Withdrawal Request"}
