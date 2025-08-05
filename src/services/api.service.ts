@@ -282,12 +282,16 @@ class ApiClient {
     }
   }
 
-  public async postFormData<T>(url: string, formData: FormData, config?: any): Promise<T> {
+  public async postFormData<T>(
+    url: string,
+    formData: FormData,
+    config?: any
+  ): Promise<T> {
     try {
       const response = await this.api.post<T>(url, formData, {
         ...config,
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
           ...config?.headers,
         },
       });
@@ -297,12 +301,16 @@ class ApiClient {
     }
   }
 
-  public async patchFormData<T>(url: string, formData: FormData, config?: any): Promise<T> {
+  public async patchFormData<T>(
+    url: string,
+    formData: FormData,
+    config?: any
+  ): Promise<T> {
     try {
       const response = await this.api.patch<T>(url, formData, {
         ...config,
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
           ...config?.headers,
         },
       });

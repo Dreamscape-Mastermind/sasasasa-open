@@ -2,8 +2,10 @@
 
 import CreateEvent from "@/app/(dashboard)/dashboard/events/create/page";
 
-export function EditEventContent({ eventId }: { eventId: string }) {
-  return (
-    <CreateEvent eventId={eventId} />
-  );
+type Props = {
+  params: Promise<{ id: string }>;
+};
+
+export function EditEventContent({ params }: Props) {
+  return <CreateEvent params={params} />;
 }

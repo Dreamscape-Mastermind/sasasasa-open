@@ -79,7 +79,20 @@ export const useUser = () => {
       queryKey: ["roles"],
       queryFn: () => userService.getRoles(),
       enabled: options?.enabled ?? true,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 30 * 60 * 1000, // 30 minutes - increased from 5 minutes
+      gcTime: 60 * 60 * 1000, // 1 hour - increased from default
+      retry: (failureCount, error: any) => {
+        // Don't retry on 429 (rate limit) or 4xx errors
+        if (
+          error?.response?.status === 429 ||
+          (error?.response?.status >= 400 && error?.response?.status < 500)
+        ) {
+          return false;
+        }
+        // Retry up to 2 times for other errors
+        return failureCount < 2;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Shorter backoff
     });
   };
 
@@ -88,6 +101,20 @@ export const useUser = () => {
       queryKey: ["available-roles"],
       queryFn: () => userService.listAvailableRoles(),
       enabled: options?.enabled ?? true,
+      staleTime: 60 * 60 * 1000, // 1 hour - roles don't change often
+      gcTime: 2 * 60 * 60 * 1000, // 2 hours
+      retry: (failureCount, error: any) => {
+        // Don't retry on 429 (rate limit) or 4xx errors
+        if (
+          error?.response?.status === 429 ||
+          (error?.response?.status >= 400 && error?.response?.status < 500)
+        ) {
+          return false;
+        }
+        // Retry up to 2 times for other errors
+        return failureCount < 2;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Shorter backoff
     });
   };
 

@@ -17,8 +17,8 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useState,
   useMemo,
+  useState,
 } from "react";
 import {
   useAppKitAccount,
@@ -117,13 +117,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyOtpMutation = useVerifyOtp();
   const resendOtpMutation = useResendOtp();
 
-  // Role queries - only run when authenticated
-  const { data: rolesData } = useRoles({
-    enabled: isAuthenticated && !!tokens?.result?.access,
+  // Role queries - only run when authenticated and with proper conditions
+  const { data: rolesData, error: rolesError } = useRoles({
+    enabled: isAuthenticated && !!tokens?.result?.access, // Only fetch if we don't have data
   });
-  const { data: availableRolesData } = useAvailableRoles({
-    enabled: isAuthenticated && !!tokens?.result?.access,
-  });
+  const { data: availableRolesData, error: availableRolesError } =
+    useAvailableRoles({
+      enabled: isAuthenticated && !!tokens?.result?.access, // Only fetch if we don't have data
+    });
 
   // Role helper functions
   /**
@@ -687,55 +688,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const contextValue = useMemo(() => ({
-    user,
-    roles: rolesData?.result?.roles || null,
-    availableRoles: availableRolesData?.result?.roles || null,
-    isLoading,
-    isAuthenticated: !!user,
-    loginWithEmail,
-    completeOtpVerification,
-    resendOtp,
-    loginWithWallet,
-    loginWithSIWEReCap,
-    linkWallet,
-    logout,
-    getAccessToken,
-    refreshAccessToken,
-    hasRole,
-    hasAnyRole,
-    hasAllRoles,
-    hasAccessLevel,
-    hasAnyAccessLevel,
-    hasAllAccessLevels,
-    setUser,
-  }), [
-    user,
-    rolesData,
-    availableRolesData,
-    isLoading,
-    loginWithEmail,
-    completeOtpVerification,
-    resendOtp,
-    loginWithWallet,
-    loginWithSIWEReCap,
-    linkWallet,
-    logout,
-    getAccessToken,
-    refreshAccessToken,
-    hasRole,
-    hasAnyRole,
-    hasAllRoles,
-    hasAccessLevel,
-    hasAnyAccessLevel,
-    hasAllAccessLevels,
-    setUser,
-  ]);
+  const contextValue = useMemo(
+    () => ({
+      user,
+      roles: rolesData?.result?.roles || null,
+      availableRoles: availableRolesData?.result?.roles || null,
+      isLoading,
+      isAuthenticated: !!user,
+      loginWithEmail,
+      completeOtpVerification,
+      resendOtp,
+      loginWithWallet,
+      loginWithSIWEReCap,
+      linkWallet,
+      logout,
+      getAccessToken,
+      refreshAccessToken,
+      hasRole,
+      hasAnyRole,
+      hasAllRoles,
+      hasAccessLevel,
+      hasAnyAccessLevel,
+      hasAllAccessLevels,
+      setUser,
+    }),
+    [
+      user,
+      rolesData,
+      availableRolesData,
+      isLoading,
+      loginWithEmail,
+      completeOtpVerification,
+      resendOtp,
+      loginWithWallet,
+      loginWithSIWEReCap,
+      linkWallet,
+      logout,
+      getAccessToken,
+      refreshAccessToken,
+      hasRole,
+      hasAnyRole,
+      hasAllRoles,
+      hasAccessLevel,
+      hasAnyAccessLevel,
+      hasAllAccessLevels,
+      setUser,
+    ]
+  );
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }
 

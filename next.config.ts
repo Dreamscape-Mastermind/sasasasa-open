@@ -45,11 +45,50 @@ const nextConfig: NextConfig = {
       "@tiptap/extension-typography",
       "@tiptap/extension-underline",
     ],
+    // Performance optimizations
+    optimizeCss: true,
+  },
+  // Performance optimizations
+  compress: true,
+  poweredByHeader: false,
+  generateEtags: false,
+  // Optimize images
+  images: {
+    remotePatterns: [
+      {
+        hostname: "stage.sasasasa.co",
+      },
+      {
+        hostname: "localhost",
+      },
+      {
+        hostname: "sasasasa.co",
+      },
+      {
+        hostname: "ra.sasasasa.co",
+      },
+      {
+        hostname: "beta.sasasasa.co",
+      },
+      {
+        hostname: "staging.sasasasa.co",
+      },
+      {
+        hostname: "staging-api.sasasasa.co",
+      },
+      {
+        hostname: "v1.sasasasa.co",
+      },
+    ],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96],
+    formats: ["image/webp", "image/avif"],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
   },
   async headers() {
     return [
       {
-        source: "/(.*)",
+        source: "/",
         headers: [
           {
             key: "Access-Control-Allow-Origin",
@@ -92,36 +131,6 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
-  },
-  images: {
-    remotePatterns: [
-      {
-        hostname: "stage.sasasasa.co",
-      },
-      {
-        hostname: "localhost",
-      },
-      {
-        hostname: "sasasasa.co",
-      },
-      {
-        hostname: "ra.sasasasa.co",
-      },
-      {
-        hostname: "beta.sasasasa.co",
-      },
-      {
-        hostname: "staging.sasasasa.co",
-      },
-      {
-        hostname: "staging-api.sasasasa.co",
-      },
-      {
-        hostname: "v1.sasasasa.co",
-      },
-    ],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    imageSizes: [16, 32, 48, 64, 96],
   },
   // Enable trailing slashes for better compatibility
   trailingSlash: false,
