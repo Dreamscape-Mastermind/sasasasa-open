@@ -96,6 +96,15 @@ export const useUser = () => {
     });
   };
 
+  const useRefreshRoles = () => {
+    return useMutation({
+      mutationFn: () => userService.refreshRoles(),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["roles"] });
+      },
+    });
+  };
+
   const useAvailableRoles = (options?: { enabled?: boolean }) => {
     return useQuery({
       queryKey: ["available-roles"],
@@ -235,6 +244,7 @@ export const useUser = () => {
     useProfile,
     useUpdateProfile,
     useRoles,
+    useRefreshRoles,
     useAvailableRoles,
     useDeleteAccount,
     // Web3 Authentication

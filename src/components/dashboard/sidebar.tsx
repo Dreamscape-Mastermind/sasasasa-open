@@ -35,11 +35,11 @@ import { Event } from "@/types/event";
 import Link from "next/link";
 import { NAV_ITEMS } from "@/lib/constants";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { UserRole } from "@/types/user";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
 import { useSidebar } from "@/contexts/SidebarContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { UserRole } from "@/types/user";
 
 interface MenuItem {
   label: string;
@@ -267,23 +267,23 @@ export function Sidebar() {
           {/* Blog Menus Section */}
           {isAdmin && (
             <div className="px-3">
-            <h2 className="mb-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Blog
-            </h2>
-            <div className="space-y-1">
-              {NAV_ITEMS.DASHBOARD_BLOG_ADMIN.map((menu: MenuItem) => (
-                <Link key={menu.href} href={menu.href}>
-                  <Button
-                    variant={pathname === menu.href ? "secondary" : "ghost"}
-                    className="w-full justify-start gap-2"
-                  >
-                    {menu.icon && <menu.icon className="h-4 w-4" />}
-                    <span>{menu.label}</span>
-                  </Button>
-                </Link>
-              ))}
+              <h2 className="mb-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Blog
+              </h2>
+              <div className="space-y-1">
+                {NAV_ITEMS.DASHBOARD_BLOG_ADMIN.map((menu: MenuItem) => (
+                  <Link key={menu.href} href={menu.href}>
+                    <Button
+                      variant={pathname === menu.href ? "secondary" : "ghost"}
+                      className="w-full justify-start gap-2"
+                    >
+                      {menu.icon && <menu.icon className="h-4 w-4" />}
+                      <span>{menu.label}</span>
+                    </Button>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
           )}
 
           {/* User Menus Section */}
