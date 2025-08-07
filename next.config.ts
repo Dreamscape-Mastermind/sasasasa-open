@@ -56,7 +56,6 @@ const nextConfig: NextConfig = {
     // Performance optimizations
     optimizeCss: true,
   },
-  compress: true,
   async headers() {
     return [
       {
@@ -70,26 +69,6 @@ const nextConfig: NextConfig = {
           {
             key: "Access-Control-Allow-Methods",
             value: "GET, POST, PUT, PATCH, OPTIONS",
-          },
-          {
-            key: "Access-Control-Allow-Headers",
-            value: "Content-Type, Authorization, X-Requested-With",
-          },
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN",
-          },
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block",
-          },
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
           },
         ],
       },
@@ -116,7 +95,6 @@ const nextConfig: NextConfig = {
     ],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
   },
   // async rewrites() {
   //   return [
