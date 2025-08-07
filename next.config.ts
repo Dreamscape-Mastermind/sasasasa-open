@@ -47,8 +47,6 @@ const nextConfig: NextConfig = {
     ],
     // Performance optimizations
     optimizeCss: true,
-    // Optimize RSC streaming
-    serverComponentsExternalPackages: [],
   },
   compress: false,
   // Optimize for HTTP/2 and RSC streaming
