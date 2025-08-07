@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+  workflow_dispatch:
 
 jobs:
   deploy-to-staging:
@@ -16,26 +17,30 @@ jobs:
       - name: Install SSH Key
         uses: webfactory/ssh-agent@v0.8.0  # Updated to the latest version
         with:
-          ssh-private-key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Upload Environment Variables
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }} << 'EOF'
-            echo "${{ secrets.STAGING_FRONTEND_ENV }}" | sudo tee /var/www/open-scroll/.env.production > /dev/null || { echo "Failed to create .env.production file"; exit 1; }
-          EOF
 
       - name: Copy Files to VPS
         run: |
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='node_modules' \
             --exclude='.next' \
-            . ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }}:${{ secrets.PROJECT_PATH }}
+            . ${{ secrets.SSH_USER }}@${{ secrets.VPS_IP }}:/var/www/sasasasa/staging
+
+      - name: Upload Environment Variables
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.VPS_IP }} << 'EOF'
+            echo "${{ secrets.STAGING_FRONTEND_ENV }}" | sudo tee /var/www/sasasasa/staging/.env.production > /dev/null || { echo "Failed to create .env.production file"; exit 1; }
+          EOF
 
       - name: Run Deployment Script on VPS
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_VPS_IP }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o ConnectTimeout=30 ${{ secrets.SSH_USER }}@${{ secrets.VPS_IP }} << 'ENDSSH'
+            # Set up error handling
+            set -euo pipefail
+
             # Source profile files to get environment variables and PATH
             source ~/.bashrc
             source ~/.profile
@@ -44,12 +49,31 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
+            # Explicitly set PROJECT_PATH for staging
+            export PROJECT_PATH="/var/www/sasasasa/staging"
+
+            export NEXT_PUBLIC_REOWN_PROJECT_ID="${{ secrets.NEXT_PUBLIC_REOWN_PROJECT_ID }}"
+
+            # Set deployment environment for staging
+            export NODE_ENV="staging"
+
+            # Verify PROJECT_PATH is set
+            if [ -z "$PROJECT_PATH" ]; then
+                echo "ERROR: PROJECT_PATH is not set"
+                exit 1
+            fi
+
+            if [ -z "$NEXT_PUBLIC_REOWN_PROJECT_ID" ]; then
+                echo "ERROR: NEXT_PUBLIC_REOWN_PROJECT_ID is not set"
+                exit 1
+            fi
+
             # Navigate to the project directory
-            cd ${{ secrets.PROJECT_PATH }}
+            cd $PROJECT_PATH
 
             # Make the start script executable
             chmod +x start.sh
 
             # Now run the start script
             ./start.sh
-          EOF
+          ENDSSH

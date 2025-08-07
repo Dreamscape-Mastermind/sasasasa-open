@@ -2,17 +2,18 @@ import "./globals.css";
 
 import { Anton, Sen } from "next/font/google";
 
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AppProviders } from "@/providers/AppProviders";
 import Footer from "@/components/Footer";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Header from "@/components/Header";
 import { Metadata } from "next";
-import Providers from "@/components/providers/query-provider";
 import SectionContainer from "@/components/SectionContainer";
-import { Sidebar } from "@/components/Sidebar";
-import { ThemeProviders } from "@/components/providers/theme-providers";
 import { Toaster } from "react-hot-toast";
-import siteMetadata from "@/data/siteMetadata";
+import siteMetadata from "@/config/siteMetadata";
+import { CookieBanner } from "@/components/ui/cookie-banner";
+import GlobalShortcutWrapper from "@/components/GlobalShortcutWrapper";
+import TopLoadingBarClient from "@/components/TopLoadingBarClient";
+import { Sidebar } from "@/components/Sidebar";
 
 const sen = Sen({
   subsets: ["latin"],
@@ -57,15 +58,14 @@ export const metadata: Metadata = {
     title: siteMetadata.title,
     card: "summary_large_image",
     images: [siteMetadata.socialBanner],
-  },
-};
+      },
+  };
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const basePath = process.env.BASE_PATH || "";
   return (
     <html lang={siteMetadata.language} suppressHydrationWarning>
       <head>
@@ -81,21 +81,29 @@ export default function RootLayout({
         ))}
       </head>
       <body
-        className={`${sen.variable} ${anton.variable} antialiased "bg-white pl-[calc(100vw-100%)] text-black dark:bg-gray-950 dark:text-white`}
+        className={`${sen.variable} ${anton.variable} antialiased bg-white text-black dark:bg-gray-950 dark:text-white`}
       >
-        <AuthProvider>
-          <ThemeProviders>
-            <Providers>
-              <SectionContainer>
-                <Header />
-                <main className="mb-auto">{children}</main>
-                <Footer />
-                <Sidebar />
-                <Toaster />
-              </SectionContainer>
-            </Providers>
-          </ThemeProviders>
-        </AuthProvider>
+        <TopLoadingBarClient />
+        <AppProviders>
+          {!children?.toString().includes("DashboardLayout") ? (
+            <SectionContainer>
+              <Header />
+              <main className="mb-auto">{children}</main>
+              <Footer />
+              <Sidebar />
+              <Toaster />
+            </SectionContainer>
+          ) : (
+            <>
+              {children}
+              <Toaster />
+            </>
+          )}
+          <CookieBanner />
+          
+          {/* Global Quick Navigation Wrapper */}
+          <GlobalShortcutWrapper />
+        </AppProviders>
       </body>
       <GoogleAnalytics gaId={siteMetadata.googleAnalyticsId} />
     </html>
