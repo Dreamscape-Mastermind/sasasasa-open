@@ -1,8 +1,16 @@
 import type { NextConfig } from "next";
 
-const withBundleAnalyzer = require("@next/bundle-analyzer")({
-  enabled: process.env.ANALYZE === "true",
-});
+// Conditionally use bundle analyzer only if available
+let withBundleAnalyzer: any = (config: any) => config;
+
+try {
+  withBundleAnalyzer = require("@next/bundle-analyzer")({
+    enabled: process.env.ANALYZE === "true",
+  });
+} catch (error) {
+  // Bundle analyzer not available, use default config
+  console.log("Bundle analyzer not available, skipping...");
+}
 
 const nextConfig: NextConfig = {
   /* config options here */
