@@ -56,44 +56,7 @@ const nextConfig: NextConfig = {
     // Performance optimizations
     optimizeCss: true,
   },
-  compress: false,
-  // Optimize for HTTP/2 and RSC streaming
-  serverExternalPackages: [],
-  poweredByHeader: false,
-  generateEtags: false,
-  // Optimize images
-  images: {
-    remotePatterns: [
-      {
-        hostname: "stage.sasasasa.co",
-      },
-      {
-        hostname: "localhost",
-      },
-      {
-        hostname: "sasasasa.co",
-      },
-      {
-        hostname: "ra.sasasasa.co",
-      },
-      {
-        hostname: "beta.sasasasa.co",
-      },
-      {
-        hostname: "staging.sasasasa.co",
-      },
-      {
-        hostname: "staging-api.sasasasa.co",
-      },
-      {
-        hostname: "v1.sasasasa.co",
-      },
-    ],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    imageSizes: [16, 32, 48, 64, 96],
-    formats: ["image/webp", "image/avif"],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
-  },
+  compress: true,
   async headers() {
     return [
       {
@@ -102,7 +65,7 @@ const nextConfig: NextConfig = {
           {
             key: "Access-Control-Allow-Origin",
             value:
-              "https://stage.sasasasa.co, http://localhost, https://sasasasa.co, https://ra.sasasasa.co, https://v1.sasasasa.co, https://staging.sasasasa.co, https://staging-api.sasasasa.co",
+              "http://localhost, https://sasasasa.co, https://ra.sasasasa.co, https://staging.sasasasa.co, https://staging-api.sasasasa.co",
           },
           {
             key: "Access-Control-Allow-Methods",
@@ -130,22 +93,30 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      {
-        source: "/_next/static/(.*)",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
     ];
   },
-  // Enable trailing slashes for better compatibility
-  trailingSlash: false,
-  // Ensure proper handling of dynamic routes
-  async redirects() {
-    return [];
+  // Optimize images
+  images: {
+    remotePatterns: [
+      {
+        hostname: "localhost",
+      },
+      {
+        hostname: "sasasasa.co",
+      },
+      {
+        hostname: "ra.sasasasa.co",
+      },
+      {
+        hostname: "staging.sasasasa.co",
+      },
+      {
+        hostname: "staging-api.sasasasa.co",
+      },
+    ],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
   },
   // async rewrites() {
   //   return [
