@@ -1,8 +1,16 @@
 import type { NextConfig } from "next";
 
-const withBundleAnalyzer = require("@next/bundle-analyzer")({
-  enabled: process.env.ANALYZE === "true",
-});
+// Conditionally use bundle analyzer only if available
+let withBundleAnalyzer: any = (config: any) => config;
+
+try {
+  withBundleAnalyzer = require("@next/bundle-analyzer")({
+    enabled: process.env.ANALYZE === "true",
+  });
+} catch (error) {
+  // Bundle analyzer not available, use default config
+  console.log("Bundle analyzer not available, skipping...");
+}
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -47,20 +55,10 @@ const nextConfig: NextConfig = {
     ],
     // Performance optimizations
     optimizeCss: true,
-    // Optimize RSC streaming
-    serverComponentsExternalPackages: [],
   },
-  compress: false,
-  // Optimize for HTTP/2 and RSC streaming
-  serverExternalPackages: [],
-  poweredByHeader: false,
-  generateEtags: false,
   // Optimize images
   images: {
     remotePatterns: [
-      {
-        hostname: "stage.sasasasa.co",
-      },
       {
         hostname: "localhost",
       },
@@ -68,10 +66,7 @@ const nextConfig: NextConfig = {
         hostname: "sasasasa.co",
       },
       {
-        hostname: "ra.sasasasa.co",
-      },
-      {
-        hostname: "beta.sasasasa.co",
+        hostname: "api.sasasasa.co",
       },
       {
         hostname: "staging.sasasasa.co",
@@ -79,67 +74,9 @@ const nextConfig: NextConfig = {
       {
         hostname: "staging-api.sasasasa.co",
       },
-      {
-        hostname: "v1.sasasasa.co",
-      },
     ],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96],
-    formats: ["image/webp", "image/avif"],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
-  },
-  async headers() {
-    return [
-      {
-        source: "/",
-        headers: [
-          {
-            key: "Access-Control-Allow-Origin",
-            value:
-              "https://stage.sasasasa.co, http://localhost, https://sasasasa.co, https://ra.sasasasa.co, https://v1.sasasasa.co, https://staging.sasasasa.co, https://staging-api.sasasasa.co",
-          },
-          {
-            key: "Access-Control-Allow-Methods",
-            value: "GET, POST, PUT, PATCH, OPTIONS",
-          },
-          {
-            key: "Access-Control-Allow-Headers",
-            value: "Content-Type, Authorization, X-Requested-With",
-          },
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN",
-          },
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block",
-          },
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
-        ],
-      },
-      {
-        source: "/_next/static/(.*)",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
-    ];
-  },
-  // Enable trailing slashes for better compatibility
-  trailingSlash: false,
-  // Ensure proper handling of dynamic routes
-  async redirects() {
-    return [];
   },
   // async rewrites() {
   //   return [

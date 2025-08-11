@@ -32,7 +32,8 @@ jobs:
       - name: Upload Environment Variables
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.VPS_IP }} << 'EOF'
-            echo "${{ secrets.STAGING_FRONTEND_ENV }}" | sudo tee /var/www/sasasasa/staging/.env.production > /dev/null || { echo "Failed to create .env.production file"; exit 1; }
+            echo "${{ secrets.STAGING_FRONTEND_ENV }}" | sudo tee /var/www/sasasasa/staging/.env.staging > /dev/null || { echo "Failed to create .env.staging file"; exit 1; }
+            echo "Staging environment file created successfully"
           EOF
 
       - name: Run Deployment Script on VPS

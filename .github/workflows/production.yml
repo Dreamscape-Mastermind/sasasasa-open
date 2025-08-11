@@ -32,6 +32,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.VPS_IP }} << 'EOF'
             echo "${{ secrets.PRODUCTION_FRONTEND_ENV }}" | sudo tee /var/www/sasasasa/production/.env.production > /dev/null || { echo "Failed to create .env.production file"; exit 1; }
+            echo "Production environment file created successfully"
           EOF
 
       - name: Run Deployment Script on VPS
