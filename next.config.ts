@@ -56,24 +56,6 @@ const nextConfig: NextConfig = {
     // Performance optimizations
     optimizeCss: true,
   },
-  async headers() {
-    return [
-      {
-        source: "/",
-        headers: [
-          {
-            key: "Access-Control-Allow-Origin",
-            value:
-              "http://localhost, https://sasasasa.co, https://api.sasasasa.co, https://staging.sasasasa.co, https://staging-api.sasasasa.co",
-          },
-          {
-            key: "Access-Control-Allow-Methods",
-            value: "GET, POST, PUT, PATCH, OPTIONS",
-          },
-        ],
-      },
-    ];
-  },
   // Optimize images
   images: {
     remotePatterns: [
