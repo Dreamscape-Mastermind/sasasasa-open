@@ -11,6 +11,8 @@ import { useDiscount } from "@/hooks/useDiscount";
 import { useFlashSale } from "@/hooks/useFlashSale";
 import { useTicket } from "@/hooks/useTicket";
 import styles from '@/components/Datepicker.module.css';
+import "react-datepicker/dist/react-datepicker.css";
+
 
 interface CreatePromotionModalProps {
   isOpen: boolean;
@@ -131,6 +133,7 @@ export function CreatePromotionModal({
     >
   ) => {
     const { name, value } = e.target;
+    console.log({name, value});
     setFormData((prev) => ({ ...prev, [name]: value }));
     setHasChanges(true);
   };
@@ -575,38 +578,64 @@ export function CreatePromotionModal({
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
+                <div className="w-full sm:w-auto max-w-full sm:max-w-xs">
                   <label
                     htmlFor="startDateTime"
                     className="block text-sm font-medium text-foreground mb-1"
                   >
                     Start Date & Time *
                   </label>
-                  <input
-                    type="datetime-local"
-                    id="startDateTime"
-                    name="startDateTime"
-                    value={formData.startDateTime}
-                    onChange={handleInputChange}
+                  <DatePicker
+                    selected={
+                      formData.startDateTime
+                        ? new Date(formData.startDateTime)
+                        : null
+                    }
+                    onChange={(date: Date | null) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        startDateTime: date ? date.toLocaleString('sv-SE').slice(0, 16) : "",
+                      }));
+                      setHasChanges(true);
+                    }}
                     className="w-full rounded-lg border border-input bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholderText="Start date and time"
+                    dateFormat="MMM d, yyyy h:mm aa"
+                    showTimeSelect
+                    timeFormat="HH:mm"
+                    timeIntervals={30}
+                    popperClassName={styles.customDatepicker}
                     required
                   />
                 </div>
 
-                <div>
+                <div className="w-full sm:w-auto max-w-full sm:max-w-xs">
                   <label
                     htmlFor="endDateTime"
                     className="block text-sm font-medium text-foreground mb-1"
                   >
                     End Date & Time *
                   </label>
-                  <input
-                    type="datetime-local"
-                    id="endDateTime"
-                    name="endDateTime"
-                    value={formData.endDateTime}
-                    onChange={handleInputChange}
+                  <DatePicker
+                    selected={
+                      formData.endDateTime
+                        ? new Date(formData.endDateTime)
+                        : null
+                    }
+                    onChange={(date: Date | null) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        endDateTime: date ? date.toLocaleString('sv-SE').slice(0, 16) : "",
+                      }));
+                      setHasChanges(true);
+                    }}
                     className="w-full rounded-lg border border-input bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholderText="End date and time"
+                    dateFormat="MMM d, yyyy h:mm aa"
+                    showTimeSelect
+                    timeFormat="HH:mm"
+                    timeIntervals={30}
+                    popperClassName={styles.customDatepicker} 
                     required
                   />
                 </div>
