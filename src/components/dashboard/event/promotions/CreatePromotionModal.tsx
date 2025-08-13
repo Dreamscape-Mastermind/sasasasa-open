@@ -1,14 +1,16 @@
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { DiscountStatus, DiscountType } from "@/types/discount";
-import { DollarSign, Percent, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-
+import { DollarSign, Percent, X } from "lucide-react";
+import DatePicker from "react-datepicker";
 import { AlertCircle } from "lucide-react";
+
+import { DiscountStatus, DiscountType } from "@/types/discount";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FlashSaleDiscountType } from "@/types/flashsale";
 import { TicketType } from "@/types/ticket";
 import { useDiscount } from "@/hooks/useDiscount";
 import { useFlashSale } from "@/hooks/useFlashSale";
 import { useTicket } from "@/hooks/useTicket";
+import styles from '@/components/Datepicker.module.css';
 
 interface CreatePromotionModalProps {
   isOpen: boolean;
@@ -411,7 +413,7 @@ export function CreatePromotionModal({
                   >
                     Discount Code *
                   </label>
-                  <div className="flex space-x-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
                       id="code"
@@ -425,7 +427,7 @@ export function CreatePromotionModal({
                     <button
                       type="button"
                       onClick={generateCode}
-                      className="px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
+                      className="w-full sm:w-auto px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
                     >
                       Generate
                     </button>
@@ -440,7 +442,7 @@ export function CreatePromotionModal({
                 Discount Settings
               </h3>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label
                     htmlFor="discountType"
@@ -526,7 +528,7 @@ export function CreatePromotionModal({
                 Usage Limits
               </h3>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label
                     htmlFor="maxUses"
@@ -572,7 +574,7 @@ export function CreatePromotionModal({
                 Validity Period
               </h3>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label
                     htmlFor="startDateTime"
@@ -617,7 +619,7 @@ export function CreatePromotionModal({
                 <h3 className="text-lg font-medium text-foreground">
                   Select Ticket Type
                 </h3>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {ticketTypesData?.result?.results.map(
                     (ticketType: TicketType) => (
                       <label key={ticketType.id} className="flex items-center">
