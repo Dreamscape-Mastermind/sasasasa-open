@@ -1,0 +1,33 @@
+# Sasasasa Open – Cursor Rules
+
+- Always read Memory Bank files at task start: `memory-bank/projectbrief.md`, `productContext.md`, `systemPatterns.md`, `techContext.md`, `activeContext.md`, `progress.md`.
+- Use Yarn (repo has `yarn.lock`). Prefer commands like `yarn add` / `yarn dev`.
+- Respect TypeScript config: path alias `@/*` -> `src/*`; do not break `strictNullChecks`.
+- Use the established service layer: import `apiClient` from `src/services/api.service.ts` for HTTP. Do not create new axios instances.
+- Prefer React Query for server state; configure queries in `src/providers/AppProviders.tsx`.
+- Use React Hook Form + Zod for forms and validation where applicable.
+- UI: TailwindCSS + Radix UI primitives; keep components in `src/components/ui` patterns.
+- Auth: leverage `AuthContext` APIs; for 401, rely on existing interceptor/refresh flow.
+- Env: use `NEXT_PUBLIC_SASASASA_API_URL` and other existing envs; update `.env.local.example` if adding new ones.
+- Images: follow `next.config.ts` remote patterns; add new hosts explicitly.
+- Web3: use `@reown/appkit` and `viem` per `src/config/web3.ts`. Network default is `scrollSepolia`.
+- Contracts/dev: use Hardhat config in `hardhat.config.js`.
+- Performance: keep `optimizePackageImports` list in mind; avoid re-exporting huge libs from barrels.
+- Error handling: throw/propagate `ApiError` and render user-safe messages; log via `useLogger` where appropriate.
+- File placement:
+  - New feature UI: `src/components/<feature>/...`
+  - New services/types: `src/services`, `src/types`
+  - New providers/context: `src/providers`, `src/contexts`
+- Do not introduce global singletons beyond existing patterns; prefer local composition.
+- Accessibility: use semantic elements and keyboard interactions consistent with Radix.
+- When choosing/adding new packages, use C7 (Context7) to research/confirm selection first, then propose exact `yarn add` command. Avoid auto-installing.
+- Tests: do not auto-generate tests unless explicitly requested.
+
+Coding style:
+- Descriptive names, early returns, narrow effects. Avoid deep nesting.
+- No inline comments for obvious code; document non-trivial decisions.
+- Keep edits scoped; avoid unrelated refactors.
+
+Operational:
+- For production ops, consult `ecosystem*.config.js` and `nginx/` configs.
+- Security: never log secrets or tokens; avoid leaking token values to SSG paths.

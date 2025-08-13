@@ -1,14 +1,18 @@
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { DiscountStatus, DiscountType } from "@/types/discount";
-import { DollarSign, Percent, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-
+import { DollarSign, Percent, X } from "lucide-react";
+import DatePicker from "react-datepicker";
 import { AlertCircle } from "lucide-react";
+
+import { DiscountStatus, DiscountType } from "@/types/discount";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FlashSaleDiscountType } from "@/types/flashsale";
 import { TicketType } from "@/types/ticket";
 import { useDiscount } from "@/hooks/useDiscount";
 import { useFlashSale } from "@/hooks/useFlashSale";
 import { useTicket } from "@/hooks/useTicket";
+import styles from '@/components/Datepicker.module.css';
+import "react-datepicker/dist/react-datepicker.css";
+
 
 interface CreatePromotionModalProps {
   isOpen: boolean;
@@ -129,6 +133,7 @@ export function CreatePromotionModal({
     >
   ) => {
     const { name, value } = e.target;
+    console.log({name, value});
     setFormData((prev) => ({ ...prev, [name]: value }));
     setHasChanges(true);
   };
@@ -411,7 +416,7 @@ export function CreatePromotionModal({
                   >
                     Discount Code *
                   </label>
-                  <div className="flex space-x-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
                       id="code"
@@ -425,7 +430,7 @@ export function CreatePromotionModal({
                     <button
                       type="button"
                       onClick={generateCode}
-                      className="px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
+                      className="w-full sm:w-auto px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80"
                     >
                       Generate
                     </button>
@@ -440,7 +445,7 @@ export function CreatePromotionModal({
                 Discount Settings
               </h3>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label
                     htmlFor="discountType"
@@ -526,7 +531,7 @@ export function CreatePromotionModal({
                 Usage Limits
               </h3>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label
                     htmlFor="maxUses"
@@ -572,39 +577,65 @@ export function CreatePromotionModal({
                 Validity Period
               </h3>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="w-full sm:w-auto max-w-full sm:max-w-xs">
                   <label
                     htmlFor="startDateTime"
                     className="block text-sm font-medium text-foreground mb-1"
                   >
                     Start Date & Time *
                   </label>
-                  <input
-                    type="datetime-local"
-                    id="startDateTime"
-                    name="startDateTime"
-                    value={formData.startDateTime}
-                    onChange={handleInputChange}
+                  <DatePicker
+                    selected={
+                      formData.startDateTime
+                        ? new Date(formData.startDateTime)
+                        : null
+                    }
+                    onChange={(date: Date | null) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        startDateTime: date ? date.toLocaleString('sv-SE').slice(0, 16) : "",
+                      }));
+                      setHasChanges(true);
+                    }}
                     className="w-full rounded-lg border border-input bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholderText="Start date and time"
+                    dateFormat="MMM d, yyyy h:mm aa"
+                    showTimeSelect
+                    timeFormat="HH:mm"
+                    timeIntervals={30}
+                    popperClassName={styles.customDatepicker}
                     required
                   />
                 </div>
 
-                <div>
+                <div className="w-full sm:w-auto max-w-full sm:max-w-xs">
                   <label
                     htmlFor="endDateTime"
                     className="block text-sm font-medium text-foreground mb-1"
                   >
                     End Date & Time *
                   </label>
-                  <input
-                    type="datetime-local"
-                    id="endDateTime"
-                    name="endDateTime"
-                    value={formData.endDateTime}
-                    onChange={handleInputChange}
+                  <DatePicker
+                    selected={
+                      formData.endDateTime
+                        ? new Date(formData.endDateTime)
+                        : null
+                    }
+                    onChange={(date: Date | null) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        endDateTime: date ? date.toLocaleString('sv-SE').slice(0, 16) : "",
+                      }));
+                      setHasChanges(true);
+                    }}
                     className="w-full rounded-lg border border-input bg-background px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholderText="End date and time"
+                    dateFormat="MMM d, yyyy h:mm aa"
+                    showTimeSelect
+                    timeFormat="HH:mm"
+                    timeIntervals={30}
+                    popperClassName={styles.customDatepicker} 
                     required
                   />
                 </div>
@@ -617,7 +648,7 @@ export function CreatePromotionModal({
                 <h3 className="text-lg font-medium text-foreground">
                   Select Ticket Type
                 </h3>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {ticketTypesData?.result?.results.map(
                     (ticketType: TicketType) => (
                       <label key={ticketType.id} className="flex items-center">

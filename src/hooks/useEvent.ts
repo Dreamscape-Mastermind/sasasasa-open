@@ -8,6 +8,12 @@ import type {
   TeamMemberQueryParams,
   UpdateEventRequest,
 } from "@/types/event";
+import type {
+  EventAnalyticsExportRequest,
+  EventAnalyticsExportResponse,
+  EventAnalyticsQuery,
+  EventAnalyticsResponse,
+} from "@/types/analytics";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { eventService } from "@/services/event.service";
@@ -32,6 +38,16 @@ export const useEvent = () => {
       queryFn: () => eventService.getEvent(id),
       staleTime: 5 * 60 * 1000, // 5 minutes - data is considered fresh for 5 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes - cache garbage collection time
+    });
+  };
+
+  const useEventAnalytics = (id: string, params?: EventAnalyticsQuery) => {
+    return useQuery<EventAnalyticsResponse>({
+      queryKey: ["event-analytics", id, params],
+      enabled: !!id,
+      queryFn: () => eventService.getEventAnalytics(id, params),
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
     });
   };
 
@@ -80,6 +96,17 @@ export const useEvent = () => {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["events"] });
       },
+    });
+  };
+
+  const useExportEventAnalytics = (id: string) => {
+    return useMutation<
+      EventAnalyticsExportResponse,
+      unknown,
+      EventAnalyticsExportRequest
+    >({
+      mutationFn: (data: EventAnalyticsExportRequest) =>
+        eventService.exportEventAnalytics(id, data),
     });
   };
 
@@ -185,6 +212,9 @@ export const useEvent = () => {
     useDeleteEvent,
     usePublishEvent,
     useCancelEvent,
+    // Analytics
+    useEventAnalytics,
+    useExportEventAnalytics,
     // Featured Events
     useFeaturedEvents,
     // Locations
