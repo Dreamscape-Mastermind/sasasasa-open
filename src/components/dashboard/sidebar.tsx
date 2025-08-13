@@ -26,7 +26,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -322,6 +327,9 @@ export function Sidebar() {
     <>
       <Sheet open={isOpen} onOpenChange={toggleSidebar}>
         <SheetContent side="right" className="p-0 w-80 lg:w-96">
+          <SheetHeader className="sr-only">
+            <SheetTitle>_</SheetTitle>
+          </SheetHeader>
           {sidebarContent}
         </SheetContent>
       </Sheet>
