@@ -56,6 +56,8 @@ const nextConfig: NextConfig = {
     // Performance optimizations
     optimizeCss: true,
   },
+  // Disable compression
+  compress: false,
   // Optimize images
   images: {
     remotePatterns: [
