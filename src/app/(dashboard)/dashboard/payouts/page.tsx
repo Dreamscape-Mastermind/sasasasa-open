@@ -5,54 +5,38 @@ import { WithdrawalForm } from "@/components/dashboard/payouts/WithdrawalForm";
 import { WithdrawalHistory } from "@/components/dashboard/payouts/WithdrawalHistory";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Shield, CreditCard } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Shield, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePayouts } from "@/hooks/usePayouts";
 
 const Payouts = () => {
-  // Demo state - in real app this would come from backend
   const { user } = useAuth();
-  const [currentView, setCurrentView] = useState<"profile" | "withdrawal">("profile");
-  const [kycStatus] = useState<KycStatus>("verified"); // Demo: change to test different states
-  const [userName] = useState(`${user?.first_name} ${user?.last_name}}`);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { useGetPayoutProfile, useRequestWithdrawal, useGetWithdrawals } = usePayouts();
 
-  console.log(user?.first_name);
+  const { data: payoutProfile, isLoading: isProfileLoading } = useGetPayoutProfile();
+  const { mutate: requestWithdrawal, isPending: isSubmitting } = useRequestWithdrawal();
+  const { data: withdrawals, isLoading: isHistoryLoading } = useGetWithdrawals();
 
-  const handleWithdrawalSubmit = async (data: any) => {
-    setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-    console.log("Withdrawal submitted:", data);
+  const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
+
+  const handleWithdrawalSubmit = (data: any) => {
+    requestWithdrawal(data, {
+      onSuccess: () => {
+        setIsWithdrawalModalOpen(false);
+      },
+    });
   };
 
-  const canAccessWithdrawal = kycStatus === "verified";
-
-  if (currentView === "withdrawal" && canAccessWithdrawal) {
-    return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div className="flex items-center space-x-4 mb-6">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentView("profile")}
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back to Profile</span>
-            </Button>
-          </div>
-
-          <WithdrawalForm
-            onSubmit={handleWithdrawalSubmit}
-            isLoading={isSubmitting}
-          />
-        </div>
-      </div>
-    );
-  }
+  const kycStatus: KycStatus = payoutProfile?.result.kyc_status || "Pending";
+  const userName = `${user?.first_name} ${user?.last_name}`;
+  const canAccessWithdrawal = kycStatus === "Verified";
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -62,7 +46,7 @@ const Payouts = () => {
           <div className="flex items-center justify-center space-x-2 mb-4">
             <Shield className="h-8 w-8 text-primary" />
             <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text">
-              KYC Verification Portal
+              Payouts Portal
             </h1>
           </div>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -75,7 +59,8 @@ const Payouts = () => {
           <ProfileStatusCard
             status={kycStatus}
             userName={userName}
-            lastUpdated="2024-01-15"
+            lastUpdated={payoutProfile?.result.updatedAt.toString() || new Date().toISOString()}
+            isLoading={isProfileLoading}
           />
 
           {/* Action Card */}
@@ -92,24 +77,21 @@ const Payouts = () => {
                   <p className="text-sm text-muted-foreground">
                     Your profile is verified! You can now request withdrawals.
                   </p>
-                  <Button variant="default" size="lg"
-                    onClick={() => setCurrentView("withdrawal")}
-                  // className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
-                  >
+                  <Button variant="default" size="lg" onClick={() => setIsWithdrawalModalOpen(true)}>
                     Request Withdrawal
                   </Button>
                 </>
               ) : (
                 <>
                   <p className="text-sm text-muted-foreground">
-                    {kycStatus === "pending"
+                    {kycStatus === "Pending"
                       ? "Your verification is being reviewed. You'll be able to request withdrawals once approved."
-                      : kycStatus === "needs_update"
+                      : kycStatus === "Needs Update"
                         ? "Please submit your KYC documents to update your information and access withdrawal features."
                         : "Your verification was not approved. Please contact support for assistance."
                     }
                   </p>
-                  {kycStatus === "rejected" && (
+                  {kycStatus === "Rejected" && (
                     <Button
                       variant="outline"
                       className="w-full"
@@ -117,7 +99,7 @@ const Payouts = () => {
                       Contact Support
                     </Button>
                   )}
-                  {kycStatus === "needs_update" && (
+                  {kycStatus === "Needs Update" && (
                     <Link href="/dashboard/kyc" className="w-full">
                       <Button
                         variant="default"
@@ -182,8 +164,20 @@ const Payouts = () => {
             </div>
           </CardContent>
         </Card>
-        {canAccessWithdrawal && <WithdrawalHistory />}
+        {canAccessWithdrawal && <WithdrawalHistory withdrawals={withdrawals?.result} isLoading={isHistoryLoading} />}
       </div>
+
+      <Dialog open={isWithdrawalModalOpen} onOpenChange={setIsWithdrawalModalOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Request a Withdrawal</DialogTitle>
+          </DialogHeader>
+          <WithdrawalForm
+            onSubmit={handleWithdrawalSubmit}
+            isLoading={isSubmitting}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

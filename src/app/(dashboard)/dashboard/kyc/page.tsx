@@ -10,6 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FileUpload } from "@/components/FileUpload";
 import toast from 'react-hot-toast';
 import Link from "next/link";
+import { usePayouts } from "@/hooks/usePayouts";
+import { useRouter } from "next/navigation";
 
 interface KYCFormData {
   idType: string;
@@ -44,6 +46,9 @@ const KYC = () => {
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof KYCFormData, string>>>({});
+  const { useUpdatePayoutProfile } = usePayouts();
+  const { mutate: updateProfile, isPending: isSubmitting } = useUpdatePayoutProfile();
+  const router = useRouter();
 
   const validateStep = (currentStep: number): boolean => {
     const newErrors: Partial<Record<keyof KYCFormData, string>> = {};
@@ -81,9 +86,24 @@ const KYC = () => {
 
   const handleSubmit = () => {
     if (validateStep(3)) {
-      toast.success("Your verification documents have been submitted successfully. We'll review them within 24-48 hours.");
-      // Here you would typically submit to your backend
-      console.log("KYC Data:", formData);
+      const profileData = {
+        kyc_id_type: formData.idType,
+        kyc_id_number: formData.idNumber,
+        kyc_id_front_image: 'https://example.com/id_front.jpg',
+        kyc_selfie_with_id_image: 'https://example.com/selfie.jpg',
+        accepted_terms: formData.termsAccepted,
+        kyc_status: 'Pending',
+      };
+
+      updateProfile(profileData, {
+        onSuccess: () => {
+          toast.success("Your verification documents have been submitted successfully.");
+          router.push('/dashboard/payouts');
+        },
+        onError: () => {
+          toast.error("There was an error submitting your documents. Please try again.");
+        }
+      });
     }
   };
 
@@ -326,7 +346,7 @@ const KYC = () => {
               <Button
                 variant="outline"
                 onClick={() => setStep(step - 1)}
-                disabled={step === 1}
+                disabled={step === 1 || isSubmitting}
                 className="min-w-24"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -339,9 +359,8 @@ const KYC = () => {
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               ) : (
-                <Button variant="default" onClick={handleSubmit} className="min-w-32">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Submit Verification
+                <Button variant="default" onClick={handleSubmit} className="min-w-32" disabled={isSubmitting}>
+                  {isSubmitting ? 'Submitting...' : <><CheckCircle className="w-4 h-4 mr-2" />Submit Verification</>}
                 </Button>
               )}
             </div>

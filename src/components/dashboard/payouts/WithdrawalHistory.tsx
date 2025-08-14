@@ -7,77 +7,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Download, History, Filter } from "lucide-react";
+import { WithdrawalRequest } from "@/types/payouts";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface WithdrawalRequest {
-  id: string;
-  amount: number;
-  currency: string;
-  method: "crypto" | "mobile_money" | "bank_transfer";
-  destination: string;
-  status: "pending" | "completed" | "failed" | "cancelled";
-  createdAt: string;
-  completedAt?: string;
+interface WithdrawalHistoryProps {
+  withdrawals?: WithdrawalRequest[];
+  isLoading: boolean;
 }
 
-// Dummy data
-const dummyWithdrawals: WithdrawalRequest[] = [
-  {
-    id: "WD-001",
-    amount: 500,
-    currency: "USD",
-    method: "crypto",
-    destination: "1A1zP1...eP2XYZ",
-    status: "completed",
-    createdAt: "2024-01-15T10:30:00Z",
-    completedAt: "2024-01-15T11:15:00Z"
-  },
-  {
-    id: "WD-002",
-    amount: 1000,
-    currency: "USD",
-    method: "bank_transfer",
-    destination: "****1234",
-    status: "pending",
-    createdAt: "2024-01-14T14:20:00Z"
-  },
-  {
-    id: "WD-003",
-    amount: 250,
-    currency: "USD",
-    method: "mobile_money",
-    destination: "+1234567890",
-    status: "failed",
-    createdAt: "2024-01-13T09:45:00Z"
-  },
-  {
-    id: "WD-004",
-    amount: 750,
-    currency: "USD",
-    method: "crypto",
-    destination: "bc1qxy2...kljh9",
-    status: "completed",
-    createdAt: "2024-01-12T16:10:00Z",
-    completedAt: "2024-01-12T17:00:00Z"
-  },
-  {
-    id: "WD-005",
-    amount: 300,
-    currency: "USD",
-    method: "bank_transfer",
-    destination: "****5678",
-    status: "cancelled",
-    createdAt: "2024-01-11T11:30:00Z"
-  }
-];
+const ITEMS_PER_PAGE = 5;
 
-const ITEMS_PER_PAGE = 3;
-
-export const WithdrawalHistory = () => {
+export const WithdrawalHistory = ({ withdrawals = [], isLoading }: WithdrawalHistoryProps) => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredWithdrawals = dummyWithdrawals.filter(withdrawal => 
-    statusFilter === "all" || withdrawal.status === statusFilter
+  const filteredWithdrawals = withdrawals.filter(withdrawal => 
+    statusFilter === "all" || withdrawal.status.toLowerCase() === statusFilter
   );
 
   const totalPages = Math.ceil(filteredWithdrawals.length / ITEMS_PER_PAGE);
@@ -86,37 +31,38 @@ export const WithdrawalHistory = () => {
 
   const getStatusBadge = (status: WithdrawalRequest["status"]) => {
     const variants = {
-      pending: "bg-gradient-primary text-white",
-      completed: "bg-gradient-success text-white",
-      failed: "bg-destructive text-destructive-foreground",
-      cancelled: "bg-muted text-muted-foreground"
+      Pending: "bg-gray-500 text-white",
+      Completed: "bg-green-500 text-white",
+      Failed: "bg-red-500 text-destructive-foreground",
+      Cancelled: "bg-red-500 text-muted-foreground",
+      "In Review": "bg-yellow-500 text-white",
+      Approved: "bg-blue-500 text-white",
+      Rejected: "bg-red-500 text-white",
     };
     
-    return <Badge className={variants[status]}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>;
+    return <Badge className={variants[status]}>{status}</Badge>;
   };
 
   const getMethodDisplay = (method: WithdrawalRequest["method"]) => {
     const methods = {
-      crypto: "Cryptocurrency",
-      mobile_money: "Mobile Money",
-      bank_transfer: "Bank Transfer"
+      Crypto: "Cryptocurrency",
+      MobileMoney: "Mobile Money",
+      BankAccount: "Bank Transfer"
     };
     return methods[method];
   };
 
   const exportToCSV = () => {
-    const headers = ["ID", "Amount", "Currency", "Method", "Destination", "Status", "Created", "Completed"];
+    const headers = ["Amount", "Method", "Destination", "Status", "Created", "Completed"];
     const csvContent = [
       headers.join(","),
       ...filteredWithdrawals.map(w => [
-        w.id,
         w.amount,
-        w.currency,
         getMethodDisplay(w.method),
         w.destination,
         w.status,
         new Date(w.createdAt).toLocaleDateString(),
-        w.completedAt ? new Date(w.completedAt).toLocaleDateString() : "N/A"
+        w.updatedAt ? new Date(w.updatedAt).toLocaleDateString() : "N/A"
       ].join(","))
     ].join("\n");
 
@@ -150,7 +96,7 @@ export const WithdrawalHistory = () => {
             <table>
               <thead>
                 <tr>
-                  <th>ID</th>
+                  
                   <th>Amount</th>
                   <th>Method</th>
                   <th>Destination</th>
@@ -161,8 +107,8 @@ export const WithdrawalHistory = () => {
               <tbody>
                 ${filteredWithdrawals.map(w => `
                   <tr>
-                    <td>${w.id}</td>
-                    <td>${w.currency} ${w.amount}</td>
+                    
+                    <td>${w.amount}</td>
                     <td>${getMethodDisplay(w.method)}</td>
                     <td>${w.destination}</td>
                     <td>${w.status}</td>
@@ -224,7 +170,6 @@ export const WithdrawalHistory = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Method</TableHead>
                 <TableHead>Destination</TableHead>
@@ -233,20 +178,29 @@ export const WithdrawalHistory = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedWithdrawals.length > 0 ? (
+              {isLoading ? (
+                Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
+                  <TableRow key={index}>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                  </TableRow>
+                ))
+              ) : paginatedWithdrawals.length > 0 ? (
                 paginatedWithdrawals.map((withdrawal) => (
-                  <TableRow key={withdrawal.id}>
-                    <TableCell className="font-medium">{withdrawal.id}</TableCell>
-                    <TableCell>{withdrawal.currency} {withdrawal.amount.toLocaleString()}</TableCell>
+                  <TableRow key={withdrawal.payout_profile_id}> {/* Assuming payout_profile_id is unique for the list */}
+                    <TableCell>${withdrawal.amount.toLocaleString()}</TableCell>
                     <TableCell>{getMethodDisplay(withdrawal.method)}</TableCell>
-                    <TableCell className="max-w-32 truncate">{withdrawal.destination}</TableCell>
+                    <TableCell className="max-w-32 truncate">{JSON.stringify(withdrawal.destination)}</TableCell>
                     <TableCell>{getStatusBadge(withdrawal.status)}</TableCell>
                     <TableCell>{new Date(withdrawal.createdAt).toLocaleDateString()}</TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                     No withdrawal requests found
                   </TableCell>
                 </TableRow>
