@@ -1,47 +1,73 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Clock, AlertTriangle, XCircle, User } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export type KycStatus = "verified" | "pending" | "needs_update" | "rejected";
+export type KycStatus = "Verified" | "Pending" | "Needs Update" | "Rejected";
 
 interface ProfileStatusCardProps {
   status: KycStatus;
   userName: string;
   lastUpdated?: string;
+  isLoading: boolean;
 }
 
 const statusConfig = {
-  verified: {
+  Verified: {
     icon: CheckCircle,
     label: "Verified",
     variant: "default" as const,
-    bgColor: "bg-gradient-success",
+    bgColor: "bg-green-500",
     description: "Your profile is verified and ready for payouts"
   },
-  pending: {
+  Pending: {
     icon: Clock,
     label: "Pending Review",
     variant: "secondary" as const,
-    bgColor: "bg-gradient-primary",
+    bgColor: "bg-gray-500",
     description: "Your documents are being reviewed"
   },
-  needs_update: {
+  "Needs Update": {
     icon: AlertTriangle,
     label: "Needs Update",
     variant: "destructive" as const,
-    bgColor: "bg-gradient-warning",
+    bgColor: "bg-yellow-500",
     description: "Please update your information to continue"
   },
-  rejected: {
+  Rejected: {
     icon: XCircle,
     label: "Rejected",
     variant: "destructive" as const,
-    bgColor: "bg-destructive",
+    bgColor: "bg-red-500",
     description: "Your verification was not approved"
   }
 };
 
-export function ProfileStatusCard({ status, userName, lastUpdated }: ProfileStatusCardProps) {
+export function ProfileStatusCard({ status, userName, lastUpdated, isLoading }: ProfileStatusCardProps) {
+  if (isLoading) {
+    return (
+      <Card className="bg-gradient-card border-border/50 shadow-card">
+        <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+          <div className="flex items-center space-x-2">
+            <Skeleton className="h-5 w-5 rounded-full" />
+            <Skeleton className="h-6 w-32" />
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <Skeleton className="h-6 w-40 mb-2" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            <Skeleton className="h-12 w-12 rounded-full" />
+          </div>
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-4 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   const config = statusConfig[status];
   const StatusIcon = config.icon;
 
@@ -59,7 +85,7 @@ export function ProfileStatusCard({ status, userName, lastUpdated }: ProfileStat
             <h3 className="text-xl font-semibold text-foreground">{userName}</h3>
             {lastUpdated && (
               <p className="text-sm text-muted-foreground">
-                Last updated: {lastUpdated}
+                Last updated: {new Date(lastUpdated).toLocaleDateString()}
               </p>
             )}
           </div>

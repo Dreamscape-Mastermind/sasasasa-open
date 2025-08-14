@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -9,10 +9,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Wallet, Smartphone, Building2, DollarSign } from "lucide-react";
+import { Wallet, Smartphone, Building2, DollarSign, Calendar } from "lucide-react";
 import toast from 'react-hot-toast';
 
 type PaymentMethod = "crypto" | "mobile_money" | "bank_account";
+
+// Mock events data
+const mockEvents = [
+  { id: "event_1", name: "Summer Music Festival 2024", balance: 1250.50 },
+  { id: "event_2", name: "Tech Conference 2024", balance: 850.75 },
+  { id: "event_3", name: "Food & Wine Expo", balance: 2100.00 },
+  { id: "event_4", name: "Art Gallery Opening", balance: 450.25 },
+];
 
 const baseSchema = z.object({
   amount: z.string().min(1, "Amount is required").refine((val) => {
@@ -46,7 +54,19 @@ interface WithdrawalFormProps {
 
 export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("crypto");
+  const [availableBalance, setAvailableBalance] = useState<number>(0);
+  const [selectedEvent, setSelectedEvent] = useState<string>("");
 
+  // Update available balance when event changes
+  useEffect(() => {
+    if (selectedEvent) {
+      const event = mockEvents.find(e => e.id === selectedEvent);
+      setAvailableBalance(event?.balance || 0);
+    } else {
+      setAvailableBalance(0);
+    }
+  }, [selectedEvent]);
+  
   const getSchema = () => {
     switch (paymentMethod) {
       case "crypto":
@@ -246,6 +266,47 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <FormField
+              control={form.control}
+              name="event_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Select Event</FormLabel>
+                  <Select onValueChange={(value) => {
+                    field.onChange(value);
+                    setSelectedEvent(value);
+                  }} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose an event to withdraw from" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {mockEvents.map((event) => (
+                        <SelectItem key={event.id} value={event.id}>
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="h-4 w-4" />
+                            <span>{event.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {selectedEvent && (
+              <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Available Balance:</span>
+                  <span className="text-xl font-semibold text-primary">
+                    ${availableBalance.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            )}
             <FormField
               control={form.control}
               name="amount"
