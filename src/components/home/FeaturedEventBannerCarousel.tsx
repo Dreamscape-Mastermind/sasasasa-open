@@ -20,6 +20,7 @@ import { useLogger } from "@/hooks/useLogger";
 export default function FeaturedCarousel({ events }: { events: Event[] }) {
   const [plugin, setPlugin] = useState<any>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [disableMotion, setDisableMotion] = useState(false);
   const analytics = useAnalytics();
   const logger = useLogger({ context: "FeaturedCarousel" });
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -28,8 +29,25 @@ export default function FeaturedCarousel({ events }: { events: Event[] }) {
   );
 
   useEffect(() => {
-    setPlugin(Autoplay({ delay: 5000, stopOnInteraction: false }));
+    const prefReduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const mobile = window.matchMedia("(max-width: 640px)");
+    const update = () => setDisableMotion(prefReduce.matches || mobile.matches);
+    update();
+    prefReduce.addEventListener("change", update);
+    mobile.addEventListener("change", update);
+    return () => {
+      prefReduce.removeEventListener("change", update);
+      mobile.removeEventListener("change", update);
+    };
   }, []);
+
+  useEffect(() => {
+    if (disableMotion) {
+      setPlugin(null);
+    } else {
+      setPlugin(Autoplay({ delay: 5000, stopOnInteraction: false }));
+    }
+  }, [disableMotion]);
 
   useEffect(() => {
     if (!emblaApi) return;

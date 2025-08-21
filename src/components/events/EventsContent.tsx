@@ -26,6 +26,7 @@ export function EventsContent() {
   const [pageSize, setPageSize] = useState(10);
   const [filters, setFilters] = useState<EventQueryParams>({
     status: EventStatus.PUBLISHED,
+    page: 1,
     page_size: 10,
   });
 
@@ -48,10 +49,14 @@ export function EventsContent() {
         })
       );
 
-      setFilters(cleanedFilters as EventQueryParams);
+      setFilters({
+        ...(cleanedFilters as EventQueryParams),
+        page: 1,
+        page_size: pageSize,
+      });
       setPage(1);
     },
-    [logger, analytics]
+    [logger, analytics, pageSize]
   );
 
   const handlePageChange = useCallback(
@@ -63,6 +68,7 @@ export function EventsContent() {
         newPage.toString()
       );
       setPage(newPage);
+      setFilters((prev) => ({ ...prev, page: newPage }));
     },
     [logger, analytics]
   );
@@ -76,7 +82,7 @@ export function EventsContent() {
         newPageSize.toString()
       );
       setPageSize(newPageSize);
-      setFilters((prev) => ({ ...prev, page_size: newPageSize }));
+      setFilters((prev) => ({ ...prev, page_size: newPageSize, page: 1 }));
       setPage(1);
     },
     [logger, analytics]

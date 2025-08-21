@@ -25,7 +25,11 @@ export default function Error({
       <h3 className="text-lg font-semibold text-destructive mb-2">Error</h3>
       <p className="text-muted-foreground text-center">{message}</p>
       <button
-        onClick={() => window.location.reload()}
+        onClick={() => {
+          if (typeof window !== "undefined") {
+            window.location.assign(window.location.href);
+          }
+        }}
         className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
       >
         Try Again

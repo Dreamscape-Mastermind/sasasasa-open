@@ -185,7 +185,9 @@ export function EventCheckout({
         // Save paid event slug to cache
         localStorage.setItem("paidEventSlug", slug);
 
-        window.location.href = authorization_url;
+        if (typeof window !== "undefined") {
+          window.location.assign(authorization_url);
+        }
         return;
       }
 

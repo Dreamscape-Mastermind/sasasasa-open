@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Event } from "@/types/event";
 import Image from "next/image";
-import { motion, Variants } from "framer-motion";
+import { motion, Variants, useReducedMotion } from "framer-motion";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,18 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
   const analytics = useAnalytics();
   const logger = useLogger({ context: "FeaturedEventBanner" });
   const [isFlashSaleActive, setIsFlashSaleActive] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  const enableMotion = !(prefersReducedMotion || isMobile);
 
   const activeFlashSale = event.available_tickets?.[0]?.flash_sale;
 
@@ -129,9 +141,9 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
       className="block group relative cursor-pointer"
     >
       <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
+        initial={enableMotion ? "hidden" : false}
+        animate={enableMotion ? "visible" : false}
+        variants={enableMotion ? containerVariants : undefined}
         className="relative w-full h-[450px] sm:h-[450px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-xl mb-8"
       >
         <Image
@@ -141,46 +153,46 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
           className="object-cover object-center transition-transform duration-300 group-hover:scale-102"
           priority
           style={{
-            transform: "scale(1.1)",
-            animation: "zoomOut 1.5s ease-out forwards",
+            transform: enableMotion ? "scale(1.1)" : undefined,
+            animation: enableMotion ? "zoomOut 1.5s ease-out forwards" : undefined,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 sm:from-black/80 via-black/60 sm:via-black/40 to-transparent">
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 sm:from-black/30 via-transparent to-transparent" />
           <motion.div
             className="absolute bottom-0 left-0 p-2 sm:p-6 md:p-8 w-full backdrop-blur-[2px] sm:backdrop-blur-[1px]"
-            variants={containerVariants}
+            variants={enableMotion ? containerVariants : undefined}
           >
             <motion.div
               className="flex items-center my-4 gap-1.5 sm:gap-3 mb-2 sm:mb-3"
-              variants={itemVariants}
+              variants={enableMotion ? itemVariants : undefined}
             >
               <motion.span
                 className="inline-block px-2 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm font-semibold bg-primary rounded-full text-white"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={enableMotion ? { scale: 1.05 } : undefined}
+                whileTap={enableMotion ? { scale: 0.95 } : undefined}
               >
                 Featured Event
               </motion.span>
               <motion.span
                 className="inline-block px-2 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm font-semibold bg-white/20 backdrop-blur-sm rounded-full text-white"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={enableMotion ? { scale: 1.05 } : undefined}
+                whileTap={enableMotion ? { scale: 0.95 } : undefined}
               >
                 {new Date(event.start_date).toLocaleDateString()}
               </motion.span>
             </motion.div>
 
             <motion.h2
-              variants={itemVariants}
+              variants={enableMotion ? itemVariants : undefined}
               className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-3 text-white drop-shadow-lg"
             >
               {event.title}
             </motion.h2>
 
             <motion.p
-              variants={itemVariants}
-              className="text-base sm:text-lg text-gray-100 max-w-3xl leading-relaxed
+              variants={enableMotion ? itemVariants : undefined}
+              className="text-sm sm:text-base text-gray-100 max-w-3xl leading-relaxed overflow-hidden max-h-28 md:max-h-32 line-clamp-4 md:line-clamp-6
                 drop-shadow-lg text-shadow-sm mb-4 font-medium
                 [text-shadow:_0_1px_2px_rgba(0,0,0,0.8)]"
             >
@@ -190,7 +202,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
             {event.performers && event.performers.length > 0 && (
               <motion.div
                 className="flex flex-wrap justify-between gap-2 sm:gap-3 mt-2 w-full"
-                variants={containerVariants}
+                variants={enableMotion ? containerVariants : undefined}
               >
                 {event.performers.map((performer) => (
                   <motion.a
@@ -203,9 +215,9 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
                       hover:text-primary transition-colors duration-200
                       flex items-center gap-2 drop-shadow-lg
                       [text-shadow:_0_1px_2px_rgba(0,0,0,0.8)]"
-                    variants={itemVariants}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    variants={enableMotion ? itemVariants : undefined}
+                    whileHover={enableMotion ? { scale: 1.05 } : undefined}
+                    whileTap={enableMotion ? { scale: 0.95 } : undefined}
                   >
                     {performer.name}
                     {performer.spotify_url && (
@@ -213,8 +225,8 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
                         className="w-5 h-5 inline-block"
                         viewBox="0 0 24 24"
                         fill="currentColor"
-                        whileHover={{ rotate: 360 }}
-                        transition={{ duration: 0.5 }}
+                        whileHover={enableMotion ? { rotate: 360 } : undefined}
+                        transition={enableMotion ? { duration: 0.5 } : undefined}
                       >
                         <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
                       </motion.svg>
@@ -225,12 +237,12 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
             )}
 
             <motion.div
-              variants={itemVariants}
+              variants={enableMotion ? itemVariants : undefined}
               className="mt-4 sm:mt-6 flex items-center gap-2 sm:gap-4 md:justify-start"
             >
               {isFlashSaleActive && activeFlashSale && (
                 <motion.div
-                  variants={flashSaleVariants}
+                  variants={enableMotion ? flashSaleVariants : undefined}
                   className="flex-shrink-0"
                 >
                   <div className="bg-red-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg shadow-lg transform rotate-3">
@@ -247,7 +259,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
               )}
             </motion.div>
             <motion.div
-              variants={itemVariants}
+              variants={enableMotion ? itemVariants : undefined}
               className="mt-4 sm:mt-6 flex items-center gap-2 sm:gap-4 md:justify-start"
             >
               <Button className="bg-red-600 w-full rounded-[4rem] hover:bg-primary/90 text-white md:w-auto md:px-8">

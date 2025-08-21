@@ -37,6 +37,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useTicket } from "@/hooks/useTicket";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/contexts/AuthContext";
+import { UserRole } from "@/types/user";
 import styles from '@/components/Datepicker.module.css';
 import BetaProgramPopup from "@/components/dashboard/event/tickets/BetaProgramPopup";
 
@@ -91,7 +92,8 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
   const deleteTicket = useDeleteTicketType(eventId);
   const formRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
+  const isBeta = !!user?.beta || hasRole(UserRole.BETA_TESTER);
 
   const { useEvent: useEventQuery, useUpdateEvent } = useEvent();
   const { data: eventData, error: eventError } = useEventQuery(eventId);
@@ -123,7 +125,7 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
       const ticket = eventData.result.available_tickets[0];
       form.reset({
         name: ticket.name,
-        price: user?.beta ? parseInt(ticket.price.toString(), 10) : 0,
+        price: isBeta ? parseInt(ticket.price.toString(), 10) : 0,
         quantity: ticket.quantity,
         description: ticket.description,
         sale_start_date: new Date(ticket.sale_start_date),
@@ -135,10 +137,10 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
 
   // Enforce free tickets for non-beta users
   useEffect(() => {
-    if (!user?.beta) {
+    if (!isBeta) {
       form.setValue("price", 0);
     }
-  }, [user?.beta, form]);
+  }, [isBeta, form]);
 
   const handleSubmit = async (data: TicketFormData) => {
     setIsLoading(true);
@@ -146,7 +148,7 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
     try {
       const ticketData: CreateTicketTypeRequest = {
         name: data.name,
-        price: user?.beta ? parseInt(data.price.toString(), 10) : 0, // Enforce free tickets for non-beta users
+        price: isBeta ? parseInt(data.price.toString(), 10) : 0, // Enforce free tickets for non-beta users
         quantity: parseInt(data.quantity.toString(), 10) || 0,
         description: data.description,
         sale_start_date: data.sale_start_date,
@@ -378,7 +380,7 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
                           <FormItem>
                             <FormLabel className="flex items-center gap-2">
                               Price
-                              {!user?.beta && (
+                          {!isBeta && (
                                 <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-2 py-1 rounded-full text-xs font-medium">
                                   Beta Only
                                 </span>
@@ -388,16 +390,16 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
                               <Input
                                 className={cn(
                                   "rounded-full",
-                                  !user?.beta && "bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+                                  !isBeta && "bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
                                 )}
                                 type="number"
-                                placeholder={user?.beta ? "0.00" : "Free ticket only"}
-                                disabled={!user?.beta}
-                                value={user?.beta ? field.value : 0}
-                                onChange={user?.beta ? field.onChange : () => { }}
+                                placeholder={isBeta ? "0.00" : "Free ticket only"}
+                                disabled={!isBeta}
+                                value={isBeta ? field.value : 0}
+                                onChange={isBeta ? field.onChange : () => { }}
                               />
                             </FormControl>
-                            {!user?.beta && (
+                            {!isBeta && (
                               <BetaProgramPopup>
                                 <p className="text-sm text-amber-600 dark:text-amber-400 mt-1 cursor-pointer hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
                                   💡 Join our beta program to unlock paid ticketing features
@@ -444,7 +446,7 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
                               <DatePicker
                                 selected={field.value}
                                 onChange={(date) => field.onChange(date)}
-                                className="border rounded p-2 bg-card rounded-full"
+                                className="border rounded-full p-2 bg-card"
                                 placeholderText="Sale start date and time"
                                 dateFormat="MMM d, yyyy h:mm aa"
                                 showTimeSelect
@@ -466,7 +468,7 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
                               <DatePicker
                                 selected={field.value}
                                 onChange={(date) => field.onChange(date)}
-                                className="border rounded p-2 bg-card rounded-full"
+                                className="border rounded-full p-2 bg-card"
                                 placeholderText="Sale end date and time"
                                 dateFormat="MMM d, yyyy h:mm aa"
                                 showTimeSelect
