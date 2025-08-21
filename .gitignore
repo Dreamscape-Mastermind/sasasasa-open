@@ -91,3 +91,6 @@ ignition/deployments/chain-31337
 
 
 web3/
+.cursorrules
+.cursor/
+memory-bank/
