@@ -6,14 +6,15 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { NAV_ITEMS } from "@/lib/constants";
-import { UserRole } from "@/types/user";
-import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { NAV_ITEMS } from "@/lib/constants";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AnimatePresence, m } from "framer-motion";
+import { UserRole } from "@/types/user";
+import { cn } from "@/lib/utils";
+import { m } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 interface RightSidebarProps {
   isOpen: boolean;
@@ -23,12 +24,12 @@ interface RightSidebarProps {
 
 const getRoleBasedNavigation = (hasRole: (roleName: string) => boolean) => {
   const navigationItems = [...NAV_ITEMS.DASHBOARD_ADMIN]; // Base items for all users
-  
+
   // Add blog admin items only for admin users
   if (hasRole(UserRole.ADMIN) || hasRole(UserRole.SUPER_ADMIN)) {
     navigationItems.push(...NAV_ITEMS.DASHBOARD_BLOG_ADMIN);
   }
-  
+
   return navigationItems;
 };
 
@@ -65,7 +66,10 @@ export function RightSidebar({ isOpen, onClose, hasRole }: RightSidebarProps) {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-72 bg-background/95 backdrop-blur-md p-0">
+      <SheetContent
+        side="right"
+        className="w-72 bg-background/95 backdrop-blur-md p-0"
+      >
         <SheetHeader className="border-b border-gray-200/30 dark:border-gray-700/30 p-6">
           <SheetTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Dashboard

@@ -2,7 +2,6 @@
 
 import {
   BarChart2,
-  Calendar,
   DollarSign,
   Download,
   TrendingUp,
@@ -15,20 +14,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useState } from "react";
+// removed date range select
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { OverviewContent } from "@/components/dashboard/LazyDashboardComponents";
 import { useEvent } from "@/hooks/useEvent";
-import { useTicket } from "@/hooks/useTicket";
 
 interface AnalyticsContentProps {
   eventId: string;
@@ -39,24 +30,26 @@ export function AnalyticsContent({ eventId }: AnalyticsContentProps) {
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const { useEvent: useEventQuery } = useEvent();
-  const { useTickets } = useTicket();
+  const { useEventAnalytics, useExportEventAnalytics } = useEvent();
+
+  const computedParams = useMemo(() => {
+    return {
+      granularity: "day" as const,
+      include_checkins: true,
+    };
+  }, []);
 
   const {
-    data: eventData,
-    isLoading: isLoadingEvent,
-    error: eventError,
-  } = useEventQuery(eventId);
+    data: analyticsData,
+    isLoading: isLoadingAnalytics,
+    error: analyticsError,
+  } = useEventAnalytics(eventId, computedParams);
 
-  const {
-    data: ticketsData,
-    isLoading: isLoadingTickets,
-    error: ticketsError,
-  } = useTickets(eventId);
+  const { mutateAsync: exportAnalytics } = useExportEventAnalytics(eventId);
 
   // Handle errors more gracefully
-  if (eventError || ticketsError) {
-    const error = eventError || ticketsError;
+  if (analyticsError) {
+    const error = analyticsError as Error | any;
     console.error("Analytics error:", error);
 
     return (
@@ -79,10 +72,10 @@ export function AnalyticsContent({ eventId }: AnalyticsContentProps) {
     );
   }
 
-  const currentEvent = eventData?.result;
-  const tickets = ticketsData?.result?.results || [];
+  const analytics = analyticsData?.result;
+  const currentEvent = analytics?.event;
 
-  if (isLoadingEvent || isLoadingTickets) {
+  if (isLoadingAnalytics) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-cyan-400">Loading analytics...</div>
@@ -133,49 +126,53 @@ export function AnalyticsContent({ eventId }: AnalyticsContentProps) {
   }
 
   try {
-    const totalRevenue = tickets.reduce((acc, ticket) => {
-      return acc + (ticket.purchase_price || 0);
-    }, 0);
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "KES",
+      }).format(amount || 0);
 
-    const totalSales = tickets.length;
+    const timelinePoints = analytics?.ticketSales.timeline || [];
+
+    const barColors = [
+      "bg-primary",
+      "bg-emerald-500",
+      "bg-amber-500",
+      "bg-purple-500",
+      "bg-sky-500",
+      "bg-rose-500",
+    ];
 
     const metrics = [
       {
         title: "Total Revenue",
-        value: `$${totalRevenue.toLocaleString()}`,
-        change: "+20.1%",
+        value: formatCurrency(analytics?.overview.totalRevenue || 0),
+        change: `${analytics?.overview.revenueGrowth ?? 0}%`,
         trend: "up",
-        description: "Compared to last month",
+        description: "vs selected period",
       },
       {
         title: "Ticket Sales",
-        value: totalSales.toString(),
-        change: "+15.3%",
+        value: (analytics?.overview.totalTicketsSold || 0).toString(),
+        change: `${analytics?.overview.ticketGrowth ?? 0}%`,
         trend: "up",
-        description: "Compared to last month",
-      },
-      {
-        title: "Active Events",
-        value: "1",
-        change: "0",
-        trend: "up",
-        description: "Current event",
+        description: "vs selected period",
       },
       {
         title: "Attendees",
-        value: totalSales.toString(),
-        change: "+12.5%",
+        value: (analytics?.overview.totalAttendees || 0).toString(),
+        change: `${analytics?.overview.attendeeGrowth ?? 0}%`,
         trend: "up",
-        description: "Compared to last month",
+        description: `${
+          analytics?.overview.attendanceRate || 0
+        }% attendance rate`,
       },
-    ];
-
-    const topEvents = [
       {
-        name: currentEvent.title,
-        sales: totalSales,
-        revenue: totalRevenue,
-        conversion: Math.round((totalSales / (totalSales + 10)) * 100),
+        title: "Avg. Ticket Price",
+        value: formatCurrency(analytics?.overview.averageTicketPrice || 0),
+        change: "",
+        trend: "up",
+        description: "Average price",
       },
     ];
 
@@ -188,21 +185,46 @@ export function AnalyticsContent({ eventId }: AnalyticsContentProps) {
               Track your event performance and metrics
             </p>
           </div>
-          <div className="flex gap-4">
-            <Select defaultValue="30">
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select period" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7">Last 7 days</SelectItem>
-                <SelectItem value="30">Last 30 days</SelectItem>
-                <SelectItem value="90">Last 90 days</SelectItem>
-                <SelectItem value="365">Last year</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" className="gap-2">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={async () => {
+                const res = await exportAnalytics({
+                  format: "csv",
+                  ...computedParams,
+                });
+                if (!res || !res.result) return;
+                const { download_url, file_name } = res.result;
+                if (!download_url) return;
+                const a = document.createElement("a");
+                a.href = download_url;
+                if (file_name) a.download = file_name;
+                a.click();
+              }}
+            >
               <Download className="h-4 w-4" />
-              Export
+              Export CSV
+            </Button>
+            <Button
+              variant="default"
+              className="gap-2"
+              onClick={async () => {
+                const res = await exportAnalytics({
+                  format: "excel",
+                  ...computedParams,
+                });
+                if (!res || !res.result) return;
+                const { download_url, file_name } = res.result;
+                if (!download_url) return;
+                const a = document.createElement("a");
+                a.href = download_url;
+                if (file_name) a.download = file_name;
+                a.click();
+              }}
+            >
+              <Download className="h-4 w-4" />
+              Export Excel
             </Button>
           </div>
         </div>
@@ -219,9 +241,6 @@ export function AnalyticsContent({ eventId }: AnalyticsContentProps) {
                 )}
                 {metric.title === "Ticket Sales" && (
                   <BarChart2 className="h-4 w-4 text-muted-foreground" />
-                )}
-                {metric.title === "Active Events" && (
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
                 )}
                 {metric.title === "Attendees" && (
                   <Users className="h-4 w-4 text-muted-foreground" />
@@ -248,52 +267,124 @@ export function AnalyticsContent({ eventId }: AnalyticsContentProps) {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          <Card className="col-span-2">
+          <Card>
             <CardHeader>
-              <CardTitle>Revenue Overview</CardTitle>
+              <CardTitle>Ticket Sales Timeline</CardTitle>
               <CardDescription>
-                Monthly revenue from ticket sales
+                Tickets sold and revenue by {computedParams.granularity}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <OverviewContent />
+              <div className="space-y-3">
+                {timelinePoints.map((p) => (
+                  <div
+                    key={p.date}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-sm text-muted-foreground">
+                      {p.date}
+                    </span>
+                    <div className="flex items-center gap-8">
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-foreground">
+                          {p.cumulative}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Total
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-primary">
+                          {p.daily}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Daily
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Ticket Types</CardTitle>
+              <CardDescription>Distribution by ticket type</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {(analytics?.ticketSales.byType || []).map((t, idx) => (
+                  <div key={t.type} className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground">
+                        {t.type}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {t.percentage}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          barColors[idx % barColors.length]
+                        }`}
+                        style={{ width: `${t.percentage}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{t.sold} tickets</span>
+                      <span>{formatCurrency(t.revenue)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Top Performing Events</CardTitle>
+            <CardTitle>Check-in Analytics</CardTitle>
             <CardDescription>
-              Events with the highest ticket sales and revenue
+              Attendance overview and hourly check-ins
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="relative">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left">
-                    <th className="pb-4 font-medium">Event Name</th>
-                    <th className="pb-4 font-medium">Ticket Sales</th>
-                    <th className="pb-4 font-medium">Revenue</th>
-                    <th className="pb-4 font-medium">Conversion Rate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topEvents.map((event) => (
-                    <tr key={event.name} className="border-t">
-                      <td className="py-4">
-                        <div className="font-medium">{event.name}</div>
-                      </td>
-                      <td className="py-4">{event.sales}</td>
-                      <td className="py-4">
-                        ${event.revenue.toLocaleString()}
-                      </td>
-                      <td className="py-4">{event.conversion}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="text-center p-4 bg-primary/10 rounded-lg">
+                <div className="text-2xl font-bold text-primary">
+                  {analytics?.checkIn.peakTime || "--:--"}
+                </div>
+                <div className="text-sm text-muted-foreground">Peak Time</div>
+              </div>
+              <div className="text-center p-4 bg-secondary/10 rounded-lg">
+                <div className="text-2xl font-bold text-foreground">
+                  {analytics?.checkIn.averageWaitTime || "--"}
+                </div>
+                <div className="text-sm text-muted-foreground">Avg. Wait</div>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {(analytics?.checkIn.timeline || []).map((h) => (
+                <div key={h.time} className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    {h.time}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-24 bg-muted rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full"
+                        style={{ width: `${Math.min(100, h.count)}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium text-foreground w-10 text-right">
+                      {h.count}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
