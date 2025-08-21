@@ -39,7 +39,9 @@ const TokenManager = {
   getAccessToken: () => cookieService.getTokens()?.result?.access,
   getRefreshToken: () => cookieService.getTokens()?.result?.refresh,
   redirectToLogin: () => {
-    window.location.href = "/login";
+    if (typeof window !== "undefined") {
+      window.location.assign("/login");
+    }
   },
 };
 

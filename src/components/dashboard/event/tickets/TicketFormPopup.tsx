@@ -29,6 +29,7 @@ import { Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import toast from "react-hot-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { UserRole } from "@/types/user";
 import { useForm } from "react-hook-form";
 import { useTicket } from "@/hooks/useTicket";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -60,7 +61,9 @@ export default function TicketFormPopup({
   editingTicket,
 }: TicketFormPopupProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
+  // const isBeta = !!user?.beta || hasRole(UserRole.BETA_TESTER);
+  const isBeta = true; // Allow for all for now
 
   const { useCreateTicketType, useUpdateTicketType } = useTicket();
   const createTicketType = useCreateTicketType(eventId, {
@@ -102,7 +105,7 @@ export default function TicketFormPopup({
     if (editingTicket) {
       form.reset({
         name: editingTicket.name,
-        price: user?.beta ? parseInt(editingTicket.price.toString(), 10) : 0,
+        price: isBeta ? parseInt(editingTicket.price.toString(), 10) : 0,
         quantity: parseInt(editingTicket.quantity.toString(), 10),
         description: editingTicket.description,
         sale_start_date: new Date(editingTicket.sale_start_date),
@@ -124,10 +127,10 @@ export default function TicketFormPopup({
 
   // Enforce free tickets for non-beta users
   useEffect(() => {
-    if (!user?.beta) {
+    if (!isBeta) {
       form.setValue("price", 0);
     }
-  }, [user?.beta, form]);
+  }, [isBeta, form]);
 
   const handleSubmit = async (data: TicketFormData) => {
     setIsLoading(true);
@@ -135,7 +138,7 @@ export default function TicketFormPopup({
     try {
       const ticketData: CreateTicketTypeRequest = {
         name: data.name,
-        price: user?.beta ? parseInt(data.price.toString(), 10) : 0,
+        price: isBeta ? parseInt(data.price.toString(), 10) : 0,
         quantity: parseInt(data.quantity.toString(), 10) || 0,
         description: data.description,
         sale_start_date: data.sale_start_date,
@@ -204,7 +207,7 @@ export default function TicketFormPopup({
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
                       Price
-                      {!user?.beta && (
+                      {!isBeta && (
                         <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-2 py-1 rounded-full text-xs font-medium">
                           Beta Only
                         </span>
@@ -213,13 +216,13 @@ export default function TicketFormPopup({
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder={user?.beta ? "0.00" : "Free ticket only"}
-                        disabled={!user?.beta}
-                        value={user?.beta ? field.value : 0}
-                        onChange={user?.beta ? field.onChange : () => {}}
+                        placeholder={isBeta ? "0.00" : "Free ticket only"}
+                        disabled={!isBeta}
+                        value={isBeta ? field.value : 0}
+                        onChange={isBeta ? field.onChange : () => {}}
                       />
                     </FormControl>
-                    {!user?.beta && (
+                    {!isBeta && (
                       <BetaProgramPopup>
                         <p className="text-sm text-amber-600 dark:text-amber-400 mt-1 cursor-pointer hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
                           💡 Join our beta program to unlock paid ticketing
@@ -317,7 +320,7 @@ export default function TicketFormPopup({
               />
             </div>
 
-            {!user?.beta && (
+            {!isBeta && (
               <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mt-4">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0">

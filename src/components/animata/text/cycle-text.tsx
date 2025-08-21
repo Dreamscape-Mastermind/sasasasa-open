@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 export default function CycleText() {
-  const words = useMemo(() => ["musicians", "curators", "culturepreneurs", "worldbuilders"], []);
+  const words = useMemo(() => ["musicians", "artists", "writers",  "curators", "culturepreneurs", "worldbuilders"], []);
   const [index, setIndex] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
 
   const longestWord = useMemo(() => {
     return words.reduce((longest, current) =>
@@ -20,18 +21,18 @@ export default function CycleText() {
   }, [words.length]);
 
   return (
-    <span className="relative inline-block">
-      <span className="invisible whitespace-nowrap" aria-hidden="true">
+    <span className="relative inline-block whitespace-nowrap align-baseline text-[0.9em] sm:text-[1em]">
+      <span className="invisible block whitespace-nowrap leading-none" aria-hidden="true">
         {longestWord}
       </span>
       <AnimatePresence mode="wait">
         <motion.span
           key={words[index]}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-          className="absolute left-0 top-0 text-[#CC322D]"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+          animate={prefersReducedMotion ? false : { opacity: 1, y: 0 }}
+          exit={prefersReducedMotion ? undefined : { opacity: 0, y: -12 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25 }}
+          className="absolute left-0 top-0 text-[#CC322D] leading-none"
         >
           {words[index]}
         </motion.span>

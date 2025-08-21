@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { OverviewContent } from "@/components/dashboard/LazyDashboardComponents";
@@ -34,6 +35,7 @@ interface AnalyticsContentProps {
 }
 
 export function AnalyticsContent({ eventId }: AnalyticsContentProps) {
+  const router = useRouter();
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -67,7 +69,7 @@ export function AnalyticsContent({ eventId }: AnalyticsContentProps) {
             {error?.message || "Please try refreshing the page"}
           </div>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => router.refresh()}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
           >
             Refresh Page
@@ -119,7 +121,7 @@ export function AnalyticsContent({ eventId }: AnalyticsContentProps) {
             onClick={() => {
               setHasError(false);
               setErrorMessage("");
-              window.location.reload();
+              router.refresh();
             }}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
           >
@@ -317,7 +319,7 @@ export function AnalyticsContent({ eventId }: AnalyticsContentProps) {
             onClick={() => {
               setHasError(false);
               setErrorMessage("");
-              window.location.reload();
+              router.refresh();
             }}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
           >

@@ -38,7 +38,9 @@ Best regards,
 [Your Name]`
     );
     
-    window.location.href = `mailto:beta@sasasasa.co?subject=${subject}&body=${body}`;
+    if (typeof window !== "undefined") {
+      window.location.href = `mailto:beta@sasasasa.co?subject=${subject}&body=${body}`;
+    }
   };
 
   const handleInstagramClick = () => {
