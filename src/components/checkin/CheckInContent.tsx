@@ -204,7 +204,7 @@ export function CheckInContent({ eventId }: { eventId: string }) {
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:space-x-3">
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => refetch()}
             className="flex items-center px-4 py-2 border border-border rounded-lg text-foreground hover:bg-accent bg-card"
           >
             <RefreshCw className="h-4 w-4 mr-2" />

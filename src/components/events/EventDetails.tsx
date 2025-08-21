@@ -166,7 +166,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
   const shareEvent = (platform: string) => {
     if (!event) return;
 
-    const eventUrl = window.location.href;
+    const eventUrl = typeof window !== "undefined" ? window.location.href : "";
     const shareText = `Check out ${event.title} on Sasasasa.`;
     const imageUrl = event.cover_image
       ? encodeURIComponent(event.cover_image)

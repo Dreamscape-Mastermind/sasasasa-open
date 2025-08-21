@@ -117,9 +117,8 @@ function EmailSettingsContent() {
 
       if (response.ok) {
         toast.success("Email verified successfully");
-        // Refresh the page or update user state
-        router.push("/dashboard/settings");
-        window.location.reload();
+        router.replace("/dashboard/settings");
+        router.refresh();
       } else {
         const error = await response.json();
         toast.error(error.message || "Failed to verify email");

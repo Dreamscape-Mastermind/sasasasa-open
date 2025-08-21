@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useScrollVisibility } from "@/hooks/useScrollVisibility";
 import { useEffect, useCallback } from "react";
 import ShortcutButton from "@/components/ui/shortcut-button";
@@ -19,6 +19,7 @@ import {
 export default function GlobalShortcutWrapper() {
   const { isAuthenticated, isLoading } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const { isVisible, isScrollingDown } = useScrollVisibility({ threshold: 50 });
   
   // Memoize static style object to prevent re-renders
@@ -34,13 +35,13 @@ export default function GlobalShortcutWrapper() {
           icon: <Home size={18} />,
           label: "Dashboard Home",
           key: "dashboard-home",
-          action: () => window.location.href = "/dashboard"
+          action: () => router.push("/dashboard")
         },
         {
           icon: <Settings size={18} />,
           label: "Settings",
           key: "settings",
-          action: () => window.location.href = "/dashboard/settings"
+          action: () => router.push("/dashboard/settings")
         }
       ];
     }
@@ -51,28 +52,28 @@ export default function GlobalShortcutWrapper() {
         icon: <Home size={18} />,
         label: "Home",
         key: "home",
-        action: () => window.location.href = "/"
+        action: () => router.push("/")
       },
       {
         icon: <Calendar size={18} />,
         label: "Experiences",
         key: "events", 
-        action: () => window.location.href = "/events"
+        action: () => router.push("/events")
       },
       {
         icon: <User size={18} />,
         label: "Dashboard",
         key: "dashboard",
-        action: () => window.location.href = "/dashboard"
+        action: () => router.push("/dashboard")
       },
       {
         icon: <Settings size={18} />,
         label: "Settings",
         key: "settings",
-        action: () => window.location.href = "/dashboard/settings"
+        action: () => router.push("/dashboard/settings")
       }
     ];
-  }, [pathname]);
+  }, [pathname, router]);
 
   // Only render if authenticated and not loading
   if (isLoading || !isAuthenticated) {

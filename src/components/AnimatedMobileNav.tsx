@@ -203,7 +203,7 @@ const AnimatedMobileNav = ({
     if (isAuthenticated) {
       setIsRightSidebarOpen(true);
     } else {
-      window.location.href = ROUTES.LOGIN;
+      router.push(ROUTES.LOGIN);
     }
   };
 
