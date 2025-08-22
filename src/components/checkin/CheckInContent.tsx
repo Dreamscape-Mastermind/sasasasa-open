@@ -170,11 +170,10 @@ export function CheckInContent({ eventId }: { eventId: string }) {
     if (!checkInData?.result) return;
 
     const csvContent = [
-      ["Ticket ID", "Attendee", "Ticket Type", "Check-in Time", "Status"],
+      ["Ticket Number", "Ticket Type", "Check-in Time", "Status"],
       ...checkInData.result.results.map((record) => [
-        record.ticket,
-        record.ticket_details.owner,
-        record.ticket_details.ticket_type,
+        record.ticket_details.ticket_number,
+        record.ticket_details.ticket_type.name,
         record.check_in_time,
         record.status,
       ]),

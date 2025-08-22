@@ -7,12 +7,9 @@ module.exports = {
       args: "start", // Arguments for the command
       env: {
         NODE_ENV: "production", // Sets production environment for Next.js
-        PORT: 3000, // Port for Next.js production
+        PORT: 3002, // Port for Next.js production
         DEPLOYMENT_ENV: "production", // Custom environment identifier
       },
-      instances: 1,
-      exec_mode: "fork",
-      watch: false,
       max_memory_restart: "1G",
       error_file: "/var/log/pm2/sasasasa-production-error.log",
       out_file: "/var/log/pm2/sasasasa-production-out.log",

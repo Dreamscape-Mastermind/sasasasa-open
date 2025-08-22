@@ -8,8 +8,8 @@ export const useWeb3 = () => {
   const metadata = {
     name: "Sasasasa",
     description: "Community to Commerce, now now",
-    url: process.env.NEXT_PUBLIC_APP_URL || "https://beta.sasasasa.co", // origin must match your domain & subdomain
-    icons: ["https://beta.sasasasa.co/images/sasasasaLogo.png"],
+    url: process.env.NEXT_PUBLIC_APP_URL || "https://sasasasa.co", // origin must match your domain & subdomain
+    icons: ["https://sasasasa.co/images/sasasasaLogo.png"],
   };
 
   // 3. Create the AppKit instance

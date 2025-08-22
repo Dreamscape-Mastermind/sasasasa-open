@@ -27,7 +27,7 @@ class CheckinService {
   ): Promise<CheckInsResponse> {
     return apiClient.get<CheckInsResponse>(
       `${this.baseUrl}/events/${eventId}/checkin`,
-      { params }
+      { params: { verbose: false, ...params } }
     );
   }
 

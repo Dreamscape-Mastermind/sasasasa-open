@@ -124,9 +124,9 @@ export default function CreateEvent({ params }: Props) {
                 : ""
             }`}
           >
-            <Users className="w-4 h-4" />
+            {/* <Users className="w-4 h-4" />
             <span className="hidden sm:inline">Event Team</span>
-            <span className="sm:hidden">Team</span>
+            <span className="sm:hidden">Team</span> */}
           </TabsTrigger>
         </TabsList>
 
@@ -138,9 +138,9 @@ export default function CreateEvent({ params }: Props) {
           <TicketForm onFormSubmitSuccess={handleNext} eventId={eventId} />
         </TabsContent>
 
-        <TabsContent value="team">
+        {/* <TabsContent value="team">
           <TeamMembersForm onFormSubmitSuccess={handleNext} eventId={eventId} />
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
 
       <div className="mt-6 flex justify-end">

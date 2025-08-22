@@ -22,25 +22,25 @@ export interface BaseCheckInEntity extends TimeStamp {
 export interface TicketType {
   id: string;
   name: string;
-  price: string;
+  price?: string;
 }
 
 export interface TicketOwner {
-  id: string;
-  name: string;
-  email: string;
+  id?: string;
+  name?: string;
+  email?: string;
 }
 
 export interface TicketDetails {
   id: string;
   ticket_type: TicketType;
-  owner: TicketOwner;
+  owner?: TicketOwner;
   ticket_number: string;
   status: string;
   checked_in_at: string;
-  checked_in_by: string;
-  purchase_price: string;
-  created_at: string;
+  checked_in_by?: string;
+  purchase_price?: string;
+  created_at?: string;
 }
 
 export interface EventDetails {
@@ -54,7 +54,7 @@ export interface EventDetails {
 export interface CheckInByDetails {
   id: string;
   name: string;
-  email: string;
+  email?: string;
 }
 
 export interface CheckIn extends BaseCheckInEntity {
@@ -149,6 +149,7 @@ export interface CheckInQueryParams {
   ordering?: string;
   page?: number;
   page_size?: number;
+  verbose?: boolean;
 }
 
 export interface CheckInDeviceQueryParams {

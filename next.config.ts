@@ -14,6 +14,16 @@ try {
 
 const nextConfig: NextConfig = {
   /* config options here */
+  reactStrictMode: false,
+  swcMinify: true,
+  eslint: { ignoreDuringBuilds: true },
+  productionBrowserSourceMaps: false,
+  optimizeFonts: true,
+  typescript: { ignoreBuildErrors: true },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error"] } : false,
+    reactRemoveProperties: true,
+  },
   experimental: {
     optimizePackageImports: [
       "@radix-ui/react-accordion",

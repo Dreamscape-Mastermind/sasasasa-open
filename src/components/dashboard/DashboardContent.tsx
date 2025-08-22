@@ -208,7 +208,7 @@ export default function DashboardContent() {
       : 0;
 
     // Placeholder for refunds (would need actual refund data)
-    const pendingRefunds = 3; // TODO: Calculate from actual refunds
+    const pendingRefunds = 0; // TODO: Calculate from actual refunds
 
     return {
       totalEvents,
@@ -464,8 +464,8 @@ export default function DashboardContent() {
               </p>
             </CardContent>
           </Card>
-
-          {/* Pending Refunds */}
+{/* 
+          Pending Refunds
           <Card className="hover:shadow-md transition-all rounded-xl border-2 border-muted/60 hover:border-destructive/40">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -483,7 +483,7 @@ export default function DashboardContent() {
                 Pending review
               </p>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Quick Event Access - Mobile Only */}

@@ -144,6 +144,7 @@ export interface DiscountQueryParams {
   search?: string;
   ordering?: string;
   page?: number;
+  verbose?: boolean;
 }
 
 export interface DiscountUsageQueryParams {

@@ -168,6 +168,7 @@ export interface FlashSaleQueryParams {
   search?: string;
   ordering?: string;
   page?: number;
+  verbose?: boolean;
 }
 
 export interface ActiveFlashSaleQueryParams {
