@@ -37,7 +37,7 @@ class DiscountService {
   ): Promise<DiscountsResponse> {
     return apiClient.get<DiscountsResponse>(
       `${this.baseUrl}/events/${eventId}/discounts`,
-      { params }
+      { params: { verbose: false, ...params } }
     );
   }
 

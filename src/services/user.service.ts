@@ -159,7 +159,7 @@ class UserService {
     data: Web3VerifyRequest
   ): Promise<AuthResponse> {
     return apiClient.post<AuthResponse>(`${this.siweBaseUrl}/verify`, data, {
-      baseURL: process.env.NEXT_PUBLIC_APP_URL,
+      baseURL: process.env.NEXT_PUBLIC_SASASASA_API_URL,
     });
   }
 
