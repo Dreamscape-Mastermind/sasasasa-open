@@ -62,13 +62,23 @@ else
     fi
 fi
 
-# Install dependencies
-echo "Installing dependencies..."
-yarn install
+# Add before yarn install
+if [ -d "node_modules" ] && [ -f "yarn.lock" ]; then
+    echo "Using cached dependencies..."
+    yarn install --frozen-lockfile --prefer-offline
+else
+    echo "Installing dependencies..."
+    yarn install
+fi
 
-# Build the application
-echo "Building application..."
-yarn build
+# Add build caching
+if [ -d ".next" ]; then
+    echo "Using cached build..."
+    yarn build --no-lint
+else
+    echo "Building application..."
+    yarn build
+fi
 
 # Restart the application
 echo "Starting/restarting application with PM2..."

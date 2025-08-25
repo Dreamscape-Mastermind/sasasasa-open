@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev --turbo",
     "build": "next build",
+    "build:fast": "next build --no-lint",
+    "build:analyze": "ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
     "analyze": "ANALYZE=true yarn build",
