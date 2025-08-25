@@ -14,13 +14,6 @@ try {
 
 const nextConfig: NextConfig = {
   /* config options here */
-  reactStrictMode: false,
-  eslint: { ignoreDuringBuilds: true },
-  productionBrowserSourceMaps: false,
-  typescript: { ignoreBuildErrors: true },
-  compiler: {
-    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error"] } : false,
-  },
   optimizePackageImports: [
     "@radix-ui/react-accordion",
     "@radix-ui/react-alert-dialog",
