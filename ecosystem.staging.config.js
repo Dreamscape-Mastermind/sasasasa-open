@@ -7,7 +7,7 @@ module.exports = {
       args: "start", // Arguments for the command
       env: {
         NODE_ENV: "production", // Sets production environment
-        PORT: 3000, // Port for Next.js
+        PORT: 3001, // Port for Next.js
       },
       watch: true,
       max_memory_restart: "1G",
