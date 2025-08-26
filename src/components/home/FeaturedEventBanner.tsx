@@ -141,31 +141,31 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
       className="block group relative cursor-pointer"
     >
       <motion.div
-        initial={enableMotion ? "hidden" : false}
-        animate={enableMotion ? "visible" : false}
-        variants={enableMotion ? containerVariants : undefined}
+        initial={enableMotion ? "hidden" : "visible"}
+        animate={"visible"}
+        variants={containerVariants}
         className="relative w-full h-[450px] sm:h-[450px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-xl mb-8"
       >
         <Image
           src={event.cover_image || "/placeholder-event.jpg"}
           alt={event.title}
           fill
-          className="object-cover object-center transition-transform duration-300 group-hover:scale-102"
+          className="object-cover object-center transition-transform duration-300 group-hover:scale-102 z-0"
           priority
           style={{
             transform: enableMotion ? "scale(1.1)" : undefined,
             animation: enableMotion ? "zoomOut 1.5s ease-out forwards" : undefined,
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 sm:from-black/80 via-black/60 sm:via-black/40 to-transparent">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 sm:from-black/80 via-black/60 sm:via-black/40 to-transparent z-20">
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 sm:from-black/30 via-transparent to-transparent" />
           <motion.div
-            className="absolute bottom-0 left-0 p-2 sm:p-6 md:p-8 w-full backdrop-blur-[2px] sm:backdrop-blur-[1px]"
-            variants={enableMotion ? containerVariants : undefined}
+            className="absolute bottom-0 left-0 p-2 sm:p-6 md:p-8 w-full backdrop-blur-0 sm:backdrop-blur-[1px] z-30"
+            variants={containerVariants}
           >
             <motion.div
               className="flex items-center my-4 gap-1.5 sm:gap-3 mb-2 sm:mb-3"
-              variants={enableMotion ? itemVariants : undefined}
+              variants={itemVariants}
             >
               <motion.span
                 className="inline-block px-2 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm font-semibold bg-primary rounded-full text-white"
@@ -184,14 +184,14 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
             </motion.div>
 
             <motion.h2
-              variants={enableMotion ? itemVariants : undefined}
+              variants={itemVariants}
               className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-3 text-white drop-shadow-lg"
             >
               {event.title}
             </motion.h2>
 
             <motion.p
-              variants={enableMotion ? itemVariants : undefined}
+              variants={itemVariants}
               className="text-sm sm:text-base text-gray-100 max-w-3xl leading-relaxed overflow-hidden max-h-28 md:max-h-32 line-clamp-4 md:line-clamp-6
                 drop-shadow-lg text-shadow-sm mb-4 font-medium
                 [text-shadow:_0_1px_2px_rgba(0,0,0,0.8)]"
@@ -202,7 +202,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
             {event.performers && event.performers.length > 0 && (
               <motion.div
                 className="flex flex-wrap justify-between gap-2 sm:gap-3 mt-2 w-full"
-                variants={enableMotion ? containerVariants : undefined}
+                variants={containerVariants}
               >
                 {event.performers.map((performer) => (
                   <motion.a
@@ -215,7 +215,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
                       hover:text-primary transition-colors duration-200
                       flex items-center gap-2 drop-shadow-lg
                       [text-shadow:_0_1px_2px_rgba(0,0,0,0.8)]"
-                    variants={enableMotion ? itemVariants : undefined}
+                    variants={itemVariants}
                     whileHover={enableMotion ? { scale: 1.05 } : undefined}
                     whileTap={enableMotion ? { scale: 0.95 } : undefined}
                   >
@@ -237,7 +237,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
             )}
 
             <motion.div
-              variants={enableMotion ? itemVariants : undefined}
+              variants={itemVariants}
               className="mt-4 sm:mt-6 flex items-center gap-2 sm:gap-4 md:justify-start"
             >
               {isFlashSaleActive && activeFlashSale && (
@@ -259,7 +259,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
               )}
             </motion.div>
             <motion.div
-              variants={enableMotion ? itemVariants : undefined}
+              variants={itemVariants}
               className="mt-4 sm:mt-6 flex items-center gap-2 sm:gap-4 md:justify-start"
             >
               <Button className="bg-red-600 w-full rounded-[4rem] hover:bg-primary/90 text-white md:w-auto md:px-8">
@@ -281,7 +281,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
           </motion.div>
         </div>
 
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 z-10 pointer-events-none" />
       </motion.div>
     </div>
   );

@@ -9,10 +9,16 @@ on:
 jobs:
   deploy-to-staging:
     runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-staging-${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4  # Updated to the latest version
+        with:
+          fetch-depth: 1
+          clean: true
 
       - name: Install SSH Key
         uses: webfactory/ssh-agent@v0.8.0  # Updated to the latest version
@@ -22,11 +28,20 @@ jobs:
 
       - name: Copy Files to VPS
         run: |
-          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
+          rsync -az --delete --omit-dir-times --no-perms --no-group --no-owner \
+            -e "ssh -o StrictHostKeyChecking=no" \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='node_modules' \
             --exclude='.next' \
+            --exclude='analyze' \
+            --exclude='contracts' \
+            --exclude='ignition' \
+            --exclude='memory-bank' \
+            --exclude='nginx' \
+            --exclude='test' \
+            --exclude='*.md' \
+            --exclude='deployment-*.json' \
             . ${{ secrets.SSH_USER }}@${{ secrets.VPS_IP }}:/var/www/sasasasa/staging
 
       - name: Upload Environment Variables

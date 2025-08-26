@@ -13,7 +13,29 @@ try {
 }
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  compress: false,
+  images: {
+    remotePatterns: [
+      {
+        hostname: "localhost",
+      },
+      {
+        hostname: "sasasasa.co",
+      },
+      {
+        hostname: "api.sasasasa.co",
+      },
+      {
+        hostname: "staging.sasasasa.co",
+      },
+      {
+        hostname: "staging-api.sasasasa.co",
+      },
+    ],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96],
+  },
+  // Add build optimizations
   experimental: {
     optimizePackageImports: [
       "@radix-ui/react-accordion",
@@ -52,33 +74,7 @@ const nextConfig: NextConfig = {
       "@tiptap/extension-text-align",
       "@tiptap/extension-typography",
       "@tiptap/extension-underline",
-    ],
-    // Performance optimizations
-    optimizeCss: true,
-  },
-  // Disable compression
-  compress: false,
-  // Optimize images
-  images: {
-    remotePatterns: [
-      {
-        hostname: "localhost",
-      },
-      {
-        hostname: "sasasasa.co",
-      },
-      {
-        hostname: "api.sasasasa.co",
-      },
-      {
-        hostname: "staging.sasasasa.co",
-      },
-      {
-        hostname: "staging-api.sasasasa.co",
-      },
-    ],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    imageSizes: [16, 32, 48, 64, 96],
+    ]
   },
   // async rewrites() {
   //   return [

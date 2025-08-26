@@ -185,11 +185,13 @@ export function CheckInHistory({
                 <td className="px-6 py-4">
                   <div>
                     <div className="text-sm font-medium text-foreground">
-                      {record.ticket_details.owner.name}
+                      {record.ticket_details.owner?.name ?? "—"}
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {record.ticket_details.owner.email}
-                    </div>
+                    {record.ticket_details.owner?.email && (
+                      <div className="text-sm text-muted-foreground">
+                        {record.ticket_details.owner.email}
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-foreground font-mono">
@@ -200,9 +202,11 @@ export function CheckInHistory({
                     <div className="text-sm font-medium text-foreground">
                       {record.ticket_details.ticket_type.name}
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {record.ticket_details.ticket_type.price}
-                    </div>
+                    {record.ticket_details.ticket_type.price && (
+                      <div className="text-sm text-muted-foreground">
+                        {record.ticket_details.ticket_type.price}
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-muted-foreground">

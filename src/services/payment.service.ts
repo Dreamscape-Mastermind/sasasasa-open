@@ -39,7 +39,7 @@ class PaymentService {
     params?: PaymentQueryParams
   ): Promise<PaymentsResponse> {
     return apiClient.get<PaymentsResponse>(`${this.baseUrl}/payments`, {
-      params,
+      params: { verbose: false, ...params },
     });
   }
 

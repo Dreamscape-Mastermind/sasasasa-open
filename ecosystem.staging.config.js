@@ -6,13 +6,10 @@ module.exports = {
       script: "yarn", // Command to run
       args: "start", // Arguments for the command
       env: {
-        NODE_ENV: "production", // Sets production environment for Next.js
-        PORT: 3001, // Port for Next.js staging
-        DEPLOYMENT_ENV: "staging", // Custom environment identifier
+        NODE_ENV: "production", // Sets production environment
+        PORT: 3001, // Port for Next.js
       },
-      instances: 1,
-      exec_mode: "fork",
-      watch: false,
+      watch: true,
       max_memory_restart: "1G",
       error_file: "/var/log/pm2/sasasasa-staging-error.log",
       out_file: "/var/log/pm2/sasasasa-staging-out.log",

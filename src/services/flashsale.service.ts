@@ -38,7 +38,7 @@ class FlashSaleService {
   ): Promise<FlashSalesResponse> {
     return apiClient.get<FlashSalesResponse>(
       `${this.baseUrl}/events/${eventId}/flash-sales`,
-      { params }
+      { params: { verbose: false, ...params } }
     );
   }
 

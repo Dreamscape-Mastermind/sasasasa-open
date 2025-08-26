@@ -111,7 +111,7 @@ export default function HomeContent() {
     (featuredEvents?.result?.results?.length || 0) > 1;
 
   return (
-    <main className="container mx-auto px-2">
+    <main className="mx-0 px-0">
       <div className="min-h-screen">
         <Hero />
         {isLoadingFeatured ? (

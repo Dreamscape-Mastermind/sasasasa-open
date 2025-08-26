@@ -88,28 +88,27 @@ class UserService {
   }
 
   public async getRoles(): Promise<RolesResponse> {
-    // Check if roles are cached in localStorage
     const cachedRoles = getUserRoles();
     if (cachedRoles) {
+      apiClient
+        .get<RolesResponse>(`${this.baseUrl}/me/roles`)
+        .then(async (response) => {
+          if (response?.result?.roles) {
+            await setUserRoles(response.result.roles);
+          }
+        })
+        .catch(() => {});
       return {
         status: "success",
-        result: {
-          roles: cachedRoles,
-        },
+        result: { roles: cachedRoles },
         message: "Roles retrieved from cache",
       };
     }
 
-    // If not cached, fetch from API
-    const response = await apiClient.get<RolesResponse>(
-      `${this.baseUrl}/me/roles`
-    );
-
-    // Cache the roles if the request was successful
+    const response = await apiClient.get<RolesResponse>(`${this.baseUrl}/me/roles`);
     if (response.result?.roles) {
       await setUserRoles(response.result.roles);
     }
-
     return response;
   }
 
@@ -159,7 +158,7 @@ class UserService {
     data: Web3VerifyRequest
   ): Promise<AuthResponse> {
     return apiClient.post<AuthResponse>(`${this.siweBaseUrl}/verify`, data, {
-      baseURL: process.env.NEXT_PUBLIC_APP_URL,
+      baseURL: process.env.NEXT_PUBLIC_SASASASA_API_URL,
     });
   }
 

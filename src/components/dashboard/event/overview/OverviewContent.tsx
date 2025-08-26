@@ -107,10 +107,10 @@ export function OverviewContent({ eventId }: { eventId: string }) {
           </div>
         </section>
 
-        {/* Team Management Section */}
+        {/* Team Management Section
         <section className="rounded-3xl bg-card p-8 shadow-lg ring-1 ring-border/50 sm:p-12">
           <TeamMembersForm />
-        </section>
+        </section> */}
       </div>
     </div>
   );

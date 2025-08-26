@@ -203,6 +203,7 @@ export interface PaymentQueryParams {
   page?: number;
   page_size?: number;
   event?: string;
+  verbose?: boolean;
 }
 
 export interface PaymentProviderQueryParams {
