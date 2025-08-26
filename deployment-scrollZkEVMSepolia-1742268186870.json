@@ -1,0 +1,9 @@
+{
+  "network": "scrollZkEVMSepolia",
+  "factoryAddress": "0x7493Ef6d17cA29810422948e6197B21548B5D544",
+  "sampleEventAddress": "0xe3771315907d10a941e016f5468F249EcEe41457",
+  "platformAdmin": "0xbAAa14a29211E06FFB9c8197A154Bb64E55b42BB",
+  "platformWallet": "0xbAAa14a29211E06FFB9c8197A154Bb64E55b42BB",
+  "defaultPlatformFee": 250,
+  "timestamp": "2025-03-18T03:23:06.870Z"
+}
