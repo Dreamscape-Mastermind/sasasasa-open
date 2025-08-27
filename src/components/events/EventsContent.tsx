@@ -17,6 +17,7 @@ import {
 import { Filter, SlidersHorizontal } from "lucide-react";
 import { useLogger } from "@/hooks/useLogger";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { RotateCcw } from "lucide-react";
 
 export function EventsContent() {
   const logger = useLogger({ context: "EventsPage" });
@@ -24,6 +25,8 @@ export function EventsContent() {
   const { useEvents } = useEvent();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [resetKey, setResetKey] = useState(0);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<EventQueryParams>({
     status: EventStatus.PUBLISHED,
     page: 1,
@@ -31,6 +34,41 @@ export function EventsContent() {
   });
 
   const { data, isLoading, error } = useEvents(filters);
+
+  const resultsCount = data?.result?.count ?? 0;
+
+  const hasActiveFilters = (() => {
+    const defaultFilters: EventQueryParams = {
+      status: EventStatus.PUBLISHED,
+      page: 1,
+      page_size: pageSize,
+    };
+    const keys = new Set([
+      ...Object.keys(filters ?? {}),
+      ...Object.keys(defaultFilters),
+    ]);
+    for (const key of keys) {
+      const current = (filters as Record<string, unknown>)[key];
+      const def = (defaultFilters as Record<string, unknown>)[key];
+      if (current !== def && !(current == null && def == null)) {
+        return true;
+      }
+    }
+    return false;
+  })();
+
+  const activeFilterCount = (() => {
+    const excluded = new Set(["page", "page_size"]);
+    let count = 0;
+    for (const [key, value] of Object.entries(filters ?? {})) {
+      if (excluded.has(key)) continue;
+      if (key === "status" && value === EventStatus.PUBLISHED) continue;
+      if (value === null || value === undefined) continue;
+      if (typeof value === "string" && value.trim() === "") continue;
+      count += 1;
+    }
+    return count;
+  })();
 
   const handleFilterChange = useCallback(
     (newFilters: EventQueryParams) => {
@@ -87,6 +125,14 @@ export function EventsContent() {
     },
     [logger, analytics]
   );
+
+  const handleResetFilters = useCallback(() => {
+    logger.info("Resetting filters");
+    analytics.trackUserAction("reset_filters", "filter", "all");
+    setFilters({ status: EventStatus.PUBLISHED, page: 1, page_size: pageSize });
+    setPage(1);
+    setResetKey((k) => k + 1);
+  }, [logger, analytics, pageSize]);
   
   const totalPages = data?.result?.count
     ? Math.ceil(data.result.count / pageSize)
@@ -105,16 +151,36 @@ export function EventsContent() {
         <aside className="lg:w-1/4 xl:w-1/5">
           <div className="sticky top-24">
             <div className="hidden lg:block p-6 bg-muted/30 rounded-2xl border">
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
                 <SlidersHorizontal className="h-5 w-5" /> Filters
               </h3>
+              <div className="flex items-center justify-between mb-4">
+                <span
+                  aria-live="polite"
+                  className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary"
+                >
+                  {activeFilterCount} active
+                </span>
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-lg"
+                    onClick={handleResetFilters}
+                    aria-label="Reset all filters"
+                  >
+                    <RotateCcw className="h-4 w-4 mr-1" /> Reset
+                  </Button>
+                )}
+              </div>
               <EventFilters
+                key={resetKey}
                 filters={filters}
                 onFilterChange={handleFilterChange}
               />
             </div>
             <div className="lg:hidden">
-              <Sheet>
+              <Sheet open={isMobileFiltersOpen} onOpenChange={setIsMobileFiltersOpen}>
                 <SheetTrigger asChild>
                   <Button variant="outline" className="w-full rounded-xl">
                     <Filter className="mr-2 h-4 w-4" />
@@ -125,11 +191,51 @@ export function EventsContent() {
                   <SheetHeader>
                     <SheetTitle>Filters</SheetTitle>
                   </SheetHeader>
-                  <div className="py-6">
+                  <div className="py-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <span
+                        aria-live="polite"
+                        className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary"
+                      >
+                        {activeFilterCount} active
+                      </span>
+                      {hasActiveFilters && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="rounded-lg"
+                          onClick={handleResetFilters}
+                          aria-label="Reset all filters"
+                        >
+                          <RotateCcw className="h-4 w-4 mr-1" /> Reset
+                        </Button>
+                      )}
+                    </div>
                     <EventFilters
+                      key={resetKey}
                       filters={filters}
                       onFilterChange={handleFilterChange}
                     />
+                    <div className="mt-6 flex items-center gap-3">
+                      <Button
+                        variant="default"
+                        className="flex-1 rounded-xl"
+                        onClick={() => setIsMobileFiltersOpen(false)}
+                        aria-label="Apply filters and close"
+                      >
+                        Show {resultsCount > 0 ? resultsCount : ""} results
+                      </Button>
+                      {hasActiveFilters && (
+                        <Button
+                          variant="ghost"
+                          className="rounded-xl"
+                          onClick={handleResetFilters}
+                          aria-label="Reset all filters"
+                        >
+                          Reset
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </SheetContent>
               </Sheet>

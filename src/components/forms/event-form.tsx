@@ -26,7 +26,11 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { useEvent } from "@/hooks/useEvent";
+import { EventStatus } from "@/types/event";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { ROUTES } from "@/lib/constants";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { EventDetailsForm } from "./event-form-parts/EventDetailsForm";
 import { EventDateTimeForm } from "./event-form-parts/EventDateTimeForm";
@@ -81,12 +85,14 @@ const formSchema = z
   );
 
 export default function EventForm( { onFormSubmitSuccess, eventId }: { onFormSubmitSuccess?: () => void , eventId?: string}) {
+  const router = useRouter();
   // State to track image handling
   const [isEditing, setIsEditing] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
   const [imageAction, setImageAction] = useState<'keep' | 'upload' | 'remove'>('keep');
   const [isLoading, setIsLoading] = useState(false);
+  const [preservedFormData, setPreservedFormData] = useState<any>(null);
 
   // Get the event hooks
   const {
@@ -104,6 +110,7 @@ export default function EventForm( { onFormSubmitSuccess, eventId }: { onFormSub
 
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent(eventId ||'');
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -125,31 +132,80 @@ export default function EventForm( { onFormSubmitSuccess, eventId }: { onFormSub
   });
 
   useEffect(() => {
-    if (createEvent.isSuccess) {
-      setIsEditing(true); // Set editing mode to true after successful creation
+    if (createEvent.isSuccess && createEvent.data?.result?.id) {
+      const newEventId = createEvent.data.result.id;
+      setIsEditing(true);
+      
+      // Store current form data in React state and sessionStorage
+      const currentFormData = form.getValues();
+      setPreservedFormData(currentFormData);
+      sessionStorage.setItem('eventFormData', JSON.stringify(currentFormData));
+      
+      // Use Next.js router for navigation instead of window.history
+      router.replace(ROUTES.DASHBOARD_EVENT_EDIT(newEventId));
+      
+      // Call success callback after navigation
+      setTimeout(() => {
+        onFormSubmitSuccess?.();
+      }, 100);
     }
+  }, [createEvent.isSuccess, createEvent.data, router, onFormSubmitSuccess, form]);
+
+  // Cleanup sessionStorage on unmount
+  useEffect(() => {
+    return () => {
+      // Clear React state
+      setPreservedFormData(null);
+      
+      // Only clear sessionStorage if we're not in the middle of a navigation
+      if (!createEvent.isSuccess) {
+        sessionStorage.removeItem('eventFormData');
+      }
+    };
   }, [createEvent.isSuccess]);
 
   // Populate the form with event data if available
   useEffect(() => {
     if (eventData?.result) {
       setIsLoading(true);
-      form.reset({
-        title: eventData.result.title,
-        description: eventData.result.description,
-        start_date: new Date(eventData.result.start_date),
-        start_time: new Date(eventData.result.start_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-        end_date: new Date(eventData.result.end_date),
-        end_time: new Date(eventData.result.end_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-        timezone: eventData.result.timezone,
-        venue: eventData.result.venue,
-        capacity: eventData.result.capacity,
-        facebook_url: eventData.result.facebook_url || "",
-        website_url: eventData.result.website_url || "",
-        linkedin_url: eventData.result.linkedin_url || "",
-        instagram_url: eventData.result.instagram_url || "",
-        twitter_url: eventData.result.twitter_url || "",
-      });
+      
+      // Check if we have preserved form data from create mode
+      if (preservedFormData && !isEditing) {
+        // Use React state first
+        form.reset(preservedFormData);
+        setPreservedFormData(null); // Clear after use
+        sessionStorage.removeItem('eventFormData'); // Clean up
+      } else {
+        // Check sessionStorage as fallback
+        const storedData = sessionStorage.getItem('eventFormData');
+        if (storedData && !isEditing) {
+          try {
+            const parsedData = JSON.parse(storedData);
+            form.reset(parsedData);
+            sessionStorage.removeItem('eventFormData'); // Clean up
+          } catch (error) {
+            console.warn('Failed to restore preserved form data:', error);
+          }
+        } else {
+          // Use server data for edit mode
+          form.reset({
+            title: eventData.result.title,
+            description: eventData.result.description,
+            start_date: new Date(eventData.result.start_date),
+            start_time: new Date(eventData.result.start_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+            end_date: new Date(eventData.result.end_date),
+            end_time: new Date(eventData.result.end_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+            timezone: eventData.result.timezone,
+            venue: eventData.result.venue,
+            capacity: eventData.result.capacity,
+            facebook_url: eventData.result.facebook_url || "",
+            website_url: eventData.result.website_url || "",
+            linkedin_url: eventData.result.linkedin_url || "",
+            instagram_url: eventData.result.instagram_url || "",
+            twitter_url: eventData.result.twitter_url || "",
+          });
+        }
+      }
       
       const existingImageUrl = eventData.result.cover_image;
       if (existingImageUrl) {
@@ -175,7 +231,7 @@ export default function EventForm( { onFormSubmitSuccess, eventId }: { onFormSub
       toast.error(errorMessage);
       setIsLoading(false);
     }
-  }, [eventData, eventError, form]);
+  }, [eventData, eventError, form, isEditing, preservedFormData]);
 
   const onSubmit = async (data) => {
 
@@ -216,15 +272,9 @@ export default function EventForm( { onFormSubmitSuccess, eventId }: { onFormSub
         await updateEvent.mutateAsync(processedData);
         toast.success("Event updated successfully!");
       } else {
-        const response = await createEvent.mutateAsync(processedData);
+        await createEvent.mutateAsync(processedData);
         toast.success("Event created successfully!");
-        
-        // Redirect to edit mode after creation if needed
-        if (response?.result?.id) {
-          window.history.replaceState({}, '', `?id=${response.result.id}`);
-          setIsEditing(true);
-          onFormSubmitSuccess?.();
-        }
+        // Navigation will be handled by the useEffect above
       }
     } catch (error) {
       console.error("Form submission failed:", error);
@@ -232,6 +282,8 @@ export default function EventForm( { onFormSubmitSuccess, eventId }: { onFormSub
       toast.error(errorMessage);
     }
   };
+
+  const handleRevertToDraft = undefined as unknown as () => Promise<void>;
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -429,6 +481,7 @@ export default function EventForm( { onFormSubmitSuccess, eventId }: { onFormSub
                         "Create Event"
                       )}
                     </Button>
+                    {false}
                   </CardContent>
                 </Card>
               </div>

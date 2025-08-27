@@ -8,6 +8,7 @@ import { FlashSalesCalendar } from "./FlashSalesCalendar";
 import { PromotionAnalytics } from "./PromotionAnalytics";
 import { PromotionsOverview } from "./PromotionsOverview";
 import { useState } from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function PromotionsContent({ eventId }: { eventId: string }) {
   const [activeTab, setActiveTab] = useState("overview");
@@ -52,8 +53,39 @@ export function PromotionsContent({ eventId }: { eventId: string }) {
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="bg-card rounded-lg shadow-sm mb-8">
+        {/* Mobile bento grid */}
+        <div className="sm:hidden grid grid-cols-2 gap-2">
+          {[
+            { key: "overview", label: "Overview", icon: TrendingUp },
+            { key: "discount-codes", label: "Discount Codes", icon: Percent },
+            { key: "flash-sales", label: "Flash Sales", icon: Clock },
+            { key: "analytics", label: "Analytics", icon: Calendar },
+          ].map(({ key, label, icon: Icon }) => (
+            <TooltipProvider key={key}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    aria-label={`Go to ${label}`}
+                    aria-pressed={activeTab === key}
+                    onClick={() => setActiveTab(key)}
+                    className={`rounded-xl border p-4 flex flex-col items-center gap-2 transition ${
+                      activeTab === key
+                        ? "bg-primary text-primary-foreground border-transparent shadow"
+                        : "bg-card text-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="text-xs font-medium text-center">{label}</span>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">{label}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ))}
+        </div>
+
+        {/* Navigation Tabs (desktop) */}
+        <div className="hidden sm:block bg-card rounded-lg shadow-sm mb-8">
           <div className="border-b border-border">
             <nav className="flex overflow-x-auto no-scrollbar">
               <button

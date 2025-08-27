@@ -15,7 +15,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateTime } from "@/lib/utils";
 import { use } from "react";
 import { useEvent } from "@/hooks/useEvent";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function EventLayout({
   children,
@@ -26,9 +27,11 @@ export default function EventLayout({
 }) {
   const pathname = usePathname();
   const { id: eventId } = use(params);
+  const router = useRouter();
 
-  const { useEvent: useEventQuery } = useEvent();
+  const { useEvent: useEventQuery, useMyEvents } = useEvent();
   const { data: eventData, isLoading, error } = useEventQuery(eventId);
+  const { data: myEventsData } = useMyEvents({ enabled: !!eventId });
 
   if (isLoading) {
     return (
@@ -37,7 +40,7 @@ export default function EventLayout({
           <Skeleton className="h-10 w-96" />
           <Skeleton className="h-6 w-48" />
         </div>
-        <nav className="mb-8 bg-muted border rounded-lg">
+        <nav className="hidden sm:block mb-8 bg-muted border rounded-lg">
           <div className="flex justify-between px-6 py-3">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="flex flex-col items-center">
@@ -52,10 +55,13 @@ export default function EventLayout({
     );
   }
 
-  if (!eventData?.result) {
+  const myEventIds = (myEventsData?.result?.results || []).map((e) => e.id);
+  const isOwned = myEventIds.includes(eventId);
+
+  if (!eventData?.result || (!isLoading && !isOwned)) {
     return (
       <div className="text-center mt-10 text-lg text-muted-foreground">
-        Event not found.
+        Event not found or you do not have access.
       </div>
     );
   }
@@ -74,7 +80,7 @@ export default function EventLayout({
               {formatDateTime(event.start_date)}
             </p>
           </div>
-          <nav className="mb-8 bg-muted border rounded-lg">
+          <nav className="hidden sm:block mb-8 bg-muted border rounded-lg">
             <div
               className="
                 flex
@@ -90,18 +96,25 @@ export default function EventLayout({
               "
               style={{ WebkitOverflowScrolling: "touch" }}
             >
-              <Link
-                href={ROUTES.DASHBOARD_EVENT_DETAILS(eventId)}
-                className={`flex flex-col items-center min-w-max text-xs sm:text-sm px-2 py-1 hover:text-primary relative transition-all
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={ROUTES.DASHBOARD_EVENT_DETAILS(eventId)}
+                      className={`flex flex-col items-center min-w-max text-xs sm:text-sm px-2 py-1 hover:text-primary relative transition-all
                   ${
                     pathname === ROUTES.DASHBOARD_EVENT_DETAILS(eventId)
                       ? "text-primary after:absolute after:bottom-[-8px] after:left-0 after:w-full after:h-0.5 after:bg-primary"
                       : "text-muted-foreground"
                   }`}
-              >
-                <BarChart2 className="h-5 w-5 mb-0.5 sm:mb-1" />
-                Overview
-              </Link>
+                    >
+                      <BarChart2 className="h-5 w-5 mb-0.5 sm:mb-1" />
+                      Overview
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">Overview</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <Link
                 href={ROUTES.DASHBOARD_EVENT_ANALYTICS(eventId)}
                 className={`flex flex-col items-center text-sm hover:text-primary relative ${

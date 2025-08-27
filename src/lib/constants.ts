@@ -63,6 +63,7 @@ export const ROUTES = {
   DASHBOARD_EVENT_TICKETS: (id: string) => `/dashboard/events/${id}/tickets`,
   DASHBOARD_EVENT_CHECK_IN: (id: string) => `/dashboard/events/${id}/checkin`,
   SEARCH: "/search",
+  TEAM_INVITE: (token: string) => `/team-invite/${token}`,
 };
 
 // Route protection configuration
@@ -85,6 +86,7 @@ export const ROUTE_PROTECTION = {
     ROUTES.VERIFY_OTP,
     ROUTES.UNAUTHORIZED,
     ROUTES.SEARCH,
+    ROUTES.TEAM_INVITE("*"),
   ],
   // Auth routes (login, register, etc.)
   AUTH: [ROUTES.LOGIN, ROUTES.VERIFY_OTP],

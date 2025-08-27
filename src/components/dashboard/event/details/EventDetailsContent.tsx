@@ -14,6 +14,7 @@ import { TicketType } from "@/types/ticket";
 import moment from "moment-timezone";
 import { useEvent } from "@/hooks/useEvent";
 import { useRouter } from "next/navigation";
+import { ROUTES } from "@/lib/constants";
 
 export function EventDetailsContent({ eventId }: { eventId: string }) {
   const { useEvent: useEventQuery } = useEvent();
@@ -96,7 +97,7 @@ export function EventDetailsContent({ eventId }: { eventId: string }) {
                 className="ml-2"
                 onClick={() => {
                   if (currentEvent?.id) {
-                    router.push(`/dashboard/events/edit/${currentEvent.id}`);
+                    router.push(ROUTES.DASHBOARD_EVENT_EDIT(currentEvent.id));
                   }
                 }}
               >

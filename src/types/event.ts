@@ -227,6 +227,7 @@ export interface TeamMemberQueryParams {
   search?: string;
   ordering?: string;
   page?: number;
+  page_size?: number;
 }
 
 export interface PerformerQueryParams {

@@ -3,7 +3,6 @@
 import { EditEventContent } from "@/components/dashboard/event/edit/EditEventContent";
 import Spinner from "@/components/ui/spinner";
 import { Suspense } from "react";
-
 type Props = {
   params: Promise<{ id: string }>;
 };
