@@ -12,8 +12,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const { useEvents } = useEvent();
-  const { data: eventsData, isLoading: eventsLoading } = useEvents();
+  const { useMyEvents } = useEvent();
+  const { data: eventsData, isLoading: eventsLoading } = useMyEvents();
 
   const events = eventsData?.result?.results || [];
 

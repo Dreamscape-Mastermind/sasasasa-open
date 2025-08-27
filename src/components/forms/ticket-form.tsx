@@ -37,9 +37,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useTicket } from "@/hooks/useTicket";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/contexts/AuthContext";
-import { UserRole } from "@/types/user";
 import styles from '@/components/Datepicker.module.css';
-import BetaProgramPopup from "@/components/dashboard/event/tickets/BetaProgramPopup";
 
 function combineDateTime(date: Date, time: string): Date {
   const [hours, minutes] = time.split(":").map(Number);
@@ -50,8 +48,8 @@ function combineDateTime(date: Date, time: string): Date {
 
 const ticketSchema = z.object({
   name: z.string().min(1, "Ticket name is required"),
-  price: z.number().min(0, "Price must be a positive number"),
-  quantity: z.number().min(1, "Quantity must be at least 1"),
+  price: z.coerce.number().min(0, "Price must be a positive number"),
+  quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
   description: z.string().min(1, "Description is required"),
   sale_start_date: z.date(),
   sale_end_date: z.date(),
@@ -92,8 +90,8 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
   const deleteTicket = useDeleteTicketType(eventId);
   const formRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { user, hasRole } = useAuth();
-  const isBeta = !!user?.beta || hasRole(UserRole.BETA_TESTER);
+  const { user } = useAuth();
+  const isBeta = true;
 
   const { useEvent: useEventQuery, useUpdateEvent } = useEvent();
   const { data: eventData, error: eventError } = useEventQuery(eventId);
@@ -125,7 +123,7 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
       const ticket = eventData.result.available_tickets[0];
       form.reset({
         name: ticket.name,
-        price: isBeta ? parseInt(ticket.price.toString(), 10) : 0,
+        price: parseInt(ticket.price.toString(), 10),
         quantity: ticket.quantity,
         description: ticket.description,
         sale_start_date: new Date(ticket.sale_start_date),
@@ -133,14 +131,9 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
         is_active: ticket.is_active,
       });
     }
-  }, [eventData, form, user?.beta]);
+  }, [eventData, form]);
 
-  // Enforce free tickets for non-beta users
-  useEffect(() => {
-    if (!isBeta) {
-      form.setValue("price", 0);
-    }
-  }, [isBeta, form]);
+  
 
   const handleSubmit = async (data: TicketFormData) => {
     setIsLoading(true);
@@ -148,7 +141,7 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
     try {
       const ticketData: CreateTicketTypeRequest = {
         name: data.name,
-        price: isBeta ? parseInt(data.price.toString(), 10) : 0, // Enforce free tickets for non-beta users
+        price: parseInt(data.price.toString(), 10),
         quantity: parseInt(data.quantity.toString(), 10) || 0,
         description: data.description,
         sale_start_date: data.sale_start_date,
@@ -380,32 +373,21 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
                           <FormItem>
                             <FormLabel className="flex items-center gap-2">
                               Price
-                          {!isBeta && (
-                                <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-2 py-1 rounded-full text-xs font-medium">
-                                  Beta Only
-                                </span>
-                              )}
                             </FormLabel>
                             <FormControl>
                               <Input
                                 className={cn(
-                                  "rounded-full",
-                                  !isBeta && "bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+                                  "rounded-full"
                                 )}
                                 type="number"
-                                placeholder={isBeta ? "0.00" : "Free ticket only"}
-                                disabled={!isBeta}
-                                value={isBeta ? field.value : 0}
-                                onChange={isBeta ? field.onChange : () => { }}
+                                placeholder={"0.00"}
+                                value={field.value}
+                                onChange={(e) => {
+                                  const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                                  field.onChange(isNaN(value) ? 0 : value);
+                                }}
                               />
                             </FormControl>
-                            {!isBeta && (
-                              <BetaProgramPopup>
-                                <p className="text-sm text-amber-600 dark:text-amber-400 mt-1 cursor-pointer hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
-                                  💡 Join our beta program to unlock paid ticketing features
-                                </p>
-                              </BetaProgramPopup>
-                            )}
                             <FormMessage />
                           </FormItem>
                         )}

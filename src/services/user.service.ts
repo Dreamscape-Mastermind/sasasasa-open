@@ -36,7 +36,6 @@ class UserService {
   private static instance: UserService;
   private readonly baseUrl = "/api/v1/accounts";
   private readonly web3BaseUrl = "/api/v1/web3";
-  private readonly siweBaseUrl = "/api/web3/siwe";
 
   private constructor() {}
 
@@ -142,22 +141,24 @@ class UserService {
     data: Web3NonceRequest
   ): Promise<Web3NonceResponse> {
     return apiClient.post<Web3NonceResponse>(
-      `${this.siweBaseUrl}/nonce`,
+      `${this.web3BaseUrl}/nonce`,
       data,
-      { baseURL: process.env.NEXT_PUBLIC_APP_URL }
+      { baseURL: process.env.NEXT_PUBLIC_SASASASA_API_URL }
     );
   }
 
   private async _getWeb3Nonce(
     data: Web3NonceRequest
   ): Promise<Web3NonceResponse> {
-    return apiClient.post<Web3NonceResponse>(`${this.web3BaseUrl}/nonce`, data);
+    return apiClient.post<Web3NonceResponse>(`${this.web3BaseUrl}/nonce`, data, {
+      baseURL: process.env.NEXT_PUBLIC_SASASASA_API_URL,
+    });
   }
 
   public async verifyWeb3Signature(
     data: Web3VerifyRequest
   ): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(`${this.siweBaseUrl}/verify`, data, {
+    return apiClient.post<AuthResponse>(`${this.web3BaseUrl}/verify`, data, {
       baseURL: process.env.NEXT_PUBLIC_SASASASA_API_URL,
     });
   }
@@ -165,7 +166,9 @@ class UserService {
   private async _verifyWeb3Signature(
     data: Web3VerifyRequest
   ): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>(`${this.web3BaseUrl}/verify`, data);
+    return apiClient.post<AuthResponse>(`${this.web3BaseUrl}/verify`, data, {
+      baseURL: process.env.NEXT_PUBLIC_SASASASA_API_URL,
+    });
   }
 
   public async getNonce(data: Web3NonceRequest): Promise<Web3NonceResponse> {
@@ -181,7 +184,10 @@ class UserService {
   ): Promise<Web3RecapNonceResponse> {
     return apiClient.post<Web3RecapNonceResponse>(
       `${this.web3BaseUrl}/recap-nonce`,
-      data
+      data,
+      {
+        baseURL: process.env.NEXT_PUBLIC_SASASASA_API_URL,
+      }
     );
   }
 
@@ -190,7 +196,10 @@ class UserService {
   ): Promise<Web3RecapVerifyResponse> {
     return apiClient.post<Web3RecapVerifyResponse>(
       `${this.web3BaseUrl}/verify-recap`,
-      data
+      data,
+      {
+        baseURL: process.env.NEXT_PUBLIC_SASASASA_API_URL,
+      }
     );
   }
 

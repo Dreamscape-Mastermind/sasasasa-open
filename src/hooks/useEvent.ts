@@ -7,6 +7,7 @@ import type {
   PerformerQueryParams,
   TeamMemberQueryParams,
   UpdateEventRequest,
+  TeamMemberRole,
 } from "@/types/event";
 import type {
   EventAnalyticsExportRequest,
@@ -85,6 +86,16 @@ export const useEvent = () => {
     return useMutation({
       mutationFn: (id: string) => eventService.publishEvent(id),
       onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["events"] });
+      },
+    });
+  };
+
+  const useUnpublishEvent = () => {
+    return useMutation({
+      mutationFn: (id: string) => eventService.unpublishEvent(id),
+      onSuccess: (_, id) => {
+        queryClient.invalidateQueries({ queryKey: ["event", id] });
         queryClient.invalidateQueries({ queryKey: ["events"] });
       },
     });
@@ -193,6 +204,42 @@ export const useEvent = () => {
     });
   };
 
+  const useDeclineTeamInvitation = (eventId: string) => {
+    return useMutation({
+      mutationFn: (data: AcceptTeamInvitationRequest) =>
+        eventService.declineTeamInvitation(eventId, data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["team-members", eventId] });
+      },
+    });
+  };
+
+  const useResendTeamInvite = (eventId: string) => {
+    return useMutation({
+      mutationFn: (memberId: string) => eventService.resendTeamInvite(eventId, memberId),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["team-members", eventId] });
+      },
+    });
+  };
+
+  const useUpdateTeamMemberRole = (eventId: string) => {
+    return useMutation({
+      mutationFn: (data: { memberId: string; role: TeamMemberRole }) =>
+        eventService.updateTeamMemberRole(eventId, data.memberId, { role: data.role }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["team-members", eventId] });
+      },
+    });
+  };
+
+  const useMyInvites = (params?: { status?: "PENDING" | "ACCEPTED" | "DECLINED" }) => {
+    return useQuery({
+      queryKey: ["my-invites", params],
+      queryFn: () => eventService.listMyInvites(params),
+    });
+  };
+
   // User's Events
   const useMyEvents = (params?: EventQueryParams & { enabled?: boolean }) => {
     const { enabled = true, ...queryParams } = params || {};
@@ -211,6 +258,7 @@ export const useEvent = () => {
     useUpdateEvent,
     useDeleteEvent,
     usePublishEvent,
+    useUnpublishEvent,
     useCancelEvent,
     // Analytics
     useEventAnalytics,
@@ -229,6 +277,10 @@ export const useEvent = () => {
     useInviteTeamMember,
     useRemoveTeamMember,
     useAcceptTeamInvitation,
+    useDeclineTeamInvitation,
+    useResendTeamInvite,
+    useUpdateTeamMemberRole,
+    useMyInvites,
     // User's Events
     useMyEvents,
   };

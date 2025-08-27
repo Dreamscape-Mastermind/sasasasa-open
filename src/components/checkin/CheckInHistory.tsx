@@ -146,7 +146,47 @@ export function CheckInHistory({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Mobile cards */}
+      <div className="sm:hidden p-4 space-y-3">
+        {records.length === 0 ? (
+          <div className="text-center py-8 bg-muted rounded-lg">
+            <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground text-lg">No check-ins found</p>
+            <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
+          </div>
+        ) : (
+          records.map((record) => (
+            <div key={record.id} className="rounded-xl border p-4 bg-card">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {getStatusIcon(record.status)}
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(record.status)}`}>
+                    {getStatusText(record.status)}
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground">{formatDateTime(record.check_in_time)}</div>
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <div className="uppercase tracking-wide text-muted-foreground">Attendee</div>
+                  <div className="text-foreground truncate">{record.ticket_details.owner?.name ?? "—"}</div>
+                </div>
+                <div>
+                  <div className="uppercase tracking-wide text-muted-foreground">Ticket</div>
+                  <div className="font-mono text-foreground break-all">{record.ticket_details.ticket_number}</div>
+                </div>
+                <div className="col-span-2">
+                  <div className="uppercase tracking-wide text-muted-foreground">Type</div>
+                  <div className="text-foreground">{record.ticket_details.ticket_type.name}</div>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="bg-muted">
@@ -246,7 +286,7 @@ export function CheckInHistory({
       )}
 
       {records.length === 0 && (
-        <div className="text-center py-12 bg-muted rounded-b-lg">
+        <div className="hidden sm:block text-center py-12 bg-muted rounded-b-lg">
           <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground text-lg">No check-ins found</p>
           <p className="text-muted-foreground">

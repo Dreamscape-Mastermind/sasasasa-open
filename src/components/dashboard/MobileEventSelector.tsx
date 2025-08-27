@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronDown, Calendar, Plus, CheckCircle, Clock, MapPin, Search, X } from "lucide-react";
+import { ChevronDown, Calendar, Plus, CheckCircle, Clock, MapPin, Search, X, BarChart2, Users, Ticket, CreditCard, Megaphone, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,6 +16,7 @@ import { ROUTES } from "@/lib/constants";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import moment from "moment-timezone";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface MobileEventSelectorProps {
   events: Event[];
@@ -376,6 +377,88 @@ export function MobileEventSelector({
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
+      )}
+
+      {selectedEvent && (
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href={ROUTES.DASHBOARD_EVENT_DETAILS(selectedEvent.id)} className="rounded-xl border p-3 flex flex-col items-center gap-1 bg-card text-foreground hover:border-primary/40">
+                  <BarChart2 className="h-5 w-5" />
+                  <span className="text-xs font-medium">Overview</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Overview</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href={ROUTES.DASHBOARD_EVENT_ANALYTICS(selectedEvent.id)} className="rounded-xl border p-3 flex flex-col items-center gap-1 bg-card text-foreground hover:border-primary/40">
+                  <BarChart2 className="h-5 w-5" />
+                  <span className="text-xs font-medium">Analytics</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Analytics</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href={ROUTES.DASHBOARD_EVENT_ATTENDEES(selectedEvent.id)} className="rounded-xl border p-3 flex flex-col items-center gap-1 bg-card text-foreground hover:border-primary/40">
+                  <Users className="h-5 w-5" />
+                  <span className="text-xs font-medium">Attendees</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Attendees</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href={ROUTES.DASHBOARD_EVENT_TICKETS(selectedEvent.id)} className="rounded-xl border p-3 flex flex-col items-center gap-1 bg-card text-foreground hover:border-primary/40">
+                  <Ticket className="h-5 w-5" />
+                  <span className="text-xs font-medium">Tickets</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Tickets</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href={ROUTES.DASHBOARD_EVENT_PAYMENTS(selectedEvent.id)} className="rounded-xl border p-3 flex flex-col items-center gap-1 bg-card text-foreground hover:border-primary/40">
+                  <CreditCard className="h-5 w-5" />
+                  <span className="text-xs font-medium">Payments</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Payments</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href={ROUTES.DASHBOARD_EVENT_PROMOTIONS(selectedEvent.id)} className="rounded-xl border p-3 flex flex-col items-center gap-1 bg-card text-foreground hover:border-primary/40">
+                  <Megaphone className="h-5 w-5" />
+                  <span className="text-xs font-medium">Promotions</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Promotions</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href={ROUTES.DASHBOARD_EVENT_CHECK_IN(selectedEvent.id)} className="rounded-xl border p-3 flex flex-col items-center gap-1 bg-card text-foreground hover:border-primary/40">
+                  <CheckSquare className="h-5 w-5" />
+                  <span className="text-xs font-medium">Check-in</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Check-in</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       )}
 
       {/* Quick Actions */}

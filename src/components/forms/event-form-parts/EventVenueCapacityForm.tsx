@@ -12,7 +12,7 @@ const formSchema = z.object({
 });
 
 export function EventVenueCapacityForm() {
-  const { control, setValue } = useFormContext();
+  const { control, setValue, register } = useFormContext();
   const venueValue = useWatch({ control, name: "venue" });
 
   return (
@@ -24,11 +24,11 @@ export function EventVenueCapacityForm() {
           <FormItem>
             <FormLabel>Venue</FormLabel>
             <FormControl>
-              {/* <Input
-                placeholder="Enter event Venue"
+              <Input
+                placeholder="Enter event venue"
                 {...field}
                 className="bg-card rounded-lg "
-              /> */}
+              />
             </FormControl>
             <FormMessage className="text-red-500" />
           </FormItem>
@@ -66,9 +66,8 @@ export function EventVenueCapacityForm() {
           </FormItem>
         )}
       />
-      {/* Hidden fields for lat/lng if not already in the form UI */}
-      <input type="hidden" {...control.register("venue_lat")} />
-      <input type="hidden" {...control.register("venue_lng")} />
+      <input type="hidden" {...register("venue_lat")} />
+      <input type="hidden" {...register("venue_lng")} />
     </>
   );
 }

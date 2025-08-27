@@ -35,13 +35,14 @@ export default function TeamMembersForm({ onFormSubmitSuccess, eventId }: { onFo
   const [isLoading, setIsLoading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
 
-  const { useTeamMembers, useInviteTeamMember, useRemoveTeamMember, usePublishEvent } =
+  const { useTeamMembers, useInviteTeamMember, useRemoveTeamMember, usePublishEvent, useResendTeamInvite, useUpdateTeamMemberRole } =
     useEvent();
 
-  const { data: teamMembersData, error: teamMembersError } =
-    useTeamMembers(eventIdd);
+  const { data: teamMembersData, error: teamMembersError } = useTeamMembers(eventIdd);
   const inviteTeamMember = useInviteTeamMember(eventIdd);
   const removeTeamMember = useRemoveTeamMember(eventIdd);
+  const resendInvite = useResendTeamInvite(eventIdd);
+  const updateRole = useUpdateTeamMemberRole(eventIdd);
   const publishEvent = usePublishEvent();
 
   useEffect(() => {
@@ -74,6 +75,28 @@ export default function TeamMembersForm({ onFormSubmitSuccess, eventId }: { onFo
     }
     const newMembers = teamMembers.filter((_, i) => i !== index);
     setTeamMembers(newMembers);
+  };
+
+  const handleResendInvite = async (index: number) => {
+    const member = teamMembersData?.result?.results[index];
+    if (!member) return;
+    try {
+      await resendInvite.mutateAsync(member.id);
+      toast.success("Invitation resent");
+    } catch (e) {
+      toast.error("Failed to resend invite");
+    }
+  };
+
+  const handleChangeRole = async (index: number, role: TeamMemberRole) => {
+    const member = teamMembersData?.result?.results[index];
+    if (!member) return;
+    try {
+      await updateRole.mutateAsync({ memberId: member.id, role });
+      toast.success("Role updated");
+    } catch (e) {
+      toast.error("Failed to update role");
+    }
   };
 
   const handleMemberChange = (
@@ -143,9 +166,11 @@ export default function TeamMembersForm({ onFormSubmitSuccess, eventId }: { onFo
               <select
                 id={`role-${index}`}
                 value={member.role}
-                onChange={(e) =>
-                  handleMemberChange(index, "role", e.target.value)
-                }
+                onChange={(e) => {
+                  handleMemberChange(index, "role", e.target.value);
+                  const current = teamMembersData?.result?.results?.[index];
+                  if (current && current.id) handleChangeRole(index, e.target.value as TeamMemberRole);
+                }}
                 className="w-full bg-card p-2 border rounded-md"
                 required
               >
@@ -156,7 +181,18 @@ export default function TeamMembersForm({ onFormSubmitSuccess, eventId }: { onFo
                 ))}
               </select>
             </div>
-            {index > 0 && (
+            {teamMembersData?.result?.results?.[index]?.status === 'PENDING' && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="md:col-span-2"
+                onClick={() => handleResendInvite(index)}
+              >
+                Resend Invite
+              </Button>
+            )}
+            {(teamMembersData?.result?.results?.[index] || teamMembers.length > 1) && (
               <Button
                 type="button"
                 variant="destructive"

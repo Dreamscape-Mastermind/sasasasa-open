@@ -165,6 +165,10 @@ class EventService {
     return apiClient.post<EventResponse>(`${this.baseUrl}/${id}/publish`);
   }
 
+  public async unpublishEvent(id: string): Promise<EventResponse> {
+    return apiClient.post<EventResponse>(`${this.baseUrl}/${id}/unpublish`);
+  }
+
   public async cancelEvent(id: string): Promise<EventResponse> {
     return apiClient.post<EventResponse>(`${this.baseUrl}/${id}/cancel`);
   }
@@ -249,9 +253,7 @@ class EventService {
     eventId: string,
     memberId: string
   ): Promise<void> {
-    return apiClient.post(`${this.baseUrl}/${eventId}/remove`, {
-      member_id: memberId,
-    });
+    return apiClient.post(`${this.baseUrl}/${eventId}/remove?id=${memberId}`);
   }
 
   public async acceptTeamInvitation(
@@ -262,6 +264,44 @@ class EventService {
       `${this.baseUrl}/${eventId}/accept`,
       data
     );
+  }
+
+  public async declineTeamInvitation(
+    eventId: string,
+    data: AcceptTeamInvitationRequest
+  ): Promise<TeamMemberResponse> {
+    return apiClient.post<TeamMemberResponse>(
+      `${this.baseUrl}/${eventId}/decline`,
+      data
+    );
+  }
+
+  public async resendTeamInvite(
+    eventId: string,
+    memberId: string
+  ): Promise<TeamMemberResponse> {
+    return apiClient.post<TeamMemberResponse>(
+      `${this.baseUrl}/${eventId}/resend?id=${memberId}`
+    );
+  }
+
+  public async updateTeamMemberRole(
+    eventId: string,
+    memberId: string,
+    data: { role: string }
+  ): Promise<TeamMemberResponse> {
+    return apiClient.patch<TeamMemberResponse>(
+      `${this.baseUrl}/${eventId}/teams/${memberId}`,
+      data
+    );
+  }
+
+  public async listMyInvites(params?: { status?: string }): Promise<{
+    status: string;
+    result: { results: Array<any> };
+    message: string;
+  }> {
+    return apiClient.get(`${this.baseUrl}/my_invites`, { params });
   }
 
   /**

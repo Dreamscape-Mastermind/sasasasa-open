@@ -21,7 +21,11 @@ import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ThemeSwitch from "@/components/ThemeSwitch";
 import { useSidebar } from "@/contexts/SidebarContext";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEvent } from "@/hooks/useEvent";
+import { EventStatus } from "@/types/event";
+import toast from "react-hot-toast";
 
 const notifications = [
   {
@@ -55,10 +59,24 @@ export function Header() {
     notifications.filter((n) => !n.read).length
   );
   const { toggleSidebar } = useSidebar();
+  const pathname = usePathname();
+  const eventId = useMemo(() => {
+    if (!pathname) return "";
+    const parts = pathname.split("/");
+    const idx = parts.findIndex((p) => p === "events");
+    if (idx !== -1 && parts[idx + 2] === "edit") {
+      return parts[idx + 1] || "";
+    }
+    return "";
+  }, [pathname]);
+  const { useEvent: useEventQuery, useUpdateEvent } = useEvent();
+  const { data: headerEvent } = useEventQuery(eventId);
+  const updateEvent = useUpdateEvent(eventId || "");
 
   const markAllAsRead = () => {
     setUnreadCount(0);
   };
+
 
   return (
     <div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

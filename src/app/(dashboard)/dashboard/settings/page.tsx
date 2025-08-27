@@ -208,13 +208,39 @@ function SettingsContent() {
         </motion.p>
       </div>
 
+      {/* Mobile bento grid nav */}
+      <div className="md:hidden sticky top-0 z-20 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-3">
+        <div className="grid grid-cols-2 gap-3 px-3">
+          <button onClick={() => setTab('account')} className={`flex flex-col items-start justify-start gap-1 rounded-xl border bg-card px-3 py-3 text-left text-sm transition-all ${tab === 'account' ? 'ring-2 ring-primary bg-accent/40' : ''}`}>
+            <Mail className="w-4 h-4" />
+            Account
+          </button>
+          <button onClick={() => setTab('general')} className={`flex flex-col items-start justify-start gap-1 rounded-xl border bg-card px-3 py-3 text-left text-sm transition-all ${tab === 'general' ? 'ring-2 ring-primary bg-accent/40' : ''}`}>
+            <User className="w-4 h-4" />
+            General
+          </button>
+          <button onClick={() => setTab('billing')} className={`flex flex-col items-start justify-start gap-1 rounded-xl border bg-card px-3 py-3 text-left text-sm transition-all ${tab === 'billing' ? 'ring-2 ring-primary bg-accent/40' : ''}`}>
+            <CreditCard className="w-4 h-4" />
+            Billing
+          </button>
+          <button onClick={() => setTab('bank')} className={`flex flex-col items-start justify-start gap-1 rounded-xl border bg-card px-3 py-3 text-left text-sm transition-all ${tab === 'bank' ? 'ring-2 ring-primary bg-accent/40' : ''}`}>
+            <CreditCard className="w-4 h-4" />
+            Bank Details
+          </button>
+          <button onClick={() => setTab('security')} className={`flex flex-col items-start justify-start gap-1 rounded-xl border bg-card px-3 py-3 text-left text-sm transition-all ${tab === 'security' ? 'ring-2 ring-primary bg-accent/40' : ''}`}>
+            <Shield className="w-4 h-4" />
+            Security
+          </button>
+        </div>
+      </div>
+
       <Tabs value={tab} onValueChange={setTab} className="space-y-6">
-        <TabsList className="bg-background border">
-          <TabsTrigger value="account" className="flex items-center gap-2">
+        <TabsList className="hidden md:flex md:rounded-md md:bg-muted md:border md:p-1 md:justify-start md:gap-2">
+          <TabsTrigger value="account" className="flex items-center gap-2 md:rounded-sm md:px-3 md:py-1.5 md:hover:bg-accent/50 transition-colors data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
             <Mail className="w-4 h-4" />
             Account
           </TabsTrigger>
-          <TabsTrigger value="general" className="flex items-center gap-2">
+          <TabsTrigger value="general" className="flex items-center gap-2 md:rounded-sm md:px-3 md:py-1.5 md:hover:bg-accent/50 transition-colors data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
             <User className="w-4 h-4" />
             General
           </TabsTrigger>
@@ -225,15 +251,15 @@ function SettingsContent() {
             <Bell className="w-4 h-4" />
             Notifications
           </TabsTrigger> */}
-          <TabsTrigger value="billing" className="flex items-center gap-2">
+          <TabsTrigger value="billing" className="flex items-center gap-2 md:rounded-sm md:px-3 md:py-1.5 md:hover:bg-accent/50 transition-colors data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
             <CreditCard className="w-4 h-4" />
             Billing
           </TabsTrigger>
-          <TabsTrigger value="bank" className="flex items-center gap-2">
+          <TabsTrigger value="bank" className="flex items-center gap-2 md:rounded-sm md:px-3 md:py-1.5 md:hover:bg-accent/50 transition-colors data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
             <CreditCard className="w-4 h-4" />
             Bank Details
           </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
+          <TabsTrigger value="security" className="flex items-center gap-2 md:rounded-sm md:px-3 md:py-1.5 md:hover:bg-accent/50 transition-colors data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
             <Shield className="w-4 h-4" />
             Security
           </TabsTrigger>

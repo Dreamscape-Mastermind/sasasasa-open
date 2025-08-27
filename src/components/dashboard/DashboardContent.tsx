@@ -130,14 +130,14 @@ const socialLinks = [
 
 export default function DashboardContent() {
   // Hooks for real data
-   const { useEvents } = useEvent();
+  const { useMyEvents } = useEvent();
   const { useTickets } = useTicket();
   const { usePayments } = usePayment();
   const { useCheckInStats } = useCheckin();
   const { useDiscounts } = useDiscount();
 
-  // Fetch real data
-  const { data: eventsData, isLoading: eventsLoading } = useEvents();
+  // Fetch real data (only current user's events)
+  const { data: eventsData, isLoading: eventsLoading } = useMyEvents();
   const { data: paymentsData, isLoading: paymentsLoading } = usePayments();
 
   // Get the first event as default selected event
@@ -173,7 +173,7 @@ export default function DashboardContent() {
       };
     }
 
-    const events = eventsData.result.results;
+    const events = eventsData.result.results || [];
     const now = new Date();
 
     // Basic event stats
@@ -191,9 +191,9 @@ export default function DashboardContent() {
     events.forEach(event => {
       if (event.available_tickets) {
         event.available_tickets.forEach(ticketType => {
-          const sold = ticketType.quantity - ticketType.remaining_tickets;
-          totalTicketsSold += sold;
-          totalRevenue += sold * ticketType.price;
+          const sold = (ticketType.quantity || 0) - (ticketType.remaining_tickets || 0);
+          totalTicketsSold += Math.max(0, sold);
+          totalRevenue += Math.max(0, sold) * (ticketType.price || 0);
         });
       }
     });
@@ -201,8 +201,8 @@ export default function DashboardContent() {
     // Check-in stats (using selected event or default)
     const checkedInToday = checkinStatsData?.result?.checked_in || 0;
     const totalTicketsForEvent = selectedEvent?.available_tickets?.reduce(
-      (sum, ticket) => sum + ticket.quantity, 0
-    ) || 1;
+      (sum, ticket) => sum + (ticket.quantity || 0), 0
+    ) || 0;
     const attendanceRate = totalTicketsForEvent > 0 
       ? Math.round((checkedInToday / totalTicketsForEvent) * 100) 
       : 0;
@@ -346,25 +346,27 @@ export default function DashboardContent() {
             </CardContent>
           </Card>
 
-          {/* Total Events */}
-          <Card className="hover:shadow-md transition-all rounded-xl border-2 border-muted/60 hover:border-primary/40">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base sm:text-lg font-semibold">Events</CardTitle>
-                <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
-                  <Calendar className="h-4 w-4 text-primary" />
+          {/* Total Events (clickable to events list) */}
+          <Link href={ROUTES.DASHBOARD_EVENTS} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
+            <Card className="hover:shadow-md transition-all rounded-xl border-2 border-muted/60 hover:border-primary/40">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base sm:text-lg font-semibold">Events</CardTitle>
+                  <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
+                    <Calendar className="h-4 w-4 text-primary" />
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl sm:text-3xl font-bold">
-                {dashboardStats.totalEvents}
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">
-                {dashboardStats.activeEvents} active
-              </p>
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl sm:text-3xl font-bold">
+                  {dashboardStats.totalEvents}
+                </div>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">
+                  {dashboardStats.activeEvents} active
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
 
           {/* Tickets Sold */}
           <Card className="hover:shadow-md transition-all rounded-xl border-2 border-muted/60 hover:border-primary/40">
@@ -643,10 +645,21 @@ export default function DashboardContent() {
               <CardTitle className="text-lg sm:text-xl font-bold">Discount Codes</CardTitle>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 rounded-xl border-2 hover:border-primary/50">
-                    <Plus className="h-4 w-4" />
-                    <span className="hidden sm:inline font-medium">Create</span>
-                  </Button>
+                  {selectedEvent ? (
+                    <Link href={ROUTES.DASHBOARD_EVENT_PROMOTIONS(selectedEvent.id)}>
+                      <Button variant="outline" size="sm" className="gap-2 rounded-xl border-2 hover:border-primary/50">
+                        <Plus className="h-4 w-4" />
+                        <span className="hidden sm:inline font-medium">Create</span>
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Link href={ROUTES.DASHBOARD_EVENTS}>
+                      <Button variant="outline" size="sm" className="gap-2 rounded-xl border-2 hover:border-primary/50">
+                        <Plus className="h-4 w-4" />
+                        <span className="hidden sm:inline font-medium">Create</span>
+                      </Button>
+                    </Link>
+                  )}
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Create new discount code</p>
@@ -656,7 +669,7 @@ export default function DashboardContent() {
             <CardContent className="space-y-4 pt-4">
               {/* Referral Codes List */}
               <div className="space-y-3">
-                {discountsData?.result?.results?.map((code) => (
+                {(discountsData?.result?.results || []).map((code) => (
                   <div
                     key={code.id}
                     className="p-4 border-2 border-muted/50 rounded-xl bg-background hover:bg-muted/20 hover:border-muted/70 transition-all"
@@ -720,6 +733,18 @@ export default function DashboardContent() {
                     </div>
                   </div>
                 ))}
+                {!discountsData?.result?.results?.length && (
+                  <div className="text-center p-6 border-2 border-dashed border-muted/40 rounded-xl bg-gradient-to-br from-muted/20 to-muted/10">
+                    <p className="text-sm font-medium text-foreground mb-1">No discount codes yet</p>
+                    <p className="text-xs text-muted-foreground mb-3">Create your first discount code</p>
+                    <Link href={selectedEvent ? ROUTES.DASHBOARD_EVENT_PROMOTIONS(selectedEvent.id) : ROUTES.DASHBOARD_EVENTS}>
+                      <Button size="sm" className="gap-2 rounded-lg">
+                        <Plus className="h-4 w-4" />
+                        Create Discount
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {/* Social Share Section */}
