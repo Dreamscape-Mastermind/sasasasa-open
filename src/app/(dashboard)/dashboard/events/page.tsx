@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, MapPin, Plus, Search } from "lucide-react";
+import { Calendar, MapPin, Plus, Search, Pencil } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useEvent } from "@/hooks/useEvent";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ROUTES } from "@/lib/constants";
 
 // Helper function to format date
 const formatDate = (dateString: string) => {
@@ -89,26 +91,44 @@ function EventsContent() {
                   />
                 </div>
                 <CardHeader>
-                  <CardTitle>{event.title}</CardTitle>
-                  <CardDescription>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4" />
-                      {formatDate(event.start_date)}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4" />
-                      {
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <CardTitle>{event.title}</CardTitle>
+                      <CardDescription>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Calendar className="h-4 w-4" />
+                          {formatDate(event.start_date)}
+                        </div>
                         <div className="flex items-center gap-2 text-sm">
                           <MapPin className="h-4 w-4" />
-                          {event.location ? (
-                            <span>{event.location.name}</span>
-                          ) : (
-                            <span>Location not available</span>
-                          )}
+                          {
+                            <div className="flex items-center gap-2 text-sm">
+                              <MapPin className="h-4 w-4" />
+                              {event.location ? (
+                                <span>{event.location.name}</span>
+                              ) : (
+                                <span>Location not available</span>
+                              )}
+                            </div>
+                          }
                         </div>
-                      }
+                      </CardDescription>
                     </div>
-                  </CardDescription>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Link
+                            href={ROUTES.DASHBOARD_EVENT_EDIT(event.id)}
+                            className="inline-flex items-center justify-center rounded-full p-2 hover:bg-muted"
+                            aria-label="Edit event"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                        </TooltipTrigger>
+                        <TooltipContent>Edit event</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">

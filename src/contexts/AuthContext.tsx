@@ -67,6 +67,10 @@ interface AuthContextType {
    * Directly set the user in context. Use after profile update for instant UI refresh.
    */
   setUser: (user: UserProfile | null) => void;
+  /**
+   * Apply a new authenticated session (tokens + user) from external flows (e.g., invite link).
+   */
+  applySession: (params: { access: string; refresh: string; user: UserProfile }) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -381,6 +385,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Token refresh failed:", error);
       logout();
     }
+  };
+
+  const applySession = ({ access, refresh, user: newUser }: { access: string; refresh: string; user: UserProfile }) => {
+    const newTokens: TokenResponse = {
+      status: "success",
+      message: "Token Data",
+      result: { access, refresh },
+    };
+    setTokens(newTokens);
+    setUser(newUser);
+    setIsAuthenticated(true);
+    cookieService.setTokens(newTokens);
+    cookieService.setUser(newUser);
   };
 
   const loginWithSIWEReCap = async (
@@ -711,6 +728,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       hasAnyAccessLevel,
       hasAllAccessLevels,
       setUser,
+      applySession,
     }),
     [
       user,
@@ -733,6 +751,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       hasAnyAccessLevel,
       hasAllAccessLevels,
       setUser,
+      applySession,
     ]
   );
 

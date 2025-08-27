@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { useEvent } from "@/hooks/useEvent";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AnalyticsContentProps {
   eventId: string;
@@ -185,47 +186,61 @@ export function AnalyticsContent({ eventId }: AnalyticsContentProps) {
               Track your event performance and metrics
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={async () => {
-                const res = await exportAnalytics({
-                  format: "csv",
-                  ...computedParams,
-                });
-                if (!res || !res.result) return;
-                const { download_url, file_name } = res.result;
-                if (!download_url) return;
-                const a = document.createElement("a");
-                a.href = download_url;
-                if (file_name) a.download = file_name;
-                a.click();
-              }}
-            >
-              <Download className="h-4 w-4" />
-              Export CSV
-            </Button>
-            <Button
-              variant="default"
-              className="gap-2"
-              onClick={async () => {
-                const res = await exportAnalytics({
-                  format: "excel",
-                  ...computedParams,
-                });
-                if (!res || !res.result) return;
-                const { download_url, file_name } = res.result;
-                if (!download_url) return;
-                const a = document.createElement("a");
-                a.href = download_url;
-                if (file_name) a.download = file_name;
-                a.click();
-              }}
-            >
-              <Download className="h-4 w-4" />
-              Export Excel
-            </Button>
+          <div className="flex gap-2 sm:gap-3 items-center">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                variant="outline"
+                className="gap-2 rounded-full px-3 sm:px-4"
+                onClick={async () => {
+                  const res = await exportAnalytics({
+                    format: "csv",
+                    ...computedParams,
+                  });
+                  if (!res || !res.result) return;
+                  const { download_url, file_name } = res.result;
+                  if (!download_url) return;
+                  const a = document.createElement("a");
+                  a.href = download_url;
+                  if (file_name) a.download = file_name;
+                  a.click();
+                }}
+              >
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Export CSV</span>
+              </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Export CSV</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                variant="default"
+                className="gap-2 rounded-full px-3 sm:px-4"
+                onClick={async () => {
+                  const res = await exportAnalytics({
+                    format: "excel",
+                    ...computedParams,
+                  });
+                  if (!res || !res.result) return;
+                  const { download_url, file_name } = res.result;
+                  if (!download_url) return;
+                  const a = document.createElement("a");
+                  a.href = download_url;
+                  if (file_name) a.download = file_name;
+                  a.click();
+                }}
+              >
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Export Excel</span>
+              </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Export Excel</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
 
