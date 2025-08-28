@@ -34,7 +34,7 @@ const Payouts = () => {
     });
   };
 
-  const kycStatus: KycStatus = payoutProfile?.result.kyc_status || "Pending";
+  const kycStatus: KycStatus = payoutProfile?.results[0]?.kyc_status || "Pending";
   const userName = `${user?.first_name} ${user?.last_name}`;
   const canAccessWithdrawal = kycStatus === "Verified";
 
@@ -42,14 +42,14 @@ const Payouts = () => {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
-        <div className="text-center space-y-4 py-8">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <Shield className="h-8 w-8 text-primary" />
+        <div className="space-y-4 py-8">
+          <div className="flex space-x-2 mb-4">
+          
             <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text">
               Payouts Portal
             </h1>
           </div>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground">
             Secure verification and instant payouts for verified users
           </p>
         </div>
@@ -59,7 +59,7 @@ const Payouts = () => {
           <ProfileStatusCard
             status={kycStatus}
             userName={userName}
-            lastUpdated={payoutProfile?.result.updatedAt.toString() || new Date().toISOString()}
+            lastUpdated={payoutProfile?.results[0]?.updated_at.toString() || new Date().toISOString()}
             isLoading={isProfileLoading}
           />
 
@@ -164,7 +164,7 @@ const Payouts = () => {
             </div>
           </CardContent>
         </Card>
-        {canAccessWithdrawal && <WithdrawalHistory withdrawals={withdrawals?.result} isLoading={isHistoryLoading} />}
+        {canAccessWithdrawal && <WithdrawalHistory withdrawals={withdrawals?.results} isLoading={isHistoryLoading} />}
       </div>
 
       <Dialog open={isWithdrawalModalOpen} onOpenChange={setIsWithdrawalModalOpen}>

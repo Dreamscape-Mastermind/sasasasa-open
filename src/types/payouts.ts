@@ -30,3 +30,7 @@ export interface WithdrawalRequest {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface WithdrawalResponse {
+  results: WithdrawalRequest
+}
