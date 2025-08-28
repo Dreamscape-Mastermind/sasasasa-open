@@ -18,6 +18,7 @@ import {
 } from "@/types/event";
 
 import { apiClient } from "./api.service";
+import type { EventRevenueResponse } from "@/types/event";
 
 /**
  * Event service for handling all event-related operations
@@ -130,6 +131,13 @@ class EventService {
 
   public async cancelEvent(id: string): Promise<EventResponse> {
     return apiClient.post<EventResponse>(`${this.baseUrl}/${id}/cancel`);
+  }
+
+  /**
+   * Event revenue
+   */
+  public async getEventRevenue(id: string): Promise<EventRevenueResponse> {
+    return apiClient.get<EventRevenueResponse>(`${this.baseUrl}/${id}/revenue`);
   }
 
   /**

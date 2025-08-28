@@ -15,7 +15,7 @@ export const usePayouts = () => {
 
   const useUpdatePayoutProfile = () => {
     return useMutation({
-      mutationFn: (data: Partial<PayoutProfile>) => payoutService.updatePayoutProfile(data),
+      mutationFn: (data: Partial<PayoutProfile> | FormData) => payoutService.updatePayoutProfile(data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['payoutProfile'] });
       },

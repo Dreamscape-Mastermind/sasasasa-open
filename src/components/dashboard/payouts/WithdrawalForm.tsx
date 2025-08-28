@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -11,23 +11,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Wallet, Smartphone, Building2, DollarSign, Calendar } from "lucide-react";
 import toast from 'react-hot-toast';
+import { useEvent } from "@/hooks/useEvent";
 
-type PaymentMethod = "crypto" | "mobile_money" | "bank_account";
+type PaymentMethod = "Crypto" | "MobileMoney" | "BankAccount";
 
-// Mock events data
-const mockEvents = [
-  { id: "event_1", name: "Summer Music Festival 2024", balance: 1250.50 },
-  { id: "event_2", name: "Tech Conference 2024", balance: 850.75 },
-  { id: "event_3", name: "Food & Wine Expo", balance: 2100.00 },
-  { id: "event_4", name: "Art Gallery Opening", balance: 450.25 },
-];
 
 const baseSchema = z.object({
+  event_id: z.string().min(1, "Event is required"),
   amount: z.string().min(1, "Amount is required").refine((val) => {
     const num = parseFloat(val);
     return !isNaN(num) && num > 0;
   }, "Amount must be a positive number"),
-  payment_method: z.enum(["crypto", "mobile_money", "bank_account"]),
+  method: z.enum(["Crypto", "MobileMoney", "BankAccount"]),
 });
 
 const cryptoSchema = baseSchema.extend({
@@ -53,27 +48,35 @@ interface WithdrawalFormProps {
 }
 
 export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormProps) {
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("crypto");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("Crypto");
   const [availableBalance, setAvailableBalance] = useState<number>(0);
   const [selectedEvent, setSelectedEvent] = useState<string>("");
+  const {useMyEvents, useEventRevenue} = useEvent();
 
-  // Update available balance when event changes
+  const {data: events, isLoading: isEventsLoading} = useMyEvents({owner: true})
+
+  // Fetch revenue for selected event and update balance
+  const { data: revenue } = useEventRevenue(selectedEvent);
   useEffect(() => {
-    if (selectedEvent) {
-      const event = mockEvents.find(e => e.id === selectedEvent);
-      setAvailableBalance(event?.balance || 0);
+    if (selectedEvent && revenue?.result) {
+      setAvailableBalance(Number(revenue.result.available_for_payout) || 0);
     } else {
       setAvailableBalance(0);
     }
+  }, [selectedEvent, revenue]);
+
+  // Keep event_id in form synced with selectedEvent
+  useEffect(() => {
+    form.setValue("event_id", selectedEvent);
   }, [selectedEvent]);
   
   const getSchema = () => {
     switch (paymentMethod) {
-      case "crypto":
+      case "Crypto":
         return cryptoSchema;
-      case "mobile_money":
+      case "MobileMoney":
         return mobileMoneySchema;
-      case "bank_account":
+      case "BankAccount":
         return bankAccountSchema;
       default:
         return baseSchema;
@@ -84,7 +87,8 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
     resolver: zodResolver(getSchema()),
     defaultValues: {
       amount: "",
-      payment_method: paymentMethod,
+      method: paymentMethod,
+      event_id: "",
     },
   });
 
@@ -95,14 +99,14 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
   };
 
   const paymentMethods = [
-    { value: "crypto", label: "Cryptocurrency", icon: Wallet },
-    { value: "mobile_money", label: "Mobile Money", icon: Smartphone },
-    { value: "bank_account", label: "Bank Account", icon: Building2 },
+    { value: "Crypto", label: "Cryptocurrency", icon: Wallet },
+    { value: "MobileMoney", label: "Mobile Money", icon: Smartphone },
+    { value: "BankAccount", label: "Bank Account", icon: Building2 },
   ];
 
   const renderPaymentMethodFields = () => {
     switch (paymentMethod) {
-      case "crypto":
+      case "Crypto":
         return (
           <>
             <FormField
@@ -128,6 +132,7 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="wallet_address"
@@ -148,7 +153,7 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
           </>
         );
 
-      case "mobile_money":
+      case "MobileMoney":
         return (
           <>
             <FormField
@@ -192,7 +197,7 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
           </>
         );
 
-      case "bank_account":
+      case "BankAccount":
         return (
           <>
             <FormField
@@ -258,10 +263,6 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
   return (
     <Card className="bg-gradient-card border-border/50 shadow-card">
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <DollarSign className="h-5 w-5" />
-          <span>Request Withdrawal</span>
-        </CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -282,11 +283,11 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {mockEvents.map((event) => (
+                      {events?.result?.results.map((event) => (
                         <SelectItem key={event.id} value={event.id}>
                           <div className="flex items-center space-x-2">
                             <Calendar className="h-4 w-4" />
-                            <span>{event.name}</span>
+                            <span>{event.title}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -340,7 +341,7 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
                       className="h-auto p-4 flex flex-col items-center space-y-2"
                       onClick={() => {
                         setPaymentMethod(method.value as PaymentMethod);
-                        form.setValue("payment_method", method.value as PaymentMethod);
+                        form.setValue("method", method.value as PaymentMethod);
                        
                         form.setValue("wallet_address", "");
                         form.setValue("crypto_currency", "");
