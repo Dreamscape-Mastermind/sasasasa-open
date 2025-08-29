@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,101 +8,39 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Eye, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import { usePayouts } from "@/hooks/usePayouts";
+import { PayoutProfile, KycStatus } from "@/types/payouts";
 
-interface KycApplication {
-  id: string;
-  userId: string;
-  userName: string;
-  email: string;
-  submittedAt: string;
-  status: "pending" | "reviewing" | "verified" | "rejected";
-  documents: {
-    idCard: string;
-    selfie: string;
-    proofOfAddress?: string;
-  };
-  personalInfo: {
-    fullName: string;
-    dateOfBirth: string;
-    nationality: string;
-    address: string;
-  };
-}
-
-const dummyApplications: KycApplication[] = [
-  {
-    id: "kyc-001",
-    userId: "user-001",
-    userName: "John Doe",
-    email: "john.doe@example.com",
-    submittedAt: "2024-01-15T10:30:00Z",
-    status: "pending",
-    documents: {
-      idCard: "/placeholder.svg",
-      selfie: "/placeholder.svg",
-      proofOfAddress: "/placeholder.svg"
-    },
-    personalInfo: {
-      fullName: "John Doe",
-      dateOfBirth: "1990-05-15",
-      nationality: "US",
-      address: "123 Main St, Anytown, USA"
-    }
-  },
-  {
-    id: "kyc-002",
-    userId: "user-002",
-    userName: "Jane Smith",
-    email: "jane.smith@example.com",
-    submittedAt: "2024-01-14T15:45:00Z",
-    status: "reviewing",
-    documents: {
-      idCard: "/placeholder.svg",
-      selfie: "/placeholder.svg"
-    },
-    personalInfo: {
-      fullName: "Jane Smith",
-      dateOfBirth: "1985-08-22",
-      nationality: "CA",
-      address: "456 Oak Ave, Toronto, Canada"
-    }
-  },
-  {
-    id: "kyc-003",
-    userId: "user-003",
-    userName: "Mike Johnson",
-    email: "mike.johnson@example.com",
-    submittedAt: "2024-01-13T09:15:00Z",
-    status: "verified",
-    documents: {
-      idCard: "/placeholder.svg",
-      selfie: "/placeholder.svg",
-      proofOfAddress: "/placeholder.svg"
-    },
-    personalInfo: {
-      fullName: "Mike Johnson",
-      dateOfBirth: "1992-12-03",
-      nationality: "UK",
-      address: "789 King Rd, London, UK"
-    }
-  }
-];
+// TODO: This should be a more specific type for KYC applications
+// For now, we are reusing PayoutProfile as it contains most of the required fields.
+interface KycApplication extends PayoutProfile {}
 
 export function KycReviewDashboard() {
-  const [applications, setApplications] = useState<KycApplication[]>(dummyApplications);
-  const [selectedApp, setSelectedApp] = useState<KycApplication | null>(null);
+  const { useGetKycSubmissions, useReviewKycSubmission } = usePayouts();
+  const { data: kycData, isLoading } = useGetKycSubmissions();
+  const { mutate: reviewKycSubmission } = useReviewKycSubmission();
+
+  const [applications, setApplications] = useState<PayoutProfile[]>([]);
+  const [selectedApp, setSelectedApp] = useState<PayoutProfile | null>(null);
   const [reviewReason, setReviewReason] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const getStatusBadge = (status: KycApplication["status"]) => {
+  useEffect(() => {
+    if (kycData?.results) {
+      setApplications(kycData?.results);
+    }
+  }, [kycData]);
+
+  const getStatusBadge = (status: KycStatus) => {
     const configs = {
-      pending: { variant: "secondary" as const, icon: Clock, label: "Pending" },
-      reviewing: { variant: "outline" as const, icon: AlertCircle, label: "Reviewing" },
-      verified: { variant: "default" as const, icon: CheckCircle, label: "Verified" },
-      rejected: { variant: "destructive" as const, icon: XCircle, label: "Rejected" }
+      Pending: { variant: "secondary" as const, icon: Clock, label: "Pending" },
+      "Needs Update": { variant: "outline" as const, icon: AlertCircle, label: "Needs Update" },
+      Verified: { variant: "default" as const, icon: CheckCircle, label: "Verified" },
+      Rejected: { variant: "destructive" as const, icon: XCircle, label: "Rejected" }
     };
 
     const config = configs[status];
+    if (!config) return null;
     const Icon = config.icon;
 
     return (
@@ -114,15 +52,16 @@ export function KycReviewDashboard() {
   };
 
   const handleApprove = (application: KycApplication) => {
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === application.id ? { ...app, status: "verified" } : app
-      )
-    );
-    toast.success(`${application.userName}'s KYC has been verified.`
-    );
-    setIsDialogOpen(false);
-    setReviewReason("");
+    reviewKycSubmission({ submissionId: application.id, status: "Verified" }, {
+      onSuccess: () => {
+        toast.success(`${application.kyc_id_number}'s KYC has been verified.`);
+        setIsDialogOpen(false);
+        setReviewReason("");
+      },
+      onError: () => {
+        toast.error("Failed to verify KYC.");
+      }
+    });
   };
 
   const handleReject = (application: KycApplication) => {
@@ -131,17 +70,19 @@ export function KycReviewDashboard() {
       return;
     }
 
-    setApplications(prev => 
-      prev.map(app => 
-        app.id === application.id ? { ...app, status: "rejected" } : app
-      )
-    );
-    toast(`${application.userName}'s KYC has been rejected.`);
-    setIsDialogOpen(false);
-    setReviewReason("");
+    reviewKycSubmission({ submissionId: application.id, status: "Rejected", reason: reviewReason }, {
+      onSuccess: () => {
+        toast.error(`${application.kyc_id_number}'s KYC has been rejected.`);
+        setIsDialogOpen(false);
+        setReviewReason("");
+      },
+      onError: () => {
+        toast.error("Failed to reject KYC.");
+      }
+    });
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -171,150 +112,140 @@ export function KycReviewDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {applications.map((app) => (
-                <TableRow key={app.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{app.userName}</div>
-                      <div className="text-sm text-muted-foreground">{app.email}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {formatDate(app.submittedAt)}
-                  </TableCell>
-                  <TableCell>
-                    {getStatusBadge(app.status)}
-                  </TableCell>
-                  <TableCell>
-                    <Dialog open={isDialogOpen && selectedApp?.id === app.id} onOpenChange={(open) => {
-                      setIsDialogOpen(open);
-                      if (!open) {
-                        setSelectedApp(null);
-                        setReviewReason("");
-                      }
-                    }}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setSelectedApp(app)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Review
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>KYC Application Review - {app.userName}</DialogTitle>
-                        </DialogHeader>
-                        
-                        <div className="grid gap-6 md:grid-cols-2">
-                          {/* Personal Information */}
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="text-lg">Personal Information</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                              <div>
-                                <label className="text-sm font-medium text-muted-foreground">Full Name</label>
-                                <p className="text-sm">{app.personalInfo.fullName}</p>
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium text-muted-foreground">Date of Birth</label>
-                                <p className="text-sm">{app.personalInfo.dateOfBirth}</p>
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium text-muted-foreground">Nationality</label>
-                                <p className="text-sm">{app.personalInfo.nationality}</p>
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium text-muted-foreground">Address</label>
-                                <p className="text-sm">{app.personalInfo.address}</p>
-                              </div>
-                            </CardContent>
-                          </Card>
-
-                          {/* Documents */}
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="text-lg">Documents</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                              <div>
-                                <label className="text-sm font-medium text-muted-foreground mb-2 block">ID Card</label>
-                                <img 
-                                  src={app.documents.idCard} 
-                                  alt="ID Card" 
-                                  className="w-full h-32 object-cover rounded border"
-                                />
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium text-muted-foreground mb-2 block">Selfie</label>
-                                <img 
-                                  src={app.documents.selfie} 
-                                  alt="Selfie" 
-                                  className="w-full h-32 object-cover rounded border"
-                                />
-                              </div>
-                              {app.documents.proofOfAddress && (
+              {isLoading ? (
+                <TableRow><TableCell colSpan={4} className="text-center">Loading...</TableCell></TableRow>
+              ) : (
+                applications.map((app) => (
+                  <TableRow key={app.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{app.kyc_id_number}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {formatDate(app.updated_at)}
+                    </TableCell>
+                    <TableCell>
+                      {getStatusBadge(app.kyc_status)}
+                    </TableCell>
+                    <TableCell>
+                      <Dialog open={isDialogOpen && selectedApp?.id === app.id} onOpenChange={(open) => {
+                        setIsDialogOpen(open);
+                        if (!open) {
+                          setSelectedApp(null);
+                          setReviewReason("");
+                        }
+                      }}>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setSelectedApp(app)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Review
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>KYC Application Review - {app.kyc_id_number}</DialogTitle>
+                          </DialogHeader>
+                          
+                          <div className="grid gap-6 md:grid-cols-2">
+                            {/* Personal Information */}
+                            <Card>
+                              <CardHeader>
+                                <CardTitle className="text-lg">Personal Information</CardTitle>
+                              </CardHeader>
+                              <CardContent className="space-y-3">
                                 <div>
-                                  <label className="text-sm font-medium text-muted-foreground mb-2 block">Proof of Address</label>
+                                  <label className="text-sm font-medium text-muted-foreground">ID Type</label>
+                                  <p className="text-sm">{app.kyc_id_type}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium text-muted-foreground">ID Number</label>
+                                  <p className="text-sm">{app.kyc_id_number}</p>
+                                </div>
+                                <div>
+                                  <label className="text-sm font-medium text-muted-foreground">Accepted Terms</label>
+                                  <p className="text-sm">{app.accepted_terms ? "Yes" : "No"}</p>
+                                </div>
+                              </CardContent>
+                            </Card>
+
+                            {/* Documents */}
+                            <Card>
+                              <CardHeader>
+                                <CardTitle className="text-lg">Documents</CardTitle>
+                              </CardHeader>
+                              <CardContent className="space-y-4">
+                                <div>
+                                  <label className="text-sm font-medium text-muted-foreground mb-2 block">ID Card</label>
                                   <img 
-                                    src={app.documents.proofOfAddress} 
-                                    alt="Proof of Address" 
+                                    src={app.kyc_id_front_image} 
+                                    alt="ID Card" 
                                     className="w-full h-32 object-cover rounded border"
                                   />
                                 </div>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </div>
+                                <div>
+                                  <label className="text-sm font-medium text-muted-foreground mb-2 block">Selfie holding ID</label>
+                                  <img 
+                                    src={app.kyc_selfie_with_id_image} 
+                                    alt="Selfie" 
+                                    className="w-full h-32 object-cover rounded border"
+                                  />
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </div>
 
-                        {/* Review Actions */}
-                        {app.status === "pending" || app.status === "reviewing" ? (
-                          <div className="space-y-4 pt-4 border-t">
-                            <div>
-                              <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                                Review Reason (required for rejection)
-                              </label>
-                              <Textarea
-                                placeholder="Enter reason for approval/rejection..."
-                                value={reviewReason}
-                                onChange={(e) => setReviewReason(e.target.value)}
-                                className="min-h-[80px]"
-                              />
+                          {/* Review Actions */}
+                          {app.kyc_status === "Pending" || app.kyc_status === "Needs Update" ? (
+                            <div className="space-y-4 pt-4 border-t">
+                              <div>
+                                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                                  Review Reason (required for rejection)
+                                </label>
+                                <Textarea
+                                  placeholder="Enter reason for approval/rejection..."
+                                  value={reviewReason}
+                                  onChange={(e) => setReviewReason(e.target.value)}
+                                  className="min-h-[80px]"
+                                />
+                              </div>
+                              <div className="flex gap-3">
+                                <Button
+                                  onClick={() => handleApprove(app)}
+                                  variant="outline"
+                                  className="flex-1"
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-2" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  onClick={() => handleReject(app)}
+                                  variant="destructive"
+                                  className="flex-1"
+                                >
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  Reject
+                                </Button>
+                              </div>
                             </div>
-                            <div className="flex gap-3">
-                              <Button
-                                onClick={() => handleApprove(app)}
-                                className="flex-1 bg-gradient-success hover:opacity-90"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Approve
-                              </Button>
-                              <Button
-                                onClick={() => handleReject(app)}
-                                variant="destructive"
-                                className="flex-1"
-                              >
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Reject
-                              </Button>
+                          ) : (
+                            <div className="pt-4 border-t">
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                {getStatusBadge(app.kyc_status)}
+                                <span>This application has already been {app.kyc_status}</span>
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          <div className="pt-4 border-t">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              {getStatusBadge(app.status)}
-                              <span>This application has already been {app.status}</span>
-                            </div>
-                          </div>
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                  </TableCell>
-                </TableRow>
-              ))}
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

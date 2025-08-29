@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,92 +8,41 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, CheckCircle, XCircle, Clock, AlertTriangle, DollarSign } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Clock, AlertTriangle, HandCoins } from "lucide-react";
 import toast from "react-hot-toast";
-
-interface WithdrawalRequest {
-  id: string;
-  userId: string;
-  userName: string;
-  email: string;
-  amount: number;
-  currency: string;
-  paymentMethod: "crypto" | "mobile_money" | "bank_account";
-  destination: string;
-  requestedAt: string;
-  status: "pending" | "processing" | "completed" | "failed";
-  failureReason?: string;
-}
-
-const dummyWithdrawals: WithdrawalRequest[] = [
-  {
-    id: "wd-001",
-    userId: "user-001",
-    userName: "John Doe",
-    email: "john.doe@example.com",
-    amount: 500,
-    currency: "USD",
-    paymentMethod: "crypto",
-    destination: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
-    requestedAt: "2024-01-15T14:30:00Z",
-    status: "pending"
-  },
-  {
-    id: "wd-002",
-    userId: "user-002",
-    userName: "Jane Smith",
-    email: "jane.smith@example.com",
-    amount: 250,
-    currency: "USD",
-    paymentMethod: "mobile_money",
-    destination: "+1234567890",
-    requestedAt: "2024-01-15T12:15:00Z",
-    status: "processing"
-  },
-  {
-    id: "wd-003",
-    userId: "user-003",
-    userName: "Mike Johnson",
-    email: "mike.johnson@example.com",
-    amount: 1000,
-    currency: "USD",
-    paymentMethod: "bank_account",
-    destination: "Account: ****1234, Bank: ABC Bank",
-    requestedAt: "2024-01-14T16:45:00Z",
-    status: "completed"
-  },
-  {
-    id: "wd-004",
-    userId: "user-004",
-    userName: "Sarah Wilson",
-    email: "sarah.wilson@example.com",
-    amount: 750,
-    currency: "USD",
-    paymentMethod: "crypto",
-    destination: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
-    requestedAt: "2024-01-14T10:20:00Z",
-    status: "failed",
-    failureReason: "Invalid wallet address"
-  }
-];
+import { usePayouts } from "@/hooks/usePayouts";
+import { WithdrawalRequest, WithdrawalStatus } from "@/types/payouts";
 
 export function WithdrawalManagement() {
-  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>(dummyWithdrawals);
+  const { useGetWithdrawals, useReviewWithdrawal } = usePayouts();
+  const { data: withdrawalsData, isLoading } = useGetWithdrawals();
+  const { mutate: reviewWithdrawal } = useReviewWithdrawal();
+
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
   const [selectedWithdrawals, setSelectedWithdrawals] = useState<string[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<WithdrawalRequest | null>(null);
   const [failureReason, setFailureReason] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const getStatusBadge = (status: WithdrawalRequest["status"]) => {
+  useEffect(() => {
+    if (withdrawalsData?.results) {
+      setWithdrawals(withdrawalsData.results);
+    }
+  }, [withdrawalsData]);
+
+  const getStatusBadge = (status: WithdrawalStatus) => {
     const configs = {
-      pending: { variant: "secondary" as const, icon: Clock, label: "Pending" },
-      processing: { variant: "outline" as const, icon: AlertTriangle, label: "Processing" },
-      completed: { variant: "default" as const, icon: CheckCircle, label: "Completed" },
-      failed: { variant: "destructive" as const, icon: XCircle, label: "Failed" }
+      Pending: { variant: "secondary" as const, icon: Clock, label: "Pending" },
+      "In Review": { variant: "outline" as const, icon: AlertTriangle, label: "In Review" },
+      Approved: { variant: "default" as const, icon: CheckCircle, label: "Approved" },
+      Rejected: { variant: "destructive" as const, icon: XCircle, label: "Rejected" },
+      Completed: { variant: "default" as const, icon: CheckCircle, label: "Completed" },
+      Failed: { variant: "destructive" as const, icon: XCircle, label: "Failed" }
     };
 
     const config = configs[status];
+    if (!config) return null;
     const Icon = config.icon;
 
     return (
@@ -104,25 +53,25 @@ export function WithdrawalManagement() {
     );
   };
 
-  const getPaymentMethodLabel = (method: WithdrawalRequest["paymentMethod"]) => {
+  const getPaymentMethodLabel = (method: WithdrawalRequest["method"]) => {
     const labels = {
-      crypto: "Cryptocurrency",
-      mobile_money: "Mobile Money",
-      bank_account: "Bank Account"
+      Crypto: "Cryptocurrency",
+      MobileMoney: "Mobile Money",
+      BankAccount: "Bank Account"
     };
     return labels[method];
   };
 
   const handleApprove = (request: WithdrawalRequest) => {
-    setWithdrawals(prev => 
-      prev.map(wd => 
-        wd.id === request.id ? { ...wd, status: "completed" } : wd
-      )
-    );
-    toast.success(
-      `${request.amount} withdrawal for ${request.userName} has been approved.`
-    );
-    setIsDialogOpen(false);
+    reviewWithdrawal({ withdrawalId: request.id, status: "Approved" }, {
+      onSuccess: () => {
+        toast.success(`Withdrawal for ${request.destination} has been approved.`);
+        setIsDialogOpen(false);
+      },
+      onError: () => {
+        toast.error("Failed to approve withdrawal.");
+      }
+    });
   };
 
   const handleReject = (request: WithdrawalRequest) => {
@@ -131,20 +80,22 @@ export function WithdrawalManagement() {
       return;
     }
 
-    setWithdrawals(prev => 
-      prev.map(wd => 
-        wd.id === request.id ? { ...wd, status: "failed", failureReason } : wd
-      )
-    );
-    toast.error(`Withdrawal for ${request.userName} has been rejected.`);
-    setIsDialogOpen(false);
-    setFailureReason("");
+    reviewWithdrawal({ withdrawalId: request.id, status: "Rejected", failure_reason: failureReason }, {
+      onSuccess: () => {
+        toast.error(`Withdrawal for ${request.destination} has been rejected.`);
+        setIsDialogOpen(false);
+        setFailureReason("");
+      },
+      onError: () => {
+        toast.error("Failed to reject withdrawal.");
+      }
+    });
   };
 
   const handleBulkApprove = () => {
     const pendingSelected = selectedWithdrawals.filter(id => {
       const request = withdrawals.find(wd => wd.id === id);
-      return request?.status === "pending";
+      return request?.status === "Pending";
     });
 
     if (pendingSelected.length === 0) {
@@ -152,11 +103,9 @@ export function WithdrawalManagement() {
       return;
     }
 
-    setWithdrawals(prev => 
-      prev.map(wd => 
-        pendingSelected.includes(wd.id) ? { ...wd, status: "completed" } : wd
-      )
-    );
+    pendingSelected.forEach(id => {
+      reviewWithdrawal({ withdrawalId: id, status: "Approved" });
+    });
 
     toast.success(`${pendingSelected.length} withdrawal(s) have been approved.`);
     setSelectedWithdrawals([]);
@@ -176,7 +125,7 @@ export function WithdrawalManagement() {
     return withdrawals.filter(wd => wd.status === statusFilter);
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: Date | string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -194,10 +143,15 @@ export function WithdrawalManagement() {
   };
 
   const filteredWithdrawals = getFilteredWithdrawals();
-  const totalPending = withdrawals.filter(wd => wd.status === "pending").length;
+  const totalPending = withdrawals.filter(wd => wd.status === "Pending").length;
   const totalAmount = withdrawals
-    .filter(wd => wd.status === "pending")
+    .filter(wd => wd.status === "Pending")
     .reduce((sum, wd) => sum + wd.amount, 0);
+
+  const completedWithdrawals = withdrawals.filter(wd => wd.status === "Completed").length;
+  const failedWithdrawals = withdrawals.filter(wd => wd.status === "Failed").length;
+  const totalCompletedAndFailed = completedWithdrawals + failedWithdrawals;
+  const successRate = totalCompletedAndFailed > 0 ? (completedWithdrawals / totalCompletedAndFailed) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -220,9 +174,9 @@ export function WithdrawalManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pending Amount</p>
-                <p className="text-2xl font-bold">{formatAmount(totalAmount, "USD")}</p>
+                <p className="text-2xl font-bold">{formatAmount(totalAmount, "KES")}</p>
               </div>
-              <DollarSign className="h-8 w-8 text-muted-foreground" />
+              <HandCoins className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -232,7 +186,11 @@ export function WithdrawalManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Success Rate</p>
-                <p className="text-2xl font-bold">94%</p>
+                {isLoading ? (
+                  <div className="h-8 w-24 bg-muted rounded-md animate-pulse" />
+                ) : (
+                  <p className="text-2xl font-bold">{successRate.toFixed(0)}%</p>
+                )}
               </div>
               <CheckCircle className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -245,7 +203,7 @@ export function WithdrawalManagement() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
+              <HandCoins className="h-5 w-5" />
               Withdrawal Management
             </CardTitle>
             <div className="flex items-center gap-3">
@@ -255,10 +213,11 @@ export function WithdrawalManagement() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="processing">Processing</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
+                  <SelectItem value="Pending">Pending</SelectItem>
+                  <SelectItem value="In Review">In Review</SelectItem>
+                  <SelectItem value="Approved">Approved</SelectItem>
+                  <SelectItem value="Completed">Completed</SelectItem>
+                  <SelectItem value="Failed">Failed</SelectItem>
                 </SelectContent>
               </Select>
               
@@ -282,7 +241,7 @@ export function WithdrawalManagement() {
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
-                <TableHead>User</TableHead>
+                <TableHead>Destination</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Method</TableHead>
                 <TableHead>Requested</TableHead>
@@ -291,139 +250,141 @@ export function WithdrawalManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredWithdrawals.map((request) => (
-                <TableRow key={request.id}>
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedWithdrawals.includes(request.id)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedWithdrawals(prev => [...prev, request.id]);
-                        } else {
-                          setSelectedWithdrawals(prev => prev.filter(id => id !== request.id));
+              {isLoading ? (
+                <TableRow><TableCell colSpan={7} className="text-center">Loading...</TableCell></TableRow>
+              ) : (
+                filteredWithdrawals.map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedWithdrawals.includes(request.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedWithdrawals(prev => [...prev, request.id]);
+                          } else {
+                            setSelectedWithdrawals(prev => prev.filter(id => id !== request.id));
+                          }
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate">
+                      <div className="font-medium">{JSON.stringify(request.destination)}</div>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {formatAmount(request.amount, "KES")}
+                    </TableCell>
+                    <TableCell>
+                      {getPaymentMethodLabel(request.method)}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {formatDate(request.created_at)}
+                    </TableCell>
+                    <TableCell>
+                      {getStatusBadge(request.status)}
+                    </TableCell>
+                    <TableCell>
+                      <Dialog open={isDialogOpen && selectedRequest?.id === request.id} onOpenChange={(open) => {
+                        setIsDialogOpen(open);
+                        if (!open) {
+                          setSelectedRequest(null);
+                          setFailureReason("");
                         }
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{request.userName}</div>
-                      <div className="text-sm text-muted-foreground">{request.email}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {formatAmount(request.amount, request.currency)}
-                  </TableCell>
-                  <TableCell>
-                    {getPaymentMethodLabel(request.paymentMethod)}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {formatDate(request.requestedAt)}
-                  </TableCell>
-                  <TableCell>
-                    {getStatusBadge(request.status)}
-                  </TableCell>
-                  <TableCell>
-                    <Dialog open={isDialogOpen && selectedRequest?.id === request.id} onOpenChange={(open) => {
-                      setIsDialogOpen(open);
-                      if (!open) {
-                        setSelectedRequest(null);
-                        setFailureReason("");
-                      }
-                    }}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setSelectedRequest(request)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Review
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Withdrawal Request Review - {request.userName}</DialogTitle>
-                        </DialogHeader>
-                        
-                        <div className="space-y-4">
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="text-lg">Request Details</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <label className="text-sm font-medium text-muted-foreground">Amount</label>
-                                  <p className="text-lg font-semibold">{formatAmount(request.amount, request.currency)}</p>
+                      }}>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setSelectedRequest(request)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Review
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle>Withdrawal Request Review - {`${request.destination}`}</DialogTitle>
+                          </DialogHeader>
+                          
+                          <div className="space-y-4">
+                            <Card>
+                              <CardHeader>
+                                <CardTitle className="text-lg">Request Details</CardTitle>
+                              </CardHeader>
+                              <CardContent className="space-y-3">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Amount</label>
+                                    <p className="text-lg font-semibold">{formatAmount(request.amount, "KES")}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Payment Method</label>
+                                    <p className="text-sm">{getPaymentMethodLabel(request.method)}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Destination</label>
+                                    <p className="text-sm break-all">{JSON.stringify(request.destination)}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Requested At</label>
+                                    <p className="text-sm">{formatDate(request.created_at)}</p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <label className="text-sm font-medium text-muted-foreground">Payment Method</label>
-                                  <p className="text-sm">{getPaymentMethodLabel(request.paymentMethod)}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium text-muted-foreground">Destination</label>
-                                  <p className="text-sm break-all">{request.destination}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium text-muted-foreground">Requested At</label>
-                                  <p className="text-sm">{formatDate(request.requestedAt)}</p>
-                                </div>
-                              </div>
-                              
-                              {request.failureReason && (
-                                <div>
-                                  <label className="text-sm font-medium text-muted-foreground">Failure Reason</label>
-                                  <p className="text-sm text-destructive">{request.failureReason}</p>
-                                </div>
-                              )}
-                            </CardContent>
-                          </Card>
+                                
+                                {request.failure_reason && (
+                                  <div>
+                                    <label className="text-sm font-medium text-muted-foreground">Failure Reason</label>
+                                    <p className="text-sm text-destructive">{request.failure_reason}</p>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
 
-                          {/* Review Actions */}
-                          {request.status === "pending" ? (
-                            <div className="space-y-4">
-                              <div>
-                                <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                                  Failure Reason (required for rejection)
-                                </label>
-                                <Textarea
-                                  placeholder="Enter reason for rejection..."
-                                  value={failureReason}
-                                  onChange={(e) => setFailureReason(e.target.value)}
-                                  className="min-h-[80px]"
-                                />
+                            {/* Review Actions */}
+                            {request.status === "Pending" ? (
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                                    Failure Reason (required for rejection)
+                                  </label>
+                                  <Textarea
+                                    placeholder="Enter reason for rejection..."
+                                    value={failureReason}
+                                    onChange={(e) => setFailureReason(e.target.value)}
+                                    className="min-h-[80px]"
+                                  />
+                                </div>
+                                <div className="flex gap-3">
+                                  <Button
+                                    onClick={() => handleApprove(request)}
+                                    variant="outline"
+                                    className="flex-1"
+                                  >
+                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleReject(request)}
+                                    variant="destructive"
+                                    className="flex-1"
+                                  >
+                                    <XCircle className="h-4 w-4 mr-2" />
+                                    Reject
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="flex gap-3">
-                                <Button
-                                  onClick={() => handleApprove(request)}
-                                  className="flex-1 bg-gradient-success hover:opacity-90"
-                                >
-                                  <CheckCircle className="h-4 w-4 mr-2" />
-                                  Approve
-                                </Button>
-                                <Button
-                                  onClick={() => handleReject(request)}
-                                  variant="destructive"
-                                  className="flex-1"
-                                >
-                                  <XCircle className="h-4 w-4 mr-2" />
-                                  Reject
-                                </Button>
+                            ) : (
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                {getStatusBadge(request.status)}
+                                <span>This request has been {request.status}</span>
                               </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              {getStatusBadge(request.status)}
-                              <span>This request has been {request.status}</span>
-                            </div>
-                          )}
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </TableCell>
-                </TableRow>
-              ))}
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

@@ -43,6 +43,7 @@ export const usePayouts = () => {
     return useQuery({
       queryKey: ['withdrawals'],
       queryFn: () => payoutService.getWithdrawals(),
+      refetchInterval: 15000,
     });
   };
 
@@ -57,12 +58,22 @@ export const usePayouts = () => {
     return useQuery({
       queryKey: ['kycSubmissions'],
       queryFn: () => payoutService.getKycSubmissions(),
+      refetchInterval: 15000,
+    });
+  };
+
+  const useReviewKycSubmission = () => {
+    return useMutation({
+      mutationFn: ({ submissionId, ...data }: { submissionId: string; status: 'Verified' | 'Rejected'; reason?: string }) => payoutService.reviewKycSubmission(submissionId, data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['kycSubmissions'] });
+      },
     });
   };
 
   const useReviewWithdrawal = () => {
     return useMutation({
-      mutationFn: (data: { withdrawalId: string; status: 'Approved' | 'Rejected'; reason?: string }) => payoutService.reviewWithdrawal(data),
+      mutationFn: ({ withdrawalId, ...data }: { withdrawalId: string; status: 'Approved' | 'Rejected'; failure_reason?: string }) => payoutService.reviewWithdrawal(withdrawalId, data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['withdrawals'] });
         queryClient.invalidateQueries({ queryKey: ['kycSubmissions'] }); // In case this affects KYC status
@@ -78,6 +89,7 @@ export const usePayouts = () => {
     useGetWithdrawals,
     useDownloadWithdrawals,
     useGetKycSubmissions,
+    useReviewKycSubmission,
     useReviewWithdrawal,
   };
 };

@@ -21,6 +21,7 @@ export type WithdrawalMethod = "Crypto" | "MobileMoney" | "BankAccount";
 export type WithdrawalStatus = "Pending" | "In Review" | "Approved" | "Rejected" | "Completed" | "Failed";
 
 export interface WithdrawalRequest {
+  id: string;
   user_id: string;
   payout_profile_id: string;
   amount: number;

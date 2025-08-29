@@ -6,14 +6,6 @@ interface AgreementsResponse {
   text: string;
 }
 
-interface KycSubmission {
-  // Define the structure of a KYC submission for the admin view
-  id: string;
-  userId: string;
-  status: string;
-  // ... other fields
-}
-
 interface ReviewWithdrawalRequest {
   withdrawalId: string;
   status: 'Approved' | 'Rejected';
@@ -56,8 +48,8 @@ class PayoutService {
     return apiClient.post<ApiResponse<WithdrawalRequest>>(`${this.baseUrl}/withdrawals`, data);
   }
 
-  public async getWithdrawals(): Promise<PaginatedResponse<WithdrawalResponse>> {
-    return apiClient.get<PaginatedResponse<WithdrawalResponse>>(`${this.baseUrl}/withdrawals`);
+  public async getWithdrawals(): Promise<PaginatedResponse<WithdrawalRequest>> {
+    return apiClient.get<PaginatedResponse<WithdrawalRequest>>(`${this.baseUrl}/withdrawals`);
   }
 
   public async downloadWithdrawals(): Promise<any> { // The response might be a blob or file
@@ -67,12 +59,16 @@ class PayoutService {
   }
 
   // Admin
-  public async getKycSubmissions(): Promise<ApiResponse<KycSubmission[]>> {
-    return apiClient.get<ApiResponse<KycSubmission[]>>(`${this.adminBaseUrl}/kyc`);
+  public async getKycSubmissions(): Promise<PaginatedResponse<PayoutProfile>> {
+    return apiClient.get<PaginatedResponse<PayoutProfile>>(`${this.baseUrl}/profile`);
   }
 
-  public async reviewWithdrawal(data: ReviewWithdrawalRequest): Promise<ApiResponse<WithdrawalRequest>> {
-    return apiClient.post<ApiResponse<WithdrawalRequest>>(`${this.adminBaseUrl}/withdrawal/review`, data);
+  public async reviewKycSubmission(submissionId: string, data: { status: 'Verified' | 'Rejected'; reason?: string }): Promise<ApiResponse<any>> {
+    return apiClient.post<ApiResponse<any>>(`${this.baseUrl}/profile/${submissionId}/review`, data);
+  }
+
+  public async reviewWithdrawal(withdrawalId: string, data: { status: 'Approved' | 'Rejected'; failure_reason?: string }): Promise<ApiResponse<WithdrawalRequest>> {
+    return apiClient.post<ApiResponse<WithdrawalRequest>>(`${this.baseUrl}/withdrawals/${withdrawalId}/review`, data);
   }
 }
 

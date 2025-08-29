@@ -25,23 +25,6 @@ const baseSchema = z.object({
   method: z.enum(["Crypto", "MobileMoney", "BankAccount"]),
 });
 
-const cryptoSchema = baseSchema.extend({
-  wallet_address: z.string().min(1, "Wallet address is required"),
-  crypto_currency: z.string().min(1, "Cryptocurrency is required"),
-});
-
-const mobileMoneySchema = baseSchema.extend({
-  phone_number: z.string().min(1, "Phone number is required"),
-  provider: z.string().min(1, "Provider is required"),
-});
-
-const bankAccountSchema = baseSchema.extend({
-  account_number: z.string().min(1, "Account number is required"),
-  bank_name: z.string().min(1, "Bank name is required"),
-  account_holder_name: z.string().min(1, "Account holder name is required"),
-  routing_number: z.string().optional(),
-});
-
 interface WithdrawalFormProps {
   onSubmit: (data: any) => void;
   isLoading?: boolean;
@@ -70,21 +53,8 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
     form.setValue("event_id", selectedEvent);
   }, [selectedEvent]);
   
-  const getSchema = () => {
-    switch (paymentMethod) {
-      case "Crypto":
-        return cryptoSchema;
-      case "MobileMoney":
-        return mobileMoneySchema;
-      case "BankAccount":
-        return bankAccountSchema;
-      default:
-        return baseSchema;
-    }
-  };
-
   const form = useForm<any>({
-    resolver: zodResolver(getSchema()),
+    resolver: zodResolver(baseSchema),
     defaultValues: {
       amount: "",
       method: paymentMethod,
@@ -103,162 +73,6 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
     { value: "MobileMoney", label: "Mobile Money", icon: Smartphone },
     { value: "BankAccount", label: "Bank Account", icon: Building2 },
   ];
-
-  const renderPaymentMethodFields = () => {
-    switch (paymentMethod) {
-      case "Crypto":
-        return (
-          <>
-            <FormField
-              control={form.control}
-              name="crypto_currency"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cryptocurrency</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select cryptocurrency" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="btc">Bitcoin (BTC)</SelectItem>
-                      <SelectItem value="eth">Ethereum (ETH)</SelectItem>
-                      <SelectItem value="usdt">Tether (USDT)</SelectItem>
-                      <SelectItem value="usdc">USD Coin (USDC)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="wallet_address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Wallet Address</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter your wallet address" 
-                      {...field} 
-                      className="font-mono text-sm"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </>
-        );
-
-      case "MobileMoney":
-        return (
-          <>
-            <FormField
-              control={form.control}
-              name="provider"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Provider</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select provider" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="mpesa">M-Pesa</SelectItem>
-                      <SelectItem value="airtel_money">Airtel Money</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="phone_number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter your phone number" 
-                      {...field} 
-                      type="tel"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </>
-        );
-
-      case "BankAccount":
-        return (
-          <>
-            <FormField
-              control={form.control}
-              name="account_holder_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Account Holder Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter account holder name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="bank_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bank Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter bank name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="account_number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Account Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter account number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="routing_number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Routing Number (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter routing number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </>
-        );
-
-      default:
-        return null;
-    }
-  };
 
   return (
     <Card className="bg-gradient-card border-border/50 shadow-card">
@@ -303,7 +117,7 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Available Balance:</span>
                   <span className="text-xl font-semibold text-primary">
-                    ${availableBalance.toFixed(2)}
+                    KES {availableBalance.toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -313,7 +127,7 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount (USD)</FormLabel>
+                  <FormLabel>Amount (KES)</FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="0.00" 
@@ -342,16 +156,6 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
                       onClick={() => {
                         setPaymentMethod(method.value as PaymentMethod);
                         form.setValue("method", method.value as PaymentMethod);
-                       
-                        form.setValue("wallet_address", "");
-                        form.setValue("crypto_currency", "");
-                        form.setValue("phone_number", "");
-                        form.setValue("account_holder_name", "");
-                        form.setValue("bank_name", "");
-                        form.setValue("account_number", "");
-                        form.setValue("routing_number", "");
-                        
-                        console.log(form.getValues());
                       }}
                     >
                       <Icon className="h-6 w-6" />
@@ -360,10 +164,6 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
                   );
                 })}
               </div>
-            </div>
-
-            <div className="space-y-4">
-              {renderPaymentMethodFields()}
             </div>
 
             <Button 
