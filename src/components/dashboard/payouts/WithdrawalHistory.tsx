@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Download, History, Filter } from "lucide-react";
-import { WithdrawalRequest } from "@/types/payouts";
+import { WithdrawalRequest, WithdrawalResponse } from "@/types/payouts";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface WithdrawalHistoryProps {
@@ -61,8 +61,8 @@ export const WithdrawalHistory = ({ withdrawals = [], isLoading }: WithdrawalHis
         getMethodDisplay(w.method),
         w.destination,
         w.status,
-        new Date(w.createdAt).toLocaleDateString(),
-        w.updatedAt ? new Date(w.updatedAt).toLocaleDateString() : "N/A"
+        new Date(w.created_at).toLocaleDateString(),
+        w.updated_at ? new Date(w.updated_at).toLocaleDateString() : "N/A"
       ].join(","))
     ].join("\n");
 
@@ -112,7 +112,7 @@ export const WithdrawalHistory = ({ withdrawals = [], isLoading }: WithdrawalHis
                     <td>${getMethodDisplay(w.method)}</td>
                     <td>${w.destination}</td>
                     <td>${w.status}</td>
-                    <td>${new Date(w.createdAt).toLocaleDateString()}</td>
+                    <td>${new Date(w.created_at).toLocaleDateString()}</td>
                   </tr>
                 `).join("")}
               </tbody>
@@ -191,11 +191,11 @@ export const WithdrawalHistory = ({ withdrawals = [], isLoading }: WithdrawalHis
               ) : paginatedWithdrawals.length > 0 ? (
                 paginatedWithdrawals.map((withdrawal) => (
                   <TableRow key={withdrawal.payout_profile_id}> {/* Assuming payout_profile_id is unique for the list */}
-                    <TableCell>${withdrawal.amount.toLocaleString()}</TableCell>
+                    <TableCell>KES {withdrawal.amount.toLocaleString()}</TableCell>
                     <TableCell>{getMethodDisplay(withdrawal.method)}</TableCell>
                     <TableCell className="max-w-32 truncate">{JSON.stringify(withdrawal.destination)}</TableCell>
                     <TableCell>{getStatusBadge(withdrawal.status)}</TableCell>
-                    <TableCell>{new Date(withdrawal.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>{new Date(withdrawal.created_at).toLocaleDateString()}</TableCell>
                   </TableRow>
                 ))
               ) : (

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ProfileStatusCard, type KycStatus } from "@/components/dashboard/payouts/ProfileStatusCard";
 import { WithdrawalForm } from "@/components/dashboard/payouts/WithdrawalForm";
 import { WithdrawalHistory } from "@/components/dashboard/payouts/WithdrawalHistory";
+import { UpdateFinancialInfoModal } from "@/components/dashboard/payouts/UpdateFinancialInfoModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,20 +12,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Shield, CreditCard } from "lucide-react";
+import { Shield, CreditCard, Building2, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePayouts } from "@/hooks/usePayouts";
 
 const Payouts = () => {
   const { user } = useAuth();
-  const { useGetPayoutProfile, useRequestWithdrawal, useGetWithdrawals } = usePayouts();
+  const { useGetPayoutProfile, useRequestWithdrawal, useGetWithdrawals, useUpdatePayoutProfile } = usePayouts();
 
   const { data: payoutProfile, isLoading: isProfileLoading } = useGetPayoutProfile();
   const { mutate: requestWithdrawal, isPending: isSubmitting } = useRequestWithdrawal();
+  const { mutate: updatePayoutProfile, isPending: isUpdatingProfile } = useUpdatePayoutProfile();
   const { data: withdrawals, isLoading: isHistoryLoading } = useGetWithdrawals();
 
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
+  const [isFinancialInfoModalOpen, setIsFinancialInfoModalOpen] = useState(false);
 
   const handleWithdrawalSubmit = (data: any) => {
     requestWithdrawal(data, {
@@ -34,9 +37,28 @@ const Payouts = () => {
     });
   };
 
-  const kycStatus: KycStatus = payoutProfile?.results[0]?.kyc_status || "Pending";
+  const handleUpdateFinancialProfile = (data: any) => {
+    if (!payoutProfile?.result?.id) return;
+    updatePayoutProfile({ profileId: payoutProfile.result.id, data }, {
+      onSuccess: () => {
+        setIsFinancialInfoModalOpen(false);
+      },
+    });
+  };
+
+  const kycStatus: KycStatus = payoutProfile?.result?.kyc_status || "Pending";
   const userName = `${user?.first_name} ${user?.last_name}`;
   const canAccessWithdrawal = kycStatus === "Verified";
+
+  const initialFinancialData = {
+    wallet_address: payoutProfile?.result?.wallet_address || '',
+    mobile_money_number: payoutProfile?.result?.mobile_money_number || '',
+    bank_account_details: {
+      account_name: payoutProfile?.result?.bank_account_details?.account_name || '',
+      account_number: payoutProfile?.result?.bank_account_details?.account_number || '',
+      bank_code: payoutProfile?.result?.bank_account_details?.bank_code || '',
+    },
+  };
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -59,7 +81,7 @@ const Payouts = () => {
           <ProfileStatusCard
             status={kycStatus}
             userName={userName}
-            lastUpdated={payoutProfile?.results[0]?.updated_at.toString() || new Date().toISOString()}
+            lastUpdated={payoutProfile?.result?.updated_at.toString() || new Date().toISOString()}
             isLoading={isProfileLoading}
           />
 
@@ -115,6 +137,27 @@ const Payouts = () => {
           </Card>
         </div>
 
+        {canAccessWithdrawal && (
+          <Card className="shadow-medium border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-primary" />
+                Financial Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                        Keep your financial information up to date to ensure smooth payouts.
+                    </p>
+                    <Button variant="outline" onClick={() => setIsFinancialInfoModalOpen(true)}>
+                        Update Financial Information
+                    </Button>
+                </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Status Guide */}
         <Card className="bg-gradient-card border-border/50 shadow-card">
           <CardHeader>
@@ -164,7 +207,7 @@ const Payouts = () => {
             </div>
           </CardContent>
         </Card>
-        {canAccessWithdrawal && <WithdrawalHistory withdrawals={withdrawals?.results} isLoading={isHistoryLoading} />}
+        {canAccessWithdrawal && <WithdrawalHistory withdrawals={withdrawals?.results || []} isLoading={isHistoryLoading} />}
       </div>
 
       <Dialog open={isWithdrawalModalOpen} onOpenChange={setIsWithdrawalModalOpen}>
@@ -178,6 +221,14 @@ const Payouts = () => {
           />
         </DialogContent>
       </Dialog>
+
+      <UpdateFinancialInfoModal
+        isOpen={isFinancialInfoModalOpen}
+        onOpenChange={setIsFinancialInfoModalOpen}
+        onSubmit={handleUpdateFinancialProfile}
+        isLoading={isUpdatingProfile}
+        initialData={initialFinancialData}
+      />
     </div>
   );
 };

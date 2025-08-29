@@ -1,5 +1,6 @@
 import { PayoutProfile, WithdrawalRequest, WithdrawalResponse } from '@/types/payouts';
 import { apiClient, ApiResponse } from './api.service';
+import { PaginatedResponse, SuccessResponse } from '@/types/common';
 
 interface AgreementsResponse {
   text: string;
@@ -34,16 +35,16 @@ class PayoutService {
   }
 
   // Profile
-  public async getPayoutProfile(): Promise<ApiResponse<PayoutProfile>> {
-    return apiClient.get<ApiResponse<PayoutProfile>>(`${this.baseUrl}/profile`);
+  public async getPayoutProfile(): Promise<SuccessResponse<PayoutProfile>> {
+    return apiClient.get<SuccessResponse<PayoutProfile>>(`${this.baseUrl}/profile/me`);
   }
 
-  public async updatePayoutProfile(profileData: Partial<PayoutProfile> | FormData): Promise<ApiResponse<PayoutProfile>> {
-    const url = `${this.baseUrl}/profile`;
+  public async updatePayoutProfile(profileId: string, profileData: Partial<PayoutProfile> | FormData): Promise<ApiResponse<PayoutProfile>> {
+    const url = `${this.baseUrl}/profile/${profileId}`;
     if (typeof FormData !== 'undefined' && profileData instanceof FormData) {
-      return apiClient.postFormData<ApiResponse<PayoutProfile>>(url, profileData);
+      return apiClient.patchFormData<ApiResponse<PayoutProfile>>(url, profileData);
     }
-    return apiClient.post<ApiResponse<PayoutProfile>>(url, profileData);
+    return apiClient.patch<ApiResponse<PayoutProfile>>(url, profileData);
   }
 
   public async getAgreements(): Promise<ApiResponse<AgreementsResponse>> {
@@ -55,8 +56,8 @@ class PayoutService {
     return apiClient.post<ApiResponse<WithdrawalRequest>>(`${this.baseUrl}/withdrawals`, data);
   }
 
-  public async getWithdrawals(): Promise<ApiResponse<WithdrawalResponse>> {
-    return apiClient.get<ApiResponse<WithdrawalResponse>>(`${this.baseUrl}/withdrawals`);
+  public async getWithdrawals(): Promise<PaginatedResponse<WithdrawalResponse>> {
+    return apiClient.get<PaginatedResponse<WithdrawalResponse>>(`${this.baseUrl}/withdrawals`);
   }
 
   public async downloadWithdrawals(): Promise<any> { // The response might be a blob or file

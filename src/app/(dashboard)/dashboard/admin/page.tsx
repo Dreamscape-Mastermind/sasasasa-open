@@ -10,14 +10,14 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="text-center space-y-4 py-8">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <Shield className="h-8 w-8 text-primary" />
+        <div className="space-y-4 py-8">
+          <div className="flex space-x-2 mb-4">
+            
             <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text">
               Admin Dashboard
             </h1>
           </div>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground">
             Manage KYC reviews and withdrawal approvals
           </p>
         </div>

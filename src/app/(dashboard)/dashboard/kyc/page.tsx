@@ -117,7 +117,7 @@ const KYC = () => {
       />
 
       <FileUpload
-        label="Selfie Photo"
+        label="Selfie Holding ID"
         accept="image/*"
         onFileSelect={(file) => updateFormData('selfiePhoto', file)}
         error={errors.selfiePhoto}
@@ -175,7 +175,7 @@ const KYC = () => {
           </Link>
         </div>
 
-                  <Card className="shadow-card border-0">
+        <Card className="shadow-card border-0">
             <CardHeader className="pb-8">
               <CardTitle className="text-3xl font-bold">Identity Verification</CardTitle>
               <CardDescription className="text-lg">

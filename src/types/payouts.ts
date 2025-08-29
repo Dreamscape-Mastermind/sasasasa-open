@@ -2,6 +2,7 @@ export type KycStatus = "Pending" | "Needs Update" | "Verified" | "Rejected";
 export type KycIdType = "ID" | "Passport";
 
 export interface PayoutProfile {
+  id: string;
   user_id: string;
   wallet_address: string;
   mobile_money_number?: string;
@@ -12,8 +13,8 @@ export interface PayoutProfile {
   kyc_id_front_image: string; // URL to the image
   kyc_selfie_with_id_image: string; // URL to the image
   accepted_terms: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export type WithdrawalMethod = "Crypto" | "MobileMoney" | "BankAccount";
@@ -27,10 +28,10 @@ export interface WithdrawalRequest {
   destination: any; // wallet address, phone, or bank details
   status: WithdrawalStatus;
   failure_reason?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface WithdrawalResponse {
-  results: WithdrawalRequest
+  results: WithdrawalRequest[]
 }
