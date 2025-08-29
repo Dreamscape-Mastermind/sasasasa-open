@@ -10,6 +10,7 @@ import {
   Settings,
   Ticket,
   Users,
+  Wallet,
 } from "lucide-react";
 
 import Cookies from "js-cookie";
@@ -38,6 +39,7 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
   DASHBOARD_SETTINGS: "/dashboard/settings",
   DASHBOARD_PURCHASES: "/dashboard/purchases",
+  DASHBOARD_PAYOUTS: "/dashboard/payouts",
 
   // Dashboard Blog routes
   DASHBOARD_BLOG: "/dashboard/blog",
@@ -135,6 +137,7 @@ export const NAV_ITEMS = {
     { label: "Dashboard", href: ROUTES.DASHBOARD, icon: Layout },
     { label: "Events", href: ROUTES.DASHBOARD_EVENTS, icon: Calendar },
     { label: "Settings", href: ROUTES.DASHBOARD_SETTINGS, icon: Settings },
+    { label: "Payouts", href: ROUTES.DASHBOARD_PAYOUTS, icon: Wallet },
     // {
     //   label: "My Purchases",
     //   icon: Ticket,
