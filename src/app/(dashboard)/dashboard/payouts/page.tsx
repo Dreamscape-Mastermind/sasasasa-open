@@ -138,7 +138,7 @@ const Payouts = () => {
         </div>
 
         {canAccessWithdrawal && (
-          <Card className="shadow-medium border-0">
+          <Card className="bg-gradient-card border-border/50 shadow-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-primary" />

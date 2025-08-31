@@ -31,6 +31,14 @@ class PayoutService {
     return apiClient.get<SuccessResponse<PayoutProfile>>(`${this.baseUrl}/profile/me`);
   }
 
+  public async createPayoutProfile(profileData: Partial<PayoutProfile> | FormData): Promise<ApiResponse<PayoutProfile>> {
+    const url = `${this.baseUrl}/profile`;
+    if (typeof FormData !== 'undefined' && profileData instanceof FormData) {
+      return apiClient.postFormData<ApiResponse<PayoutProfile>>(url, profileData);
+    }
+    return apiClient.post<ApiResponse<PayoutProfile>>(url, profileData);
+  }
+
   public async updatePayoutProfile(profileId: string, profileData: Partial<PayoutProfile> | FormData): Promise<ApiResponse<PayoutProfile>> {
     const url = `${this.baseUrl}/profile/${profileId}`;
     if (typeof FormData !== 'undefined' && profileData instanceof FormData) {

@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
-import { Upload, X, Check, AlertCircle } from "lucide-react";
+import { Upload, X, Check, AlertCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ImagePreviewModal } from "./ImagePreviewModal";
 
 interface FileUploadProps {
   label: string;
@@ -10,6 +11,7 @@ interface FileUploadProps {
   error?: string;
   maxSize?: number; // in MB
   preview?: boolean;
+  imageUrl?: string;
 }
 
 export const FileUpload = ({ 
@@ -18,11 +20,13 @@ export const FileUpload = ({
   onFileSelect, 
   error, 
   maxSize = 5,
-  preview = true 
+  preview = true,
+  imageUrl
 }: FileUploadProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (selectedFile: File) => {
@@ -86,44 +90,52 @@ export const FileUpload = ({
         <input
           ref={fileInputRef}
           type="file"
+          id="file-upload"
           accept={accept}
           onChange={handleFileChange}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          className="hidden"
         />
         
-        {file ? (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              {previewUrl ? (
+        {previewUrl || imageUrl ? (
+          <div className="flex flex-col sm:flex-row items-center justify-between sm:space-y-0 space-y-4">
+              <div className="flex items-center space-x-3">
                 <img 
-                  src={previewUrl} 
+                  src={previewUrl || imageUrl} 
                   alt="Preview" 
-                  className="w-12 h-12 object-cover rounded-md border"
+                  className="w-24 h-24 object-cover rounded-md border"
                 />
-              ) : (
-                <div className="w-12 h-12 bg-accent rounded-md flex items-center justify-center">
-                  <Check className="w-6 h-6 text-accent-foreground" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">{file ? file.name : 'Current Image'}</p>
+                  {file && (
+                    <p className="text-xs text-muted-foreground">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  )}
+                  {(previewUrl || imageUrl) && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={(e) => {e.stopPropagation(); setIsModalOpen(true);}}
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      View
+                    </Button>
+                  )}
                 </div>
-              )}
-              <div>
-                <p className="text-sm font-medium text-foreground">{file.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {(file.size / 1024 / 1024).toFixed(2)} MB
-                </p>
               </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={file ? removeFile : () => fileInputRef.current?.click()}
+                className="text-muted-foreground hover:text-destructive w-full sm:w-auto"
+              >
+                {file ? <X className="w-4 h-4" /> : 'Replace'}
+              </Button>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={removeFile}
-              className="text-muted-foreground hover:text-destructive"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
         ) : (
-          <div className="text-center">
+          <label htmlFor="file-upload" className="text-center cursor-pointer">
             <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
             <p className="text-sm font-medium text-foreground mb-1">
               Drop your file here or click to browse
@@ -131,7 +143,7 @@ export const FileUpload = ({
             <p className="text-xs text-muted-foreground">
               Max size: {maxSize}MB • {accept.replace('image/', '').toUpperCase()} files
             </p>
-          </div>
+          </label>
         )}
       </div>
 
@@ -141,6 +153,13 @@ export const FileUpload = ({
           <span>{error}</span>
         </div>
       )}
+
+      <ImagePreviewModal 
+        isOpen={isModalOpen} 
+        onOpenChange={setIsModalOpen} 
+        imageUrl={previewUrl || imageUrl || ''}
+        fileName={file?.name}
+      />
     </div>
   );
 };

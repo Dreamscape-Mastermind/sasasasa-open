@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Shield, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,17 +32,30 @@ const KYC = () => {
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof KYCFormData, string>>>({});
-  const { useUpdatePayoutProfile } = usePayouts();
-  const { mutate: updateProfile, isPending: isSubmitting } = useUpdatePayoutProfile();
+  const { useUpdatePayoutProfile, useGetPayoutProfile, useCreatePayoutProfile } = usePayouts();
+  const { data: payoutProfile, isLoading: isProfileLoading } = useGetPayoutProfile();
+  const { mutate: updateProfile, isPending: isUpdatingProfile } = useUpdatePayoutProfile();
+  const { mutate: createProfile, isPending: isCreatingProfile } = useCreatePayoutProfile();
   const router = useRouter();
+
+  useEffect(() => {
+    if (payoutProfile) {
+      setFormData(prev => ({
+        ...prev,
+        idType: payoutProfile?.result?.kyc_id_type === 'Passport' ? 'passport' : 'national-id',
+        idNumber: payoutProfile?.result?.kyc_id_number || '',
+        termsAccepted: !!payoutProfile?.result?.id,
+      }));
+    }
+  }, [payoutProfile]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof KYCFormData, string>> = {};
 
     if (!formData.idType) newErrors.idType = "ID type is required";
     if (!formData.idNumber.trim()) newErrors.idNumber = "ID number is required";
-    if (!formData.idFrontPhoto) newErrors.idFrontPhoto = "ID front photo is required";
-    if (!formData.selfiePhoto) newErrors.selfiePhoto = "Selfie photo is required";
+    if (!formData.idFrontPhoto && !payoutProfile?.result?.kyc_id_front_image) newErrors.idFrontPhoto = "ID front photo is required";
+    if (!formData.selfiePhoto && !payoutProfile?.result?.kyc_selfie_with_id_image) newErrors.selfiePhoto = "Selfie photo is required";
     if (!formData.termsAccepted) newErrors.termsAccepted = "You must accept the terms";
 
     setErrors(newErrors);
@@ -58,19 +71,33 @@ const KYC = () => {
       if (formData.idFrontPhoto) form.append('kyc_id_front_image', formData.idFrontPhoto);
       if (formData.selfiePhoto) form.append('kyc_selfie_with_id_image', formData.selfiePhoto);
       form.append('accepted_terms', String(formData.termsAccepted));
-      form.append('kyc_status', 'Pending');
+      if(!payoutProfile?.result?.kyc_status) form.append('kyc_status', 'Pending');
 
-      updateProfile(form, {
-        onSuccess: () => {
-          toast.success("Your verification documents have been submitted successfully.");
-          router.push('/dashboard/payouts');
-        },
-        onError: () => {
-          toast.error("There was an error submitting your documents. Please try again.");
-        }
-      });
+      if (payoutProfile?.result?.id) {
+        updateProfile({ profileId: payoutProfile.result.id, data: form }, {
+          onSuccess: () => {
+            toast.success("Your verification documents have been submitted successfully.");
+            router.push('/dashboard/payouts');
+          },
+          onError: () => {
+            toast.error("There was an error submitting your documents. Please try again.");
+          }
+        });
+      } else {
+        createProfile(form, {
+          onSuccess: () => {
+            toast.success("Your verification documents have been submitted successfully.");
+            router.push('/dashboard/payouts');
+          },
+          onError: () => {
+            toast.error("There was an error submitting your documents. Please try again.");
+          }
+        });
+      }
     }
   };
+
+  const isSubmitting = isUpdatingProfile || isCreatingProfile;
 
   const updateFormData = (field: keyof KYCFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -85,7 +112,7 @@ const KYC = () => {
         <div className="space-y-2">
           <Label>ID Type</Label>
           <Select value={formData.idType} onValueChange={(value) => updateFormData('idType', value)}>
-            <SelectTrigger className={errors.idType ? 'border-destructive' : ''}>
+            <SelectTrigger className={`rounded-lg ${errors.idType ? 'border-destructive' : ''}`}>
               <SelectValue placeholder="Select ID type" />
             </SelectTrigger>
             <SelectContent>
@@ -102,7 +129,7 @@ const KYC = () => {
             id="idNumber"
             value={formData.idNumber}
             onChange={(e) => updateFormData('idNumber', e.target.value)}
-            className={errors.idNumber ? 'border-destructive' : ''}
+            className={`rounded-lg ${errors.idNumber ? 'border-destructive' : ''}`}
           />
           {errors.idNumber && <p className="text-destructive text-sm">{errors.idNumber}</p>}
         </div>
@@ -114,6 +141,7 @@ const KYC = () => {
         onFileSelect={(file) => updateFormData('idFrontPhoto', file)}
         error={errors.idFrontPhoto}
         maxSize={5}
+        imageUrl={payoutProfile?.result?.kyc_id_front_image}
       />
 
       <FileUpload
@@ -122,6 +150,7 @@ const KYC = () => {
         onFileSelect={(file) => updateFormData('selfiePhoto', file)}
         error={errors.selfiePhoto}
         maxSize={5}
+        imageUrl={payoutProfile?.result?.kyc_selfie_with_id_image}
       />
 
       <Card className="border-info/20 bg-info/5">

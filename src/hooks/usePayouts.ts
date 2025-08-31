@@ -22,6 +22,15 @@ export const usePayouts = () => {
     });
   };
 
+  const useCreatePayoutProfile = () => {
+    return useMutation({
+      mutationFn: (data: Partial<PayoutProfile> | FormData) => payoutService.createPayoutProfile(data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['payoutProfile'] });
+      },
+    });
+  };
+
   const useGetAgreements = () => {
     return useQuery({
       queryKey: ['payoutAgreements'],
@@ -84,6 +93,7 @@ export const usePayouts = () => {
   return {
     useGetPayoutProfile,
     useUpdatePayoutProfile,
+    useCreatePayoutProfile,
     useGetAgreements,
     useRequestWithdrawal,
     useGetWithdrawals,
