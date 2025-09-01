@@ -2,13 +2,25 @@
 import { useState, useEffect } from "react";
 import { Shield, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FileUpload } from "@/components/FileUpload";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 import Link from "next/link";
 import { usePayouts } from "@/hooks/usePayouts";
 import { useRouter } from "next/navigation";
@@ -20,6 +32,8 @@ interface KYCFormData {
   idFrontPhoto: File | null;
   selfiePhoto: File | null;
   termsAccepted: boolean;
+  idFrontPhotoPreview: string | null;
+  selfiePhotoPreview: string | null;
 }
 
 const KYC = () => {
@@ -29,21 +43,35 @@ const KYC = () => {
     idFrontPhoto: null,
     selfiePhoto: null,
     termsAccepted: false,
+    idFrontPhotoPreview: null,
+    selfiePhotoPreview: null,
   });
 
-  const [errors, setErrors] = useState<Partial<Record<keyof KYCFormData, string>>>({});
-  const { useUpdatePayoutProfile, useGetPayoutProfile, useCreatePayoutProfile } = usePayouts();
-  const { data: payoutProfile, isLoading: isProfileLoading } = useGetPayoutProfile();
-  const { mutate: updateProfile, isPending: isUpdatingProfile } = useUpdatePayoutProfile();
-  const { mutate: createProfile, isPending: isCreatingProfile } = useCreatePayoutProfile();
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof KYCFormData, string>>
+  >({});
+  const {
+    useUpdatePayoutProfile,
+    useGetPayoutProfile,
+    useCreatePayoutProfile,
+  } = usePayouts();
+  const { data: payoutProfile, isLoading: isProfileLoading } =
+    useGetPayoutProfile();
+  const { mutate: updateProfile, isPending: isUpdatingProfile } =
+    useUpdatePayoutProfile();
+  const { mutate: createProfile, isPending: isCreatingProfile } =
+    useCreatePayoutProfile();
   const router = useRouter();
-
+  // const payoutProfile = {};
   useEffect(() => {
     if (payoutProfile) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        idType: payoutProfile?.result?.kyc_id_type === 'Passport' ? 'passport' : 'national-id',
-        idNumber: payoutProfile?.result?.kyc_id_number || '',
+        idType:
+          payoutProfile?.result?.kyc_id_type === "Passport"
+            ? "passport"
+            : "national-id",
+        idNumber: payoutProfile?.result?.kyc_id_number || "",
         termsAccepted: !!payoutProfile?.result?.id,
       }));
     }
@@ -54,9 +82,15 @@ const KYC = () => {
 
     if (!formData.idType) newErrors.idType = "ID type is required";
     if (!formData.idNumber.trim()) newErrors.idNumber = "ID number is required";
-    if (!formData.idFrontPhoto && !payoutProfile?.result?.kyc_id_front_image) newErrors.idFrontPhoto = "ID front photo is required";
-    if (!formData.selfiePhoto && !payoutProfile?.result?.kyc_selfie_with_id_image) newErrors.selfiePhoto = "Selfie photo is required";
-    if (!formData.termsAccepted) newErrors.termsAccepted = "You must accept the terms";
+    if (!formData.idFrontPhoto && !payoutProfile?.result?.kyc_id_front_image)
+      newErrors.idFrontPhoto = "ID front photo is required";
+    if (
+      !formData.selfiePhoto &&
+      !payoutProfile?.result?.kyc_selfie_with_id_image
+    )
+      newErrors.selfiePhoto = "Selfie photo is required";
+    if (!formData.termsAccepted)
+      newErrors.termsAccepted = "You must accept the terms";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -64,34 +98,48 @@ const KYC = () => {
 
   const handleSubmit = () => {
     if (validateForm()) {
-      const mappedIdType: KycIdType = formData.idType === 'passport' ? 'Passport' : 'ID';
+      const mappedIdType: KycIdType =
+        formData.idType === "passport" ? "Passport" : "ID";
       const form = new FormData();
-      form.append('kyc_id_type', mappedIdType);
-      form.append('kyc_id_number', formData.idNumber);
-      if (formData.idFrontPhoto) form.append('kyc_id_front_image', formData.idFrontPhoto);
-      if (formData.selfiePhoto) form.append('kyc_selfie_with_id_image', formData.selfiePhoto);
-      form.append('accepted_terms', String(formData.termsAccepted));
-      if(!payoutProfile?.result?.kyc_status) form.append('kyc_status', 'Pending');
-
+      form.append("kyc_id_type", mappedIdType);
+      form.append("kyc_id_number", formData.idNumber);
+      if (formData.idFrontPhoto)
+        form.append("kyc_id_front_image", formData.idFrontPhoto);
+      if (formData.selfiePhoto)
+        form.append("kyc_selfie_with_id_image", formData.selfiePhoto);
+      form.append("accepted_terms", String(formData.termsAccepted));
+      if (!payoutProfile?.result?.kyc_status)
+        form.append("kyc_status", "Pending");
       if (payoutProfile?.result?.id) {
-        updateProfile({ profileId: payoutProfile.result.id, data: form }, {
-          onSuccess: () => {
-            toast.success("Your verification documents have been submitted successfully.");
-            router.push('/dashboard/payouts');
-          },
-          onError: () => {
-            toast.error("There was an error submitting your documents. Please try again.");
+        updateProfile(
+          { profileId: payoutProfile.result.id, data: form },
+          {
+            onSuccess: () => {
+              toast.success(
+                "Your verification documents have been submitted successfully."
+              );
+              router.push("/dashboard/payouts");
+            },
+            onError: () => {
+              toast.error(
+                "There was an error submitting your documents. Please try again."
+              );
+            },
           }
-        });
+        );
       } else {
         createProfile(form, {
           onSuccess: () => {
-            toast.success("Your verification documents have been submitted successfully.");
-            router.push('/dashboard/payouts');
+            toast.success(
+              "Your verification documents have been submitted successfully."
+            );
+            router.push("/dashboard/payouts");
           },
           onError: () => {
-            toast.error("There was an error submitting your documents. Please try again.");
-          }
+            toast.error(
+              "There was an error submitting your documents. Please try again."
+            );
+          },
         });
       }
     }
@@ -100,9 +148,25 @@ const KYC = () => {
   const isSubmitting = isUpdatingProfile || isCreatingProfile;
 
   const updateFormData = (field: keyof KYCFormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      const newState = { ...prev, [field]: value };
+      if (field === "idFrontPhoto" && value instanceof File) {
+        newState.idFrontPhotoPreview = URL.createObjectURL(value);
+      } else if (field === "idFrontPhoto" && value === null) {
+        newState.idFrontPhotoPreview = null;
+      }
+
+      if (field === "selfiePhoto" && value instanceof File) {
+        newState.selfiePhotoPreview = URL.createObjectURL(value);
+      } else if (field === "selfiePhoto" && value === null) {
+        newState.selfiePhotoPreview = null;
+      }
+
+      return newState;
+    });
+
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
@@ -111,8 +175,15 @@ const KYC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>ID Type</Label>
-          <Select value={formData.idType} onValueChange={(value) => updateFormData('idType', value)}>
-            <SelectTrigger className={`rounded-lg ${errors.idType ? 'border-destructive' : ''}`}>
+          <Select
+            value={formData.idType}
+            onValueChange={(value) => updateFormData("idType", value)}
+          >
+            <SelectTrigger
+              className={`rounded-lg ${
+                errors.idType ? "border-destructive" : ""
+              }`}
+            >
               <SelectValue placeholder="Select ID type" />
             </SelectTrigger>
             <SelectContent>
@@ -120,7 +191,9 @@ const KYC = () => {
               <SelectItem value="national-id">National ID Card</SelectItem>
             </SelectContent>
           </Select>
-          {errors.idType && <p className="text-destructive text-sm">{errors.idType}</p>}
+          {errors.idType && (
+            <p className="text-destructive text-sm">{errors.idType}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -128,29 +201,41 @@ const KYC = () => {
           <Input
             id="idNumber"
             value={formData.idNumber}
-            onChange={(e) => updateFormData('idNumber', e.target.value)}
-            className={`rounded-lg ${errors.idNumber ? 'border-destructive' : ''}`}
+            onChange={(e) => updateFormData("idNumber", e.target.value)}
+            className={`rounded-lg ${
+              errors.idNumber ? "border-destructive" : ""
+            }`}
           />
-          {errors.idNumber && <p className="text-destructive text-sm">{errors.idNumber}</p>}
+          {errors.idNumber && (
+            <p className="text-destructive text-sm">{errors.idNumber}</p>
+          )}
         </div>
       </div>
 
       <FileUpload
+        id="id-front-photo"
         label="ID Front Photo"
         accept="image/*"
-        onFileSelect={(file) => updateFormData('idFrontPhoto', file)}
+        onFileSelect={(file) => updateFormData("idFrontPhoto", file)}
         error={errors.idFrontPhoto}
         maxSize={5}
         imageUrl={payoutProfile?.result?.kyc_id_front_image}
+        file={formData.idFrontPhoto}
+        previewUrl={formData.idFrontPhotoPreview}
+        onRemove={() => updateFormData("idFrontPhoto", null)}
       />
 
       <FileUpload
+        id="selfie-photo"
         label="Selfie Holding ID"
         accept="image/*"
-        onFileSelect={(file) => updateFormData('selfiePhoto', file)}
+        onFileSelect={(file) => updateFormData("selfiePhoto", file)}
         error={errors.selfiePhoto}
         maxSize={5}
         imageUrl={payoutProfile?.result?.kyc_selfie_with_id_image}
+        file={formData.selfiePhoto}
+        previewUrl={formData.selfiePhotoPreview}
+        onRemove={() => updateFormData("selfiePhoto", null)}
       />
 
       <Card className="border-info/20 bg-info/5">
@@ -177,18 +262,28 @@ const KYC = () => {
             <Checkbox
               id="terms"
               checked={formData.termsAccepted}
-              onCheckedChange={(checked) => updateFormData('termsAccepted', checked)}
+              onCheckedChange={(checked) =>
+                updateFormData("termsAccepted", checked)
+              }
             />
             <div className="space-y-2">
-              <Label htmlFor="terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <Label
+                htmlFor="terms"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
                 I agree to the Terms of Service and Privacy Policy
               </Label>
               <p className="text-xs text-muted-foreground">
-                By checking this box, you agree to our terms of service and confirm that the information provided is accurate and complete.
+                By checking this box, you agree to our terms of service and
+                confirm that the information provided is accurate and complete.
               </p>
             </div>
           </div>
-          {errors.termsAccepted && <p className="text-destructive text-sm mt-2">{errors.termsAccepted}</p>}
+          {errors.termsAccepted && (
+            <p className="text-destructive text-sm mt-2">
+              {errors.termsAccepted}
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -198,29 +293,44 @@ const KYC = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
-          <Link href="/dashboard/payouts" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link
+            href="/dashboard/payouts"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Payouts
           </Link>
         </div>
 
         <Card className="shadow-card border-0">
-            <CardHeader className="pb-8">
-              <CardTitle className="text-3xl font-bold">Identity Verification</CardTitle>
-              <CardDescription className="text-lg">
-                Complete your KYC verification to unlock full access to our platform. 
-                Your information is secure and encrypted.
-              </CardDescription>
-            </CardHeader>
+          <CardHeader className="pb-8">
+            <CardTitle className="text-3xl font-bold">
+              Identity Verification
+            </CardTitle>
+            <CardDescription className="text-lg">
+              Complete your KYC verification to unlock full access to our
+              platform. Your information is secure and encrypted.
+            </CardDescription>
+          </CardHeader>
 
           <CardContent className="px-8 pb-8">
-            <div className="mb-8">
-              {renderForm()}
-            </div>
+            <div className="mb-8">{renderForm()}</div>
 
             <div className="flex justify-center">
-              <Button variant="default" onClick={handleSubmit} className="min-w-32" disabled={isSubmitting}>
-                {isSubmitting ? 'Submitting...' : <><CheckCircle className="w-4 h-4 mr-2" />Submit Verification</>}
+              <Button
+                variant="default"
+                onClick={handleSubmit}
+                className="min-w-32"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  "Submitting..."
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Submit Verification
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>

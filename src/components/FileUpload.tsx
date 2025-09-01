@@ -3,8 +3,10 @@ import { Upload, X, Check, AlertCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ImagePreviewModal } from "./ImagePreviewModal";
+import Image from "next/image";
 
 interface FileUploadProps {
+  id: string;
   label: string;
   accept?: string;
   onFileSelect: (file: File | null) => void;
@@ -12,19 +14,24 @@ interface FileUploadProps {
   maxSize?: number; // in MB
   preview?: boolean;
   imageUrl?: string;
+  file: File | null;
+  previewUrl: string | null;
+  onRemove: () => void;
 }
 
 export const FileUpload = ({ 
+  id,
   label, 
   accept = "image/*", 
   onFileSelect, 
   error, 
   maxSize = 5,
   preview = true,
-  imageUrl
+  imageUrl,
+  file,
+  previewUrl,
+  onRemove
 }: FileUploadProps) => {
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -34,14 +41,7 @@ export const FileUpload = ({
       onFileSelect(null);
       return;
     }
-
-    setFile(selectedFile);
     onFileSelect(selectedFile);
-
-    if (preview && selectedFile.type.startsWith('image/')) {
-      const url = URL.createObjectURL(selectedFile);
-      setPreviewUrl(url);
-    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -61,9 +61,7 @@ export const FileUpload = ({
   };
 
   const removeFile = () => {
-    setFile(null);
-    setPreviewUrl(null);
-    onFileSelect(null);
+    onRemove();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -90,7 +88,7 @@ export const FileUpload = ({
         <input
           ref={fileInputRef}
           type="file"
-          id="file-upload"
+          id={id}
           accept={accept}
           onChange={handleFileChange}
           className="hidden"
@@ -99,9 +97,12 @@ export const FileUpload = ({
         {previewUrl || imageUrl ? (
           <div className="flex flex-col sm:flex-row items-center justify-between sm:space-y-0 space-y-4">
               <div className="flex items-center space-x-3">
-                <img 
+                <Image 
                   src={previewUrl || imageUrl} 
                   alt="Preview" 
+                  width={96}
+                  height={96}
+                  unoptimized={true}
                   className="w-24 h-24 object-cover rounded-md border"
                 />
                 <div>
@@ -135,7 +136,7 @@ export const FileUpload = ({
               </Button>
             </div>
         ) : (
-          <label htmlFor="file-upload" className="text-center cursor-pointer">
+          <label htmlFor={id} className="text-center cursor-pointer">
             <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
             <p className="text-sm font-medium text-foreground mb-1">
               Drop your file here or click to browse
