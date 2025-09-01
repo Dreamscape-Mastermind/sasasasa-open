@@ -46,11 +46,12 @@ const Payouts = () => {
     });
   };
 
-  const kycStatus: KycStatus = payoutProfile?.result?.kyc_status || "Pending";
+  const kycStatus: KycStatus = payoutProfile && payoutProfile.status == "success" ? payoutProfile?.result?.kyc_status as KycStatus : "Needs Update";
   const userName = `${user?.first_name} ${user?.last_name}`;
   const canAccessWithdrawal = kycStatus === "Verified";
-
-  const initialFinancialData = {
+  const lastUpdated = payoutProfile && payoutProfile.status == "success" ? payoutProfile?.result?.updated_at.toString() : new Date().toISOString();
+  
+  const initialFinancialData = payoutProfile && payoutProfile.status == "success" ? {
     wallet_address: payoutProfile?.result?.wallet_address || '',
     mobile_money_number: payoutProfile?.result?.mobile_money_number || '',
     bank_account_details: {
@@ -58,7 +59,7 @@ const Payouts = () => {
       account_number: payoutProfile?.result?.bank_account_details?.account_number || '',
       bank_code: payoutProfile?.result?.bank_account_details?.bank_code || '',
     },
-  };
+  } : {};
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -81,7 +82,7 @@ const Payouts = () => {
           <ProfileStatusCard
             status={kycStatus}
             userName={userName}
-            lastUpdated={payoutProfile?.result?.updated_at.toString() || new Date().toISOString()}
+            lastUpdated={lastUpdated}
             isLoading={isProfileLoading}
           />
 
@@ -227,7 +228,7 @@ const Payouts = () => {
         onOpenChange={setIsFinancialInfoModalOpen}
         onSubmit={handleUpdateFinancialProfile}
         isLoading={isUpdatingProfile}
-        initialData={initialFinancialData}
+        initialData={initialFinancialData ? initialFinancialData : undefined}
       />
     </div>
   );
