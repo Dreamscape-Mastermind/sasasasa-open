@@ -52,6 +52,15 @@ export const useEvent = () => {
     });
   };
 
+  const useEventRevenue = (id: string) => {
+    return useQuery({
+      queryKey: ["event-revenue", id],
+      enabled: !!id,
+      queryFn: () => eventService.getEventRevenue(id),
+      staleTime: 60 * 1000,
+    });
+  };
+
   const useCreateEvent = () => {
     return useMutation({
       mutationFn: (data: CreateEventRequest) => eventService.createEvent(data),
@@ -283,5 +292,6 @@ export const useEvent = () => {
     useMyInvites,
     // User's Events
     useMyEvents,
+    useEventRevenue,
   };
 };
