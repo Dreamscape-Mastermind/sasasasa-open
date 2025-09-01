@@ -98,7 +98,7 @@ export const FileUpload = ({
           <div className="flex flex-col sm:flex-row items-center justify-between sm:space-y-0 space-y-4">
               <div className="flex items-center space-x-3">
                 <Image 
-                  src={previewUrl || imageUrl} 
+                  src={previewUrl || imageUrl || ''} 
                   alt="Preview" 
                   width={96}
                   height={96}
