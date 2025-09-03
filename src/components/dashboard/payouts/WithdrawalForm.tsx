@@ -7,21 +7,42 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Wallet, Smartphone, Building2, DollarSign, Calendar } from "lucide-react";
-import toast from 'react-hot-toast';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Wallet,
+  Smartphone,
+  Building2,
+  DollarSign,
+  Calendar,
+} from "lucide-react";
+import toast from "react-hot-toast";
 import { useEvent } from "@/hooks/useEvent";
 
 type PaymentMethod = "Crypto" | "MobileMoney" | "BankAccount";
 
-
 const baseSchema = z.object({
   event_id: z.string().min(1, "Event is required"),
-  amount: z.string().min(1, "Amount is required").refine((val) => {
-    const num = parseFloat(val);
-    return !isNaN(num) && num > 0;
-  }, "Amount must be a positive number"),
+  amount: z
+    .string()
+    .min(1, "Amount is required")
+    .refine((val) => {
+      const num = parseFloat(val);
+      return !isNaN(num) && num > 0;
+    }, "Amount must be a positive number"),
   method: z.enum(["Crypto", "MobileMoney", "BankAccount"]),
 });
 
@@ -30,29 +51,29 @@ interface WithdrawalFormProps {
   isLoading?: boolean;
 }
 
-export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormProps) {
+export function WithdrawalForm({
+  onSubmit,
+  isLoading = false,
+}: WithdrawalFormProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("Crypto");
-  const [availableBalance, setAvailableBalance] = useState<number>(0);
+  const [revenueDetails, setRevenueDetails] = useState<any>(null);
   const [selectedEvent, setSelectedEvent] = useState<string>("");
-  const {useMyEvents, useEventRevenue} = useEvent();
+  const { useMyEvents, useEventRevenue } = useEvent();
 
-  const {data: events, isLoading: isEventsLoading} = useMyEvents({owner: true})
+  const { data: events, isLoading: isEventsLoading } = useMyEvents({
+    owner: true,
+  });
 
   // Fetch revenue for selected event and update balance
   const { data: revenue } = useEventRevenue(selectedEvent);
   useEffect(() => {
     if (selectedEvent && revenue?.result) {
-      setAvailableBalance(Number(revenue.result.available_for_payout) || 0);
+      setRevenueDetails(revenue.result);
     } else {
-      setAvailableBalance(0);
+      setRevenueDetails(null);
     }
   }, [selectedEvent, revenue]);
 
-  // Keep event_id in form synced with selectedEvent
-  useEffect(() => {
-    form.setValue("event_id", selectedEvent);
-  }, [selectedEvent]);
-  
   const form = useForm<any>({
     resolver: zodResolver(baseSchema),
     defaultValues: {
@@ -62,9 +83,13 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
     },
   });
 
+  // Keep event_id in form synced with selectedEvent
+  useEffect(() => {
+    form.setValue("event_id", selectedEvent);
+  }, [selectedEvent, form]);
+
   const handleSubmit = (data: any) => {
-    console.log("Withdrawal request:", data);
-    toast.success("Your withdrawal request has been submitted for processing.");
+    toast.custom("Your withdrawal request has been submitted for processing.");
     onSubmit(data);
   };
 
@@ -76,21 +101,26 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
 
   return (
     <Card className="bg-gradient-card border-border/50 shadow-card">
-      <CardHeader>
-      </CardHeader>
+      <CardHeader></CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          <FormField
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
+            <FormField
               control={form.control}
               name="event_id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Select Event</FormLabel>
-                  <Select onValueChange={(value) => {
-                    field.onChange(value);
-                    setSelectedEvent(value);
-                  }} defaultValue={field.value}>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      setSelectedEvent(value);
+                    }}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Choose an event to withdraw from" />
@@ -112,13 +142,41 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
               )}
             />
 
-            {selectedEvent && (
+            {selectedEvent && revenueDetails && (
               <div className="bg-muted/50 rounded-lg p-4 border border-border">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Available Balance:</span>
-                  <span className="text-xl font-semibold text-primary">
-                    KES {availableBalance.toFixed(2)}
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">
+                    Available for Payout:
                   </span>
+                  <span className="text-xl font-semibold text-primary">
+                    KES {Number(revenueDetails.available_for_payout).toFixed(2)}
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div className="flex justify-between">
+                    <span>Total Revenue:</span>
+                    <span>
+                      KES {Number(revenueDetails.total_revenue).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Platform Fee:</span>
+                    <span>
+                      - KES {Number(revenueDetails.platform_fee).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Net Revenue:</span>
+                    <span>
+                      KES {Number(revenueDetails.net_revenue).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Total Withdrawn:</span>
+                    <span>
+                      - KES {Number(revenueDetails.total_withdrawn).toFixed(2)}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
@@ -129,10 +187,10 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
                 <FormItem>
                   <FormLabel>Amount (KES)</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="0.00" 
-                      {...field} 
-                      type="number" 
+                    <Input
+                      placeholder="0.00"
+                      {...field}
+                      type="number"
                       step="0.01"
                       min="0"
                     />
@@ -151,7 +209,9 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
                     <Button
                       key={method.value}
                       type="button"
-                      variant={paymentMethod === method.value ? "default" : "outline"}
+                      variant={
+                        paymentMethod === method.value ? "default" : "outline"
+                      }
                       className="h-auto p-4 flex flex-col items-center space-y-2"
                       onClick={() => {
                         setPaymentMethod(method.value as PaymentMethod);
@@ -166,9 +226,9 @@ export function WithdrawalForm({ onSubmit, isLoading = false }: WithdrawalFormPr
               </div>
             </div>
 
-            <Button 
+            <Button
               variant="default"
-              type="submit" 
+              type="submit"
               className="w-full"
               disabled={isLoading}
             >
