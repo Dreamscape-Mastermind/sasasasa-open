@@ -1,16 +1,50 @@
+
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { useWeb3 } from "@/hooks/useWeb3"
+import { createAppKit, useAppKit } from "@reown/appkit/react";
+import { ethersAdapter, networks, projectId } from "@/config/web3";
+import colors from "tailwindcss/colors";
+import { useEffect } from "react";
 
 
 export function AppKit({children}: {children?: React.ReactNode} ) {
-  const { initializeAppKitButton } = useWeb3()
+    useEffect(() => {
+        const metadata = {
+            name: "Sasasasa",
+            description: "Community to Commerce, now now",
+            url: process.env.NEXT_PUBLIC_APP_URL || "https://sasasasa.co", // origin must match your domain & subdomain
+            icons: ["https://sasasasa.co/images/sasasasaLogo.png"],
+          };
+        
+          // 3. Create the AppKit instance
+          createAppKit({
+            adapters: [ethersAdapter],
+            metadata,
+            networks,
+            projectId,
+            features: {
+              email: true, // default to true
+              socials: ["google", "github", "discord", "x", "farcaster"],
+              emailShowWallets: true, // default to true,
+              analytics: true,
+            },
+            themeVariables: {
+              "--w3m-color-mix": colors.pink[500],
+              "--w3m-color-mix-strength": 40,
+              "--w3m-accent": "#CC322D",
+            },
+            allWallets: "SHOW", // default to SHOW
+          });
+    }, [])
+
+  const { open } = useAppKit();
   
 
   return (
     <>
-    <Button onClick={() => initializeAppKitButton()}>Connect Wallet</Button>
+    <Button onClick={() => open({ view: "Connect" })}>Connect Wallet</Button>
+    {children}
     </>
   )
 }
