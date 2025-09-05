@@ -148,14 +148,14 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Name:</span>
                   <span className="font-medium">
-                    {ticket.owner_details.first_name}{" "}
-                    {ticket.owner_details.last_name}
+                    {ticket.owner_details?.first_name}{" "}
+                    {ticket.owner_details?.last_name}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Email:</span>
                   <span className="font-medium text-right max-w-[60%] break-all">
-                    {ticket.owner_details.email}
+                    {ticket.owner_details?.email}
                   </span>
                 </div>
               </div>
@@ -163,7 +163,7 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Customer ID:</span>
                   <span className="font-mono text-sm text-muted-foreground">
-                    {ticket.owner_details.id}
+                    {ticket.owner_details?.id}
                   </span>
                 </div>
                 <div className="flex justify-between">

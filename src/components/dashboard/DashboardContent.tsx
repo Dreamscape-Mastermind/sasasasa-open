@@ -598,22 +598,22 @@ export default function DashboardContent() {
               <div className="space-y-4">
                 {ticketsData?.result?.results?.map((attendee) => (
                   <div
-                    key={attendee.owner_details.email}
+                    key={attendee.owner_details?.email}
                     className="flex items-center justify-between gap-3 p-3 rounded-xl hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <Avatar className="h-10 w-10 flex-shrink-0 rounded-xl border-2 border-muted/40">
                         
                         <AvatarFallback className="text-xs rounded-xl font-bold">
-                          {attendee.owner_details.first_name
-                            .split(" ")
+                          {attendee.owner_details?.first_name
+                            ?.split(" ")
                             .map((n) => n[0])
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-sm truncate">
-                          {attendee.owner_details.first_name} {attendee.owner_details.last_name}
+                          {attendee.owner_details?.first_name} {attendee.owner_details?.last_name}
                         </div>
                         <div className="text-xs text-muted-foreground truncate">
                           {attendee.ticket_type_name}
