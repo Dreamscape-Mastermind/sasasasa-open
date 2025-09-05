@@ -188,7 +188,7 @@ export function CheckInHistory({
                     Ticket
                   </div>
                   <div className="font-mono text-foreground break-all">
-                    {record.ticket_details.ticket_number}
+                    {record.ticket_details?.ticket_number}
                   </div>
                 </div>
                 <div className="col-span-2">
@@ -196,7 +196,7 @@ export function CheckInHistory({
                     Type
                   </div>
                   <div className="text-foreground">
-                    {record.ticket_details.ticket_type.name}
+                    {record.ticket_details?.ticket_type?.name}
                   </div>
                 </div>
               </div>
@@ -249,22 +249,22 @@ export function CheckInHistory({
                     </div>
                     {record.ticket_details?.owner?.email && (
                       <div className="text-sm text-muted-foreground">
-                        {record.ticket_details?.owner.email}
+                        {record.ticket_details?.owner?.email}
                       </div>
                     )}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-foreground font-mono">
-                  {record.ticket_details.ticket_number}
+                  {record.ticket_details?.ticket_number}
                 </td>
                 <td className="px-6 py-4 text-sm text-foreground">
                   <div>
                     <div className="text-sm font-medium text-foreground">
-                      {record.ticket_details.ticket_type.name}
+                      {record.ticket_details?.ticket_type?.name}
                     </div>
-                    {record.ticket_details.ticket_type.price && (
+                    {record.ticket_details?.ticket_type?.price && (
                       <div className="text-sm text-muted-foreground">
-                        {record.ticket_details.ticket_type.price}
+                        {record.ticket_details?.ticket_type?.price}
                       </div>
                     )}
                   </div>
