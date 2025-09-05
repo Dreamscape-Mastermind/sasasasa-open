@@ -171,9 +171,9 @@ export function CheckInContent({ eventId }: { eventId: string }) {
 
     const csvContent = [
       ["Ticket Number", "Ticket Type", "Check-in Time", "Status"],
-      ...checkInData.result.results.map((record) => [
-        record.ticket_details.ticket_number,
-        record.ticket_details.ticket_type.name,
+      ...checkInData?.result?.results.map((record) => [
+        record.ticket_details?.ticket_number,
+        record.ticket_details?.ticket_type.name,
         record.check_in_time,
         record.status,
       ]),
@@ -308,7 +308,7 @@ export function CheckInContent({ eventId }: { eventId: string }) {
                     Ticket Number
                   </label>
                   <p className="font-mono text-sm bg-muted p-2 rounded border border-border mt-1 text-foreground">
-                    {scannedTicket.ticket_details.ticket_number}
+                    {scannedTicket?.ticket_details?.ticket_number}
                   </p>
                 </div>
 
@@ -317,7 +317,7 @@ export function CheckInContent({ eventId }: { eventId: string }) {
                     Ticket Type
                   </label>
                   <p className="font-medium mt-1 text-foreground">
-                    {scannedTicket.ticket_details.ticket_type.name}
+                    {scannedTicket?.ticket_details?.ticket_type.name}
                   </p>
                 </div>
 
@@ -326,7 +326,7 @@ export function CheckInContent({ eventId }: { eventId: string }) {
                     Checked in by
                   </label>
                   <p className="font-semibold mt-1 text-foreground">
-                    {scannedTicket.checked_in_by_details.name}
+                    {scannedTicket?.checked_in_by_details?.name}
                   </p>
                 </div>
 
@@ -335,7 +335,7 @@ export function CheckInContent({ eventId }: { eventId: string }) {
                     Event
                   </label>
                   <p className="font-medium mt-1 text-foreground">
-                    {scannedTicket.event_details.title}
+                    {scannedTicket?.event_details?.title}
                   </p>
                 </div>
 
@@ -344,7 +344,7 @@ export function CheckInContent({ eventId }: { eventId: string }) {
                     Check-in Time
                   </label>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {scannedTicket.check_in_time}
+                    {scannedTicket?.check_in_time}
                   </p>
                 </div>
 
