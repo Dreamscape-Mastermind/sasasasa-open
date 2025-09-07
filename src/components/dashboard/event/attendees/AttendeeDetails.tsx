@@ -50,7 +50,7 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
           </Badge>
         );
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge variant="secondary">{status ?? 'Unknown'}</Badge>;
     }
   };
 
@@ -64,7 +64,7 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Ticket Details</h1>
           <p className="text-muted-foreground">
-            Ticket: {ticket.ticket_number}
+            Ticket: {ticket?.ticket_number ?? 'N/A'}
           </p>
         </div>
       </div>
@@ -77,29 +77,29 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
           <CardContent className="space-y-4">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Status:</span>
-              {getStatusBadge(ticket.status)}
+              {getStatusBadge(ticket?.status)}
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Ticket Number:</span>
               <span className="font-mono text-sm font-medium">
-                {ticket.ticket_number}
+                {ticket?.ticket_number ?? 'N/A'}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Type:</span>
-              <span className="font-medium">{ticket.ticket_type_name}</span>
+              <span className="font-medium">{ticket?.ticket_type_name ?? 'N/A'}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Price:</span>
-              <span className="font-medium">KSH {ticket.purchase_price}</span>
+              <span className="font-medium">KSH {ticket?.purchase_price ?? '0.00'}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Created:</span>
               <span className="font-medium">
-                {formatDate(ticket.created_at)}
+                {formatDate(ticket?.created_at)}
               </span>
             </div>
-            {ticket.checked_in_at && (
+            {ticket?.checked_in_at && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Checked In:</span>
                 <span className="font-medium">
@@ -118,26 +118,26 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
             <div className="flex justify-between items-start">
               <span className="text-muted-foreground">Event Title:</span>
               <span className="font-medium text-right max-w-[60%]">
-                {ticket.event_title}
+                {ticket?.event_title ?? 'N/A'}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Event ID:</span>
               <span className="font-mono text-sm text-muted-foreground">
-                {ticket.event}
+                {ticket?.event ?? 'N/A'}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Ticket Type ID:</span>
               <span className="font-mono text-sm text-muted-foreground">
-                {ticket.ticket_type}
+                {ticket?.ticket_type ?? 'N/A'}
               </span>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {ticket.owner_details && (
+      {ticket?.owner_details && (
         <Card>
           <CardHeader>
             <CardTitle>Customer Information</CardTitle>
@@ -148,14 +148,14 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Name:</span>
                   <span className="font-medium">
-                    {ticket.owner_details.first_name}{" "}
-                    {ticket.owner_details.last_name}
+                    {ticket.owner_details?.first_name ?? ''}{" "}
+                    {ticket.owner_details?.last_name ?? ''}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Email:</span>
                   <span className="font-medium text-right max-w-[60%] break-all">
-                    {ticket.owner_details.email}
+                    {ticket.owner_details?.email ?? 'N/A'}
                   </span>
                 </div>
               </div>
@@ -163,13 +163,13 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Customer ID:</span>
                   <span className="font-mono text-sm text-muted-foreground">
-                    {ticket.owner_details.id}
+                    {ticket.owner_details?.id ?? 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Owner ID:</span>
                   <span className="font-mono text-sm text-muted-foreground">
-                    {ticket.owner}
+                    {ticket.owner ?? 'N/A'}
                   </span>
                 </div>
               </div>
@@ -178,7 +178,7 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
         </Card>
       )}
 
-      {ticket.qr_code && (
+      {ticket?.qr_code && (
         <Card>
           <CardHeader>
             <CardTitle>QR Code</CardTitle>

@@ -152,7 +152,9 @@ export function CheckInHistory({
           <div className="text-center py-8 bg-muted rounded-lg">
             <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground text-lg">No check-ins found</p>
-            <p className="text-muted-foreground">Try adjusting your search or filter criteria</p>
+            <p className="text-muted-foreground">
+              Try adjusting your search or filter criteria
+            </p>
           </div>
         ) : (
           records.map((record) => (
@@ -160,24 +162,42 @@ export function CheckInHistory({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {getStatusIcon(record.status)}
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(record.status)}`}>
+                  <span
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                      record.status
+                    )}`}
+                  >
                     {getStatusText(record.status)}
                   </span>
                 </div>
-                <div className="text-xs text-muted-foreground">{formatDateTime(record.check_in_time)}</div>
+                <div className="text-xs text-muted-foreground">
+                  {formatDateTime(record.check_in_time)}
+                </div>
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <div className="uppercase tracking-wide text-muted-foreground">Attendee</div>
-                  <div className="text-foreground truncate">{record.ticket_details.owner?.name ?? "—"}</div>
+                  <div className="uppercase tracking-wide text-muted-foreground">
+                    Attendee
+                  </div>
+                  <div className="text-foreground truncate">
+                    {record.ticket_details?.owner?.name ?? "—"}
+                  </div>
                 </div>
                 <div>
-                  <div className="uppercase tracking-wide text-muted-foreground">Ticket</div>
-                  <div className="font-mono text-foreground break-all">{record.ticket_details.ticket_number}</div>
+                  <div className="uppercase tracking-wide text-muted-foreground">
+                    Ticket
+                  </div>
+                  <div className="font-mono text-foreground break-all">
+                    {record.ticket_details?.ticket_number}
+                  </div>
                 </div>
                 <div className="col-span-2">
-                  <div className="uppercase tracking-wide text-muted-foreground">Type</div>
-                  <div className="text-foreground">{record.ticket_details.ticket_type.name}</div>
+                  <div className="uppercase tracking-wide text-muted-foreground">
+                    Type
+                  </div>
+                  <div className="text-foreground">
+                    {record.ticket_details?.ticket_type?.name}
+                  </div>
                 </div>
               </div>
             </div>
@@ -225,26 +245,26 @@ export function CheckInHistory({
                 <td className="px-6 py-4">
                   <div>
                     <div className="text-sm font-medium text-foreground">
-                      {record.ticket_details.owner?.name ?? "—"}
+                      {record.ticket_details?.owner?.name ?? "—"}
                     </div>
-                    {record.ticket_details.owner?.email && (
+                    {record.ticket_details?.owner?.email && (
                       <div className="text-sm text-muted-foreground">
-                        {record.ticket_details.owner.email}
+                        {record.ticket_details?.owner?.email}
                       </div>
                     )}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-foreground font-mono">
-                  {record.ticket_details.ticket_number}
+                  {record.ticket_details?.ticket_number}
                 </td>
                 <td className="px-6 py-4 text-sm text-foreground">
                   <div>
                     <div className="text-sm font-medium text-foreground">
-                      {record.ticket_details.ticket_type.name}
+                      {record.ticket_details?.ticket_type?.name}
                     </div>
-                    {record.ticket_details.ticket_type.price && (
+                    {record.ticket_details?.ticket_type?.price && (
                       <div className="text-sm text-muted-foreground">
-                        {record.ticket_details.ticket_type.price}
+                        {record.ticket_details?.ticket_type?.price}
                       </div>
                     )}
                   </div>
