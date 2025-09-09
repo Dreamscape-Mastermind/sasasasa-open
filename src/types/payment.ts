@@ -113,6 +113,20 @@ export interface TransactionResult {
   amount: number;
   eventId?: string;
   eventTitle?: string;
+  currency?: string;
+  paymentMethod?: string;
+  providerStatus?: string;
+  customerName?: string;
+  customerEmail?: string;
+  ticketCount?: number;
+  ticketTypes?: Array<{
+    id: string;
+    name: string;
+    price: string;
+    currency?: string;
+  }>;
+  completedAt?: string;
+  provider?: string;
 }
 
 /**
@@ -148,6 +162,15 @@ export interface PaymentProvidersResponse
   extends SuccessResponse<PaginatedResponse<PaymentProviderConfig>> {}
 
 export interface PaymentVerificationResponse extends SuccessResponse<Payment> {}
+
+/**
+ * Actual API response structure for payment verification (matches real API)
+ */
+export interface PaymentVerificationApiResponse {
+  status: string;
+  message: string;
+  result: Payment;
+}
 
 export interface PaymentRefundResponse
   extends SuccessResponse<{

@@ -5,7 +5,6 @@ import {
   TimeStamp,
 } from "./common";
 
-import { PaymentDetailsResponse } from "./payment";
 import { TicketTypeWithFlashSale } from "./flashsale";
 
 /**
@@ -178,9 +177,19 @@ export interface TicketTypesResponse
 
 export interface TicketPurchaseResponse
   extends SuccessResponse<{
-    tickets: Ticket[];
-    total_amount: string;
-    payment_details: PaymentDetailsResponse;
+    ticket_type: "paid" | "free";
+    redirect_type: "payment_provider" | "checkout_success";
+    payment_reference: string;
+    authorization_url?: string; // For paid tickets
+    access_code?: string; // For paid tickets
+    provider?: string; // For paid tickets
+    amount?: number; // For paid tickets
+    currency?: string; // For paid tickets
+    message?: string; // For free tickets
+    tickets: Array<{
+      ticket_number: string;
+      status: TicketStatus;
+    }>;
   }> {}
 
 export interface TicketRefundResponse extends SuccessResponse<TicketRefund> {}

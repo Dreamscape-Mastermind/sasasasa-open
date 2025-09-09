@@ -58,31 +58,6 @@ export function EventCheckout({
   const [error, setError] = useState<string | null>(null);
   const { transaction } = usePaymentVerification();
 
-  const { verifyPayment } = usePaymentVerification({
-    context: "EventCheckout",
-    onSuccess: (result) => {
-      logger.info("Free ticket transaction successful", {
-        reference: result.reference,
-      });
-      analytics.trackEvent({
-        event: "free_ticket_success",
-        reference: result.reference,
-      });
-      setStep("success");
-    },
-    onError: (error) => {
-      logger.error("Free ticket verification failed", {
-        error: error.message,
-      });
-      analytics.trackEvent({
-        event: "free_ticket_verification_failed",
-        error: error.message,
-      });
-      setStep("error");
-      setError(error.message);
-    },
-  });
-
   const {
     register,
     handleSubmit,
@@ -141,54 +116,66 @@ export function EventCheckout({
 
       const result = await purchaseTickets.mutateAsync(payload);
 
-      if (result.status === "success") {
-        // For free tickets, there won't be an authorization_url
-        if (!result.result?.payment_details?.authorization_url) {
-          const reference = result.result?.payment_details?.reference;
+      if (result.status === "success" && result.result) {
+        const { ticket_type, redirect_type, payment_reference } = result.result;
 
-          if (!reference) {
-            throw new Error("No payment reference found");
-          }
+        // Save event slug to cache for both paid and free tickets
+        localStorage.setItem("paidEventSlug", slug);
 
-          logger.info("Verifying free ticket transaction", { reference });
-          analytics.trackEvent({
-            event: "free_ticket_verification_start",
-            reference,
+        if (ticket_type === "free" && redirect_type === "checkout_success") {
+          // Handle free tickets - redirect to checkout success page
+          const checkout_url = `/checkout/callback?trxref=${payment_reference}&reference=${payment_reference}`;
+
+          logger.info("Free ticket purchase successful", {
+            reference: payment_reference,
+            checkout_url,
           });
 
-          await verifyPayment(reference);
-          // Save paid event slug to cache
-          localStorage.setItem("paidEventSlug", slug);
+          analytics.trackEvent({
+            event: "free_ticket_purchase_success",
+            reference: payment_reference,
+            ticket_count: tickets.reduce((sum, t) => sum + t.quantity, 0),
+          });
 
+          // Redirect to checkout success page
+          if (typeof window !== "undefined") {
+            router.push(checkout_url);
+          }
           return;
         }
 
-        // Handle paid tickets with authorization URL
-        const authorization_url =
-          result.result?.payment_details?.authorization_url;
-        if (!authorization_url) {
-          throw new Error("No payment URL found");
+        if (ticket_type === "paid" && redirect_type === "payment_provider") {
+          // Handle paid tickets - redirect to payment provider
+          const authorization_url = result.result.authorization_url;
+
+          if (!authorization_url) {
+            throw new Error("No payment URL found for paid tickets");
+          }
+
+          logger.info("Paid ticket checkout successful", {
+            email: data.email,
+            total,
+            paymentUrl: authorization_url,
+            reference: payment_reference,
+          });
+
+          analytics.trackEvent({
+            event: "paid_ticket_checkout_success",
+            total_amount: total,
+            ticket_count: tickets.reduce((sum, t) => sum + t.quantity, 0),
+            reference: payment_reference,
+          });
+
+          // Redirect to payment provider
+          if (typeof window !== "undefined") {
+            window.location.assign(authorization_url);
+          }
+          return;
         }
 
-        logger.info("Paid ticket checkout successful", {
-          email: data.email,
-          total,
-          paymentUrl: authorization_url,
-        });
-
-        analytics.trackEvent({
-          event: "paid_ticket_checkout_success",
-          total_amount: total,
-          ticket_count: tickets.reduce((sum, t) => sum + t.quantity, 0),
-        });
-
-        // Save paid event slug to cache
-        localStorage.setItem("paidEventSlug", slug);
-
-        if (typeof window !== "undefined") {
-          window.location.assign(authorization_url);
-        }
-        return;
+        throw new Error(
+          `Unsupported ticket type or redirect type: ${ticket_type}/${redirect_type}`
+        );
       }
 
       throw new Error(
@@ -370,12 +357,16 @@ export function EventCheckout({
           <PaymentStatusDialog
             isOpen={true}
             onClose={onClose}
-            transaction={transaction ? transaction : {
-              status: PaymentStatus.FAILED,
-              message: error || "Payment failed",
-              reference: "",
-              amount: 0,
-            }}
+            transaction={
+              transaction
+                ? transaction
+                : {
+                    status: PaymentStatus.FAILED,
+                    message: error || "Payment failed",
+                    reference: "",
+                    amount: 0,
+                  }
+            }
             onPurchaseAgain={() => setStep("details")}
           />
         );
@@ -385,12 +376,16 @@ export function EventCheckout({
           <PaymentStatusDialog
             isOpen={true}
             onClose={onClose}
-            transaction={transaction ? transaction : {
-              status: PaymentStatus.COMPLETED,
-              message: "Your tickets have been purchased successfully",
-              reference: "",
-              amount: total,
-            }}
+            transaction={
+              transaction
+                ? transaction
+                : {
+                    status: PaymentStatus.COMPLETED,
+                    message: "Your tickets have been purchased successfully",
+                    reference: "",
+                    amount: total,
+                  }
+            }
           />
         );
     }

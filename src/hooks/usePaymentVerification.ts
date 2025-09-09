@@ -1,4 +1,5 @@
 import { PaymentStatus, TransactionResult } from "@/types/payment";
+
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
 import { usePayment } from "@/hooks/usePayment";
@@ -25,7 +26,7 @@ export function usePaymentVerification({
   const [loading, setLoading] = useState(true);
   const logger = useLogger({ context });
 
-  const verifyPayment = async (reference) => {
+  const verifyPayment = async (reference, trxref) => {
     if (!reference) {
       const error = new Error("Invalid payment reference");
       setTransaction({
@@ -40,66 +41,118 @@ export function usePaymentVerification({
     }
 
     try {
-      const result = await verifyPaymentMutation.mutateAsync({
+      const apiResponse = await verifyPaymentMutation.mutateAsync({
         reference,
+        trxref,
       });
 
+      // Parse the API response structure
+      // Handle both wrapped and direct API responses
+      let paymentData: any;
+      let apiStatus: string;
+      let apiMessage: string;
 
-      if (result.result?.status === PaymentStatus.COMPLETED) {
-        const successResult = {
-          status: result.result?.status,
-          message:
-            result.result?.last_error_message ||
-            "Payment completed successfully",
-          reference: result.result?.reference,
-          amount: result.result?.amount,
-          eventId: result.result?.metadata?.event.id,
-          eventTitle: result.result?.metadata?.event.title,
+      if (apiResponse.result) {
+        // Wrapped response from service
+        paymentData = apiResponse.result;
+        apiStatus = apiResponse.status;
+        apiMessage = apiResponse.message;
+      } else {
+        // Direct API response structure
+        paymentData = apiResponse;
+        apiStatus = apiResponse.status;
+        apiMessage = apiResponse.message;
+      }
+
+      if (paymentData?.status === PaymentStatus.COMPLETED) {
+        const successResult: TransactionResult = {
+          status: paymentData.status,
+          message: apiMessage || "Payment completed successfully",
+          reference: paymentData.reference,
+          amount: parseFloat(paymentData.amount.toString()),
+          currency: paymentData.currency,
+          paymentMethod: paymentData.payment_method || undefined,
+          providerStatus: paymentData.provider_status || undefined,
+          customerName:
+            paymentData.customer_first_name && paymentData.customer_last_name
+              ? `${paymentData.customer_first_name} ${paymentData.customer_last_name}`
+              : paymentData.customer_first_name ||
+                paymentData.customer_last_name ||
+                undefined,
+          customerEmail: paymentData.customer_email || undefined,
+          ticketCount: paymentData.metadata?.ticket_count,
+          ticketTypes: paymentData.metadata?.ticket_types,
+          completedAt: paymentData.completed_at || undefined,
+          provider: paymentData.provider,
+          eventId: paymentData.metadata?.event?.id,
+          eventTitle: paymentData.metadata?.event?.title,
         };
 
         setTransaction(successResult);
         // Send successful payment event
         trackEvent({
           event: "purchase",
-          value: result.result?.amount,
-          transaction_id: result.result?.reference,
+          value: parseFloat(paymentData.amount.toString()),
+          transaction_id: paymentData.reference,
           status: "completed",
         });
         logger.info("Purchase complete", {
-          id: result.result?.reference,
-          amount: result.result?.amount,
+          id: paymentData.reference,
+          amount: paymentData.amount,
         });
         onSuccess?.(successResult);
       } else {
-        const failedResult = {
-          status: result.result?.status || PaymentStatus.FAILED,
+        const failedResult: TransactionResult = {
+          status: paymentData?.status || PaymentStatus.FAILED,
           message:
-            result.result?.last_error_message || "Payment verification failed",
-          reference: result.result?.reference || reference || "",
-          amount: result.result?.amount || 0,
+            apiMessage ||
+            paymentData?.last_error_message ||
+            "Payment verification failed",
+          reference: paymentData?.reference || reference || "",
+          amount: paymentData ? parseFloat(paymentData.amount.toString()) : 0,
+          currency: paymentData?.currency,
+          paymentMethod: paymentData?.payment_method || undefined,
+          providerStatus: paymentData?.provider_status || undefined,
+          customerName:
+            paymentData?.customer_first_name && paymentData?.customer_last_name
+              ? `${paymentData.customer_first_name} ${paymentData.customer_last_name}`
+              : paymentData?.customer_first_name ||
+                paymentData?.customer_last_name ||
+                undefined,
+          customerEmail: paymentData?.customer_email || undefined,
+          ticketCount: paymentData?.metadata?.ticket_count,
+          ticketTypes: paymentData?.metadata?.ticket_types,
+          completedAt: paymentData?.completed_at || undefined,
+          provider: paymentData?.provider,
+          eventId: paymentData?.metadata?.event?.id,
+          eventTitle: paymentData?.metadata?.event?.title,
         };
 
         setTransaction(failedResult);
         // Send failed payment event
         trackEvent({
           event: "purchase_failed",
-          value: result.result?.amount || 0,
-          transaction_id: result.result?.reference || reference || "",
-          status: result.result?.status || PaymentStatus.FAILED,
+          value: paymentData ? parseFloat(paymentData.amount.toString()) : 0,
+          transaction_id: paymentData?.reference || reference || "",
+          status: paymentData?.status || PaymentStatus.FAILED,
           error_message:
-            result.result?.last_error_message || "Payment verification failed",
+            apiMessage ||
+            paymentData?.last_error_message ||
+            "Payment verification failed",
         });
         logger.error("Purchase failed", {
-          id: result.result?.reference || reference,
-          amount: result.result?.amount || 0,
-          status: result.result?.status || PaymentStatus.FAILED,
+          id: paymentData?.reference || reference,
+          amount: paymentData ? parseFloat(paymentData.amount.toString()) : 0,
+          status: paymentData?.status || PaymentStatus.FAILED,
           error:
-            result.result?.last_error_message || "Payment verification failed",
+            apiMessage ||
+            paymentData?.last_error_message ||
+            "Payment verification failed",
         });
         onError?.(new Error(failedResult.message));
       }
     } catch (error) {
-      const errorResult = {
+      const errorResult: TransactionResult = {
         status: PaymentStatus.FAILED,
         message:
           error instanceof Error ? error.message : "Failed to verify payment",
