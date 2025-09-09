@@ -187,6 +187,23 @@ export interface PerformersResponse
   extends SuccessResponse<PaginatedResponse<Performer>> {}
 
 /**
+ * Revenue types
+ */
+export interface EventRevenue {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  total_revenue: string; // decimal as string from backend
+  platform_fee: string; // decimal as string
+  net_revenue: string; // decimal as string
+  total_withdrawn: string; // decimal as string
+  available_for_payout: string; // decimal as string
+  event: string; // event id
+}
+
+export interface EventRevenueResponse extends SuccessResponse<EventRevenue> {}
+
+/**
  * Query parameter interfaces
  */
 export interface EventQueryParams {
@@ -202,6 +219,7 @@ export interface EventQueryParams {
   page_size?: number;
   is_past?: boolean;
   is_featured?: boolean;
+  owner?: boolean;
   location__city?: string;
   location__country?: string;
   start_date?: string;
