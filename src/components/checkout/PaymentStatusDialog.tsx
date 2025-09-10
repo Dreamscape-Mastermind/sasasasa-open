@@ -37,7 +37,7 @@ export function PaymentStatusDialog({
 }: PaymentStatusDialogProps) {
   if (loading) {
     return (
-      <Dialog open={isOpen} onOpenChange={() => {}}>
+      <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[600px] bg-background border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground">
@@ -54,7 +54,7 @@ export function PaymentStatusDialog({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-background border-border">
         <DialogHeader>
           <DialogTitle className="text-foreground">
