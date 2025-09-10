@@ -67,7 +67,7 @@ const AdminDashboard = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="kyc" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-1 h-auto md:grid-cols-2 md:h-10">
             <TabsTrigger value="kyc" className="flex items-center gap-2">
               KYC Reviews
             </TabsTrigger>
