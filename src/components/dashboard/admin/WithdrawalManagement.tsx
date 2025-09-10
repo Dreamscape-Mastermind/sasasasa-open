@@ -279,14 +279,14 @@ export function WithdrawalManagement() {
       {/* Main Table */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-start md:justify-between gap-4">
             <CardTitle className="flex items-center gap-2">
               <HandCoins className="h-5 w-5" />
               Withdrawal Management
             </CardTitle>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col md:flex-row items-center gap-3">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full md:w-40">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -302,7 +302,7 @@ export function WithdrawalManagement() {
               <Button
                 onClick={handleBulkApprove}
                 disabled={selectedWithdrawals.length === 0}
-                className="bg-gradient-success hover:opacity-90"
+                className="bg-gradient-success hover:opacity-90 w-full md:w-auto"
               >
                 Bulk Approve ({selectedWithdrawals.length})
               </Button>
