@@ -261,7 +261,7 @@ export function DiscountCodesTable({
                   <Percent className="h-4 w-4 mr-1" />
                   {code.discount_type === DiscountType.PERCENTAGE
                     ? `${code.amount}%`
-                    : `KSH. ${code.amount}`}
+                    : `KES. ${code.amount}`}
                 </div>
                 <div className="flex items-center mb-1 sm:mb-0">
                   <Clock className="h-4 w-4 mr-1" />
@@ -271,7 +271,7 @@ export function DiscountCodesTable({
                 {code.max_discount_amount && (
                   <div className="flex items-center mb-1 sm:mb-0">
                     <span className="text-xs sm:text-sm text-muted-foreground">
-                      Max: Ksh. {code.max_discount_amount}
+                      Max: KES. {code.max_discount_amount}
                     </span>
                   </div>
                 )}

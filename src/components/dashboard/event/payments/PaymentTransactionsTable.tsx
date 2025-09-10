@@ -173,7 +173,9 @@ export function PaymentTransactionsTable({
             {/* Mobile card list */}
             <div className="sm:hidden space-y-3">
               {payments.length === 0 ? (
-                <div className="rounded-xl border p-4 text-center text-muted-foreground">No transactions found</div>
+                <div className="rounded-xl border p-4 text-center text-muted-foreground">
+                  No transactions found
+                </div>
               ) : (
                 payments.map((payment) => (
                   <button
@@ -182,7 +184,9 @@ export function PaymentTransactionsTable({
                     className="w-full text-left rounded-xl border p-4 bg-card hover:border-primary/40 transition"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="font-semibold text-foreground">KSH. {payment.amount} {payment.currency}</div>
+                      <div className="font-semibold text-foreground">
+                        KES. {payment.amount} {payment.currency}
+                      </div>
                       <Badge variant={getStatusBadgeVariant(payment.status)}>
                         {payment.status.toLowerCase()}
                       </Badge>
@@ -190,15 +194,22 @@ export function PaymentTransactionsTable({
                     <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                       <div>
                         <div className="uppercase tracking-wide">Date</div>
-                        <div className="text-foreground">{formatDate(payment.created_at)}</div>
+                        <div className="text-foreground">
+                          {formatDate(payment.created_at)}
+                        </div>
                       </div>
                       <div>
                         <div className="uppercase tracking-wide">Customer</div>
-                        <div className="text-foreground truncate">{payment.customer_first_name} {payment.customer_last_name}</div>
+                        <div className="text-foreground truncate">
+                          {payment.customer_first_name}{" "}
+                          {payment.customer_last_name}
+                        </div>
                       </div>
                       <div className="col-span-2">
                         <div className="uppercase tracking-wide">Reference</div>
-                        <div className="font-mono text-foreground break-all">{payment.reference}</div>
+                        <div className="font-mono text-foreground break-all">
+                          {payment.reference}
+                        </div>
                       </div>
                     </div>
                   </button>
@@ -257,10 +268,10 @@ export function PaymentTransactionsTable({
                         <TableCell>
                           {payment.metadata?.event?.title
                             ? payment.metadata.event.title
-                            : `Event #KSH. {payment.id}`}
+                            : `Event #KES. {payment.id}`}
                         </TableCell>
                         <TableCell>
-                          <span className="text-xs">KSH. </span>
+                          <span className="text-xs">KES. </span>
                           {payment.amount} {payment.currency}
                         </TableCell>
                         <TableCell>

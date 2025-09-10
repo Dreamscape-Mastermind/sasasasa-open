@@ -50,7 +50,7 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
           </Badge>
         );
       default:
-        return <Badge variant="secondary">{status ?? 'Unknown'}</Badge>;
+        return <Badge variant="secondary">{status ?? "Unknown"}</Badge>;
     }
   };
 
@@ -64,7 +64,7 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Ticket Details</h1>
           <p className="text-muted-foreground">
-            Ticket: {ticket?.ticket_number ?? 'N/A'}
+            Ticket: {ticket?.ticket_number ?? "N/A"}
           </p>
         </div>
       </div>
@@ -82,16 +82,18 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
             <div className="flex justify-between">
               <span className="text-muted-foreground">Ticket Number:</span>
               <span className="font-mono text-sm font-medium">
-                {ticket?.ticket_number ?? 'N/A'}
+                {ticket?.ticket_number ?? "N/A"}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Type:</span>
-              <span className="font-medium">{ticket?.ticket_type_name ?? 'N/A'}</span>
+              <span className="font-medium">
+                {ticket?.ticket_type_name ?? "N/A"}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Price:</span>
-              <span className="font-medium">KSH {ticket?.purchase_price ?? '0.00'}</span>
+              <span className="font-medium">KES {ticket.purchase_price}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Created:</span>
@@ -118,19 +120,19 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
             <div className="flex justify-between items-start">
               <span className="text-muted-foreground">Event Title:</span>
               <span className="font-medium text-right max-w-[60%]">
-                {ticket?.event_title ?? 'N/A'}
+                {ticket?.event_title ?? "N/A"}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Event ID:</span>
               <span className="font-mono text-sm text-muted-foreground">
-                {ticket?.event ?? 'N/A'}
+                {ticket?.event ?? "N/A"}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Ticket Type ID:</span>
               <span className="font-mono text-sm text-muted-foreground">
-                {ticket?.ticket_type ?? 'N/A'}
+                {ticket?.ticket_type ?? "N/A"}
               </span>
             </div>
           </CardContent>
@@ -148,14 +150,14 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Name:</span>
                   <span className="font-medium">
-                    {ticket.owner_details?.first_name ?? ''}{" "}
-                    {ticket.owner_details?.last_name ?? ''}
+                    {ticket.owner_details?.first_name ?? ""}{" "}
+                    {ticket.owner_details?.last_name ?? ""}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Email:</span>
                   <span className="font-medium text-right max-w-[60%] break-all">
-                    {ticket.owner_details?.email ?? 'N/A'}
+                    {ticket.owner_details?.email ?? "N/A"}
                   </span>
                 </div>
               </div>
@@ -163,13 +165,13 @@ export function AttendeeDetails({ ticket, onBack }: AttendeeDetailsProps) {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Customer ID:</span>
                   <span className="font-mono text-sm text-muted-foreground">
-                    {ticket.owner_details?.id ?? 'N/A'}
+                    {ticket.owner_details?.id ?? "N/A"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Owner ID:</span>
                   <span className="font-mono text-sm text-muted-foreground">
-                    {ticket.owner ?? 'N/A'}
+                    {ticket.owner ?? "N/A"}
                   </span>
                 </div>
               </div>

@@ -30,7 +30,7 @@ export function PaymentAnalytics({ eventId }: PaymentAnalyticsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            <span className="text-sm">KSH. </span>
+            <span className="text-sm">KES. </span>
             {analytics.total_revenue.toLocaleString()}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -46,7 +46,7 @@ export function PaymentAnalytics({ eventId }: PaymentAnalyticsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            <span className="text-sm">KSH. </span>
+            <span className="text-sm">KES. </span>
             {analytics.pending_payments.toLocaleString()}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -62,7 +62,7 @@ export function PaymentAnalytics({ eventId }: PaymentAnalyticsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            <span className="text-sm">KSH. </span>
+            <span className="text-sm">KES. </span>
             {analytics.avg_ticket_price.toFixed(2)}
           </div>
           <p className="text-xs text-muted-foreground">Across all events</p>
@@ -74,7 +74,7 @@ export function PaymentAnalytics({ eventId }: PaymentAnalyticsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            <span className="text-sm">KSH. </span>
+            <span className="text-sm">KES. </span>
             {analytics?.refunds}
           </div>
           <p className="text-xs text-muted-foreground">

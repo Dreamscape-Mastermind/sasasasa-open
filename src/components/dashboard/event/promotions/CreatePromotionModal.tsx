@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { DollarSign, Percent, X } from "lucide-react";
+import { HandCoins, Percent, X } from "lucide-react";
 import DatePicker from "react-datepicker";
 import { AlertCircle } from "lucide-react";
 
@@ -10,9 +10,8 @@ import { TicketType } from "@/types/ticket";
 import { useDiscount } from "@/hooks/useDiscount";
 import { useFlashSale } from "@/hooks/useFlashSale";
 import { useTicket } from "@/hooks/useTicket";
-import styles from '@/components/Datepicker.module.css';
+import styles from "@/components/Datepicker.module.css";
 import "react-datepicker/dist/react-datepicker.css";
-
 
 interface CreatePromotionModalProps {
   isOpen: boolean;
@@ -133,7 +132,7 @@ export function CreatePromotionModal({
     >
   ) => {
     const { name, value } = e.target;
-    console.log({name, value});
+    console.log({ name, value });
     setFormData((prev) => ({ ...prev, [name]: value }));
     setHasChanges(true);
   };
@@ -497,7 +496,7 @@ export function CreatePromotionModal({
                     {formData.discountType === "percentage" ? (
                       <Percent className="absolute left-2 top-2.5 h-4 w-4 text-foreground" />
                     ) : (
-                      <DollarSign className="absolute left-2 top-2.5 h-4 w-4 text-foreground" />
+                      <HandCoins className="absolute left-2 top-2.5 h-4 w-4 text-foreground" />
                     )}
                   </div>
                 </div>
@@ -594,7 +593,9 @@ export function CreatePromotionModal({
                     onChange={(date: Date | null) => {
                       setFormData((prev) => ({
                         ...prev,
-                        startDateTime: date ? date.toLocaleString('sv-SE').slice(0, 16) : "",
+                        startDateTime: date
+                          ? date.toLocaleString("sv-SE").slice(0, 16)
+                          : "",
                       }));
                       setHasChanges(true);
                     }}
@@ -625,7 +626,9 @@ export function CreatePromotionModal({
                     onChange={(date: Date | null) => {
                       setFormData((prev) => ({
                         ...prev,
-                        endDateTime: date ? date.toLocaleString('sv-SE').slice(0, 16) : "",
+                        endDateTime: date
+                          ? date.toLocaleString("sv-SE").slice(0, 16)
+                          : "",
                       }));
                       setHasChanges(true);
                     }}
@@ -635,7 +638,7 @@ export function CreatePromotionModal({
                     showTimeSelect
                     timeFormat="HH:mm"
                     timeIntervals={30}
-                    popperClassName={styles.customDatepicker} 
+                    popperClassName={styles.customDatepicker}
                     required
                   />
                 </div>

@@ -114,7 +114,7 @@ export function PaymentDetails({ paymentId, onBack }: PaymentDetailsProps) {
             <div className="flex justify-between">
               <span className="text-muted-foreground">Amount:</span>
               <span className="font-medium">
-                KSH.{payment.amount} {payment.currency}
+                KES.{payment.amount} {payment.currency}
               </span>
             </div>
             <div className="flex justify-between">
@@ -217,7 +217,7 @@ export function PaymentDetails({ paymentId, onBack }: PaymentDetailsProps) {
                           <div className="flex justify-between items-center">
                             <span className="font-medium">{ticket.name}</span>
                             <span className="text-sm text-muted-foreground">
-                              KSH {ticket.price}
+                              KES {ticket.price}
                             </span>
                           </div>
                           <div className="text-xs text-muted-foreground mt-1">
@@ -275,7 +275,7 @@ export function PaymentDetails({ paymentId, onBack }: PaymentDetailsProps) {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Fees:</span>
                       <span className="font-medium">
-                        KSH{" "}
+                        KES{" "}
                         {(
                           payment.metadata.paystack_response.fees / 100
                         ).toFixed(2)}
@@ -284,7 +284,7 @@ export function PaymentDetails({ paymentId, onBack }: PaymentDetailsProps) {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Amount:</span>
                       <span className="font-medium">
-                        KSH{" "}
+                        KES{" "}
                         {(
                           payment.metadata.paystack_response.amount / 100
                         ).toFixed(2)}

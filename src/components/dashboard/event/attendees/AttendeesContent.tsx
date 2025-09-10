@@ -104,7 +104,7 @@ import { useTicket } from "@/hooks/useTicket";
 //             </div>
 //             <div className="flex justify-between">
 //               <span className="text-muted-foreground">Price:</span>
-//               <span className="font-medium">KSH {ticket.purchase_price}</span>
+//               <span className="font-medium">KES {ticket.purchase_price}</span>
 //             </div>
 //             <div className="flex justify-between">
 //               <span className="text-muted-foreground">Created:</span>
