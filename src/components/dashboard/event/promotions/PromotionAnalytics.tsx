@@ -1,6 +1,6 @@
 import {
   BarChart3,
-  DollarSign,
+  HandCoins,
   Download,
   LineChart,
   Percent,
@@ -72,7 +72,7 @@ export function PromotionAnalytics({
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "KES",
     }).format(amount);
   };
 
@@ -133,7 +133,7 @@ export function PromotionAnalytics({
               </p>
             </div>
             <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/20">
-              <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <HandCoins className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
           <p

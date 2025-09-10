@@ -1,4 +1,4 @@
-import { Award, Clock, DollarSign, Percent, TrendingUp } from "lucide-react";
+import { Award, Clock, HandCoins, Percent, TrendingUp } from "lucide-react";
 
 import { FlashSaleStatus } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -66,7 +66,7 @@ export function PromotionsOverview({
     },
     {
       name: "Revenue from Promotions",
-      value: `KSH. ${(
+      value: `KES. ${(
         (discountStats?.result?.total_amount_saved || 0) +
         (flashSaleStats?.result?.total_revenue || 0)
       ).toLocaleString()}`,
@@ -77,7 +77,7 @@ export function PromotionsOverview({
           ]?.average_discount || 0)) /
         2
       }% avg discount`,
-      icon: DollarSign,
+      icon: HandCoins,
       color: "text-green-600 dark:text-green-400",
       bgColor: "bg-green-100 dark:bg-green-900/20",
     },

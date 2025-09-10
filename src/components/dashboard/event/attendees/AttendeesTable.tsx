@@ -139,7 +139,7 @@ export function AttendeesTable({
                 </TableCell>
                 <TableCell>
                   <div className="font-semibold text-foreground">
-                    KSH {ticket.purchase_price}
+                    KES {ticket.purchase_price}
                   </div>
                 </TableCell>
                 <TableCell>{getStatusBadge(ticket.status)}</TableCell>
@@ -205,7 +205,7 @@ export function AttendeesTable({
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                   <span className="font-semibold text-foreground">
-                    KSH {ticket.purchase_price}
+                    KES {ticket.purchase_price}
                   </span>
                 </div>
               </div>
