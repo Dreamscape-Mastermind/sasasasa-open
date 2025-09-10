@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, DollarSign, Ticket } from "lucide-react";
+import { Calendar, HandCoins, Ticket } from "lucide-react";
 
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
@@ -19,7 +19,7 @@ const features = [
       "Flexible ticketing options with QR codes, multiple tiers, and analytics.",
   },
   {
-    icon: DollarSign,
+    icon: HandCoins,
     title: "Secure Payments, Low Fees",
     description:
       "Process payments securely with mobile money and card payments. More options coming soon. Low fees always.",
@@ -45,7 +45,8 @@ export function Features() {
       <div className="text-center max-w-2xl mx-auto mb-16">
         <h2 className="text-3xl font-bold mb-4">Why Choose Sasasasa?</h2>
         <p className="text-muted-foreground">
-        Our goal is simple, give you the tools to get your brand to you global audience. Everything you need to create and manage and grow  your
+          Our goal is simple, give you the tools to get your brand to you global
+          audience. Everything you need to create and manage and grow your
           experiences and brand via universal commerce.
         </p>
       </div>

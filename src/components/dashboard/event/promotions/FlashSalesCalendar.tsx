@@ -3,7 +3,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  DollarSign,
+  HandCoins,
   Edit,
   MoreHorizontal,
   Trash2,
@@ -332,7 +332,7 @@ export function FlashSalesCalendar({
                   <div className="text-xs opacity-75">
                     {sale.discount_type === "PERCENTAGE"
                       ? `${sale.discount_amount}% off`
-                      : `KSH. ${sale.discount_amount} off`}
+                      : `KES. ${sale.discount_amount} off`}
                   </div>
                 </div>
               );
@@ -522,10 +522,10 @@ export function FlashSalesCalendar({
                   {format(new Date(sale.end_date), "HH:mm")}pm )
                 </div>
                 <div className="flex items-center mb-1 sm:mb-0">
-                  <DollarSign className="h-4 w-4 mr-1" />
+                  <HandCoins className="h-4 w-4 mr-1" />
                   {sale.discount_type === "PERCENTAGE"
                     ? `${sale.discount_amount}% off`
-                    : `KSH. ${sale.discount_amount} off`}
+                    : `KES. ${sale.discount_amount} off`}
                 </div>
                 {sale.is_recurring && (
                   <div className="flex items-center mb-1 sm:mb-0">

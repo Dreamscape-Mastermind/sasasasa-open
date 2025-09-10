@@ -47,6 +47,7 @@ import { useTicket } from "@/hooks/useTicket";
 import { usePayment } from "@/hooks/usePayment";
 import { useCheckin } from "@/hooks/useCheckin";
 import { useDiscount } from "@/hooks/useDiscount";
+import { useUserRevenue } from "@/hooks/useUserRevenue";
 import { DiscountStatus } from "@/types/discount";
 import EventCard from "@/components/EventCard";
 
@@ -84,13 +85,25 @@ const sampleReferralCodes = [
 // Event category mapping for UI display
 const getEventCategoryIcon = (eventTitle: string) => {
   const title = eventTitle.toLowerCase();
-  if (title.includes('concert') || title.includes('music') || title.includes('festival')) {
+  if (
+    title.includes("concert") ||
+    title.includes("music") ||
+    title.includes("festival")
+  ) {
     return { icon: Music2, color: "bg-primary/10 text-primary" };
   }
-  if (title.includes('conference') || title.includes('meetup') || title.includes('workshop')) {
+  if (
+    title.includes("conference") ||
+    title.includes("meetup") ||
+    title.includes("workshop")
+  ) {
     return { icon: Users2, color: "bg-primary/20 text-primary" };
   }
-  if (title.includes('sport') || title.includes('game') || title.includes('tournament')) {
+  if (
+    title.includes("sport") ||
+    title.includes("game") ||
+    title.includes("tournament")
+  ) {
     return { icon: Trophy, color: "bg-secondary/20 text-secondary-foreground" };
   }
   return { icon: Video, color: "bg-muted text-muted-foreground" };
@@ -102,21 +115,24 @@ const sampleRecentAttendees = [
     name: "Sarah Davis",
     email: "sarah@example.com",
     ticketType: "VIP Pass",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces",
+    avatar:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces",
     checkedIn: true,
   },
   {
     name: "Michael Chen",
     email: "michael@example.com",
     ticketType: "Regular",
-    avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=64&h=64&fit=crop&crop=faces",
+    avatar:
+      "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=64&h=64&fit=crop&crop=faces",
     checkedIn: false,
   },
   {
     name: "Emma Wilson",
     email: "emma@example.com",
     ticketType: "Early Bird",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&fit=crop&crop=faces",
+    avatar:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&fit=crop&crop=faces",
     checkedIn: true,
   },
 ];
@@ -135,6 +151,7 @@ export default function DashboardContent() {
   const { usePayments } = usePayment();
   const { useCheckInStats } = useCheckin();
   const { useDiscounts } = useDiscount();
+  const { totalRevenue, isLoading: isRevenueLoading } = useUserRevenue();
 
   // Fetch real data (only current user's events)
   const { data: eventsData, isLoading: eventsLoading } = useMyEvents();
@@ -147,12 +164,14 @@ export default function DashboardContent() {
 
   // Fetch tickets for selected event
   const { data: ticketsData, isLoading: ticketsLoading } = useTickets(
-    selectedEvent?.id || "", 
+    selectedEvent?.id || "",
     undefined
   );
 
-  const { data: discountsData, isLoading: discountsLoading } = useDiscounts(selectedEvent?.id || "");
-  console.log({discountsData})
+  const { data: discountsData, isLoading: discountsLoading } = useDiscounts(
+    selectedEvent?.id || ""
+  );
+  console.log({ discountsData });
   // Fetch check-in stats for selected event
   const { data: checkinStatsData, isLoading: checkinLoading } = useCheckInStats(
     selectedEvent?.id ?? ""
@@ -178,34 +197,38 @@ export default function DashboardContent() {
 
     // Basic event stats
     const totalEvents = events.length;
-    const activeEvents = events.filter(e => e.status === EventStatus.PUBLISHED).length;
-    const upcomingEvents = events.filter(e => {
+    const activeEvents = events.filter(
+      (e) => e.status === EventStatus.PUBLISHED
+    ).length;
+    const upcomingEvents = events.filter((e) => {
       const startDate = new Date(e.start_date);
       return startDate > now && e.status === EventStatus.PUBLISHED;
     }).length;
 
     // Calculate ticket stats across all events
     let totalTicketsSold = 0;
-    let totalRevenue = 0;
 
-    events.forEach(event => {
+    events.forEach((event) => {
       if (event.available_tickets) {
-        event.available_tickets.forEach(ticketType => {
-          const sold = (ticketType.quantity || 0) - (ticketType.remaining_tickets || 0);
+        event.available_tickets.forEach((ticketType) => {
+          const sold =
+            (ticketType.quantity || 0) - (ticketType.remaining_tickets || 0);
           totalTicketsSold += Math.max(0, sold);
-          totalRevenue += Math.max(0, sold) * (ticketType.price || 0);
         });
       }
     });
 
     // Check-in stats (using selected event or default)
     const checkedInToday = checkinStatsData?.result?.checked_in || 0;
-    const totalTicketsForEvent = selectedEvent?.available_tickets?.reduce(
-      (sum, ticket) => sum + (ticket.quantity || 0), 0
-    ) || 0;
-    const attendanceRate = totalTicketsForEvent > 0 
-      ? Math.round((checkedInToday / totalTicketsForEvent) * 100) 
-      : 0;
+    const totalTicketsForEvent =
+      selectedEvent?.available_tickets?.reduce(
+        (sum, ticket) => sum + (ticket.quantity || 0),
+        0
+      ) || 0;
+    const attendanceRate =
+      totalTicketsForEvent > 0
+        ? Math.round((checkedInToday / totalTicketsForEvent) * 100)
+        : 0;
 
     // Placeholder for refunds (would need actual refund data)
     const pendingRefunds = 0; // TODO: Calculate from actual refunds
@@ -220,24 +243,28 @@ export default function DashboardContent() {
       checkedInToday,
       pendingRefunds,
     };
-  }, [eventsData, selectedEvent, checkinStatsData]);
+  }, [eventsData, selectedEvent, checkinStatsData, totalRevenue]);
 
   // Event categories stats
   const eventCategories = useMemo(() => {
     if (!eventsData?.result?.results) return [];
 
     const categoryMap = new Map();
-    
-    eventsData.result.results.forEach(event => {
+
+    eventsData.result.results.forEach((event) => {
       const { icon, color } = getEventCategoryIcon(event.title);
-      const category = event.title.toLowerCase().includes('concert') ? 'Concerts' :
-                     event.title.toLowerCase().includes('conference') ? 'Conferences' :
-                     event.title.toLowerCase().includes('sport') ? 'Sports' : 'Others';
-      
+      const category = event.title.toLowerCase().includes("concert")
+        ? "Concerts"
+        : event.title.toLowerCase().includes("conference")
+        ? "Conferences"
+        : event.title.toLowerCase().includes("sport")
+        ? "Sports"
+        : "Others";
+
       if (categoryMap.has(category)) {
         categoryMap.set(category, {
           ...categoryMap.get(category),
-          count: categoryMap.get(category).count + 1
+          count: categoryMap.get(category).count + 1,
         });
       } else {
         categoryMap.set(category, {
@@ -245,7 +272,7 @@ export default function DashboardContent() {
           icon,
           color,
           count: 1,
-          lastUpdate: "Recent"
+          lastUpdate: "Recent",
         });
       }
     });
@@ -256,12 +283,13 @@ export default function DashboardContent() {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "KES",
       minimumFractionDigits: 0,
     }).format(amount);
   };
 
-  const isLoading = eventsLoading || paymentsLoading || ticketsLoading || checkinLoading;
+  const isLoading =
+    eventsLoading || paymentsLoading || ticketsLoading || checkinLoading;
 
   if (isLoading) {
     return (
@@ -303,7 +331,6 @@ export default function DashboardContent() {
       <div className="space-y-6 sm:space-y-8 animate-in p-4 sm:p-6">
         {/* Header with Search and Create Event */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          
           <div className="hidden md:block">
             <Link href={ROUTES.DASHBOARD_EVENT_CREATE()}>
               <Tooltip>
@@ -336,22 +363,38 @@ export default function DashboardContent() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl sm:text-4xl font-bold mb-2">
-                {formatCurrency(dashboardStats.totalRevenue)}
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <TrendingUp className="h-4 w-4" />
-                <span>From {dashboardStats.totalTicketsSold} tickets sold</span>
-              </div>
+              {isRevenueLoading ? (
+                <div className="space-y-2">
+                  <div className="h-10 bg-muted/20 rounded-xl w-48 animate-pulse" />
+                  <div className="h-4 bg-muted/20 rounded-xl w-64 animate-pulse" />
+                </div>
+              ) : (
+                <>
+                  <div className="text-3xl sm:text-4xl font-bold mb-2">
+                    {formatCurrency(dashboardStats.totalRevenue)}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <TrendingUp className="h-4 w-4" />
+                    <span>
+                      From {dashboardStats.totalTicketsSold} tickets sold
+                    </span>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
           {/* Total Events (clickable to events list) */}
-          <Link href={ROUTES.DASHBOARD_EVENTS} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
+          <Link
+            href={ROUTES.DASHBOARD_EVENTS}
+            className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
+          >
             <Card className="hover:shadow-md transition-all rounded-xl border-2 border-muted/60 hover:border-primary/40">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base sm:text-lg font-semibold">Events</CardTitle>
+                  <CardTitle className="text-base sm:text-lg font-semibold">
+                    Events
+                  </CardTitle>
                   <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
                     <Calendar className="h-4 w-4 text-primary" />
                   </div>
@@ -372,7 +415,9 @@ export default function DashboardContent() {
           <Card className="hover:shadow-md transition-all rounded-xl border-2 border-muted/60 hover:border-primary/40">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base sm:text-lg font-semibold">Tickets</CardTitle>
+                <CardTitle className="text-base sm:text-lg font-semibold">
+                  Tickets
+                </CardTitle>
                 <div className="p-2 bg-secondary/20 rounded-xl border border-secondary/30">
                   <BarChart3 className="h-4 w-4 text-secondary-foreground" />
                 </div>
@@ -421,14 +466,18 @@ export default function DashboardContent() {
                       cy="40"
                       r="36"
                       className="stroke-primary stroke-3 fill-none sm:hidden"
-                      strokeDasharray={`${dashboardStats.attendanceRate * 2.26} 226`}
+                      strokeDasharray={`${
+                        dashboardStats.attendanceRate * 2.26
+                      } 226`}
                     />
                     <circle
                       cx="48"
                       cy="48"
                       r="40"
                       className="stroke-primary stroke-3 fill-none hidden sm:block"
-                      strokeDasharray={`${dashboardStats.attendanceRate * 2.51} 251`}
+                      strokeDasharray={`${
+                        dashboardStats.attendanceRate * 2.51
+                      } 251`}
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -441,7 +490,9 @@ export default function DashboardContent() {
                   <div className="text-2xl sm:text-3xl font-bold">
                     {dashboardStats.checkedInToday}
                   </div>
-                  <p className="text-sm text-muted-foreground font-medium">Checked in today</p>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Checked in today
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -451,7 +502,9 @@ export default function DashboardContent() {
           <Card className="hover:shadow-md transition-all rounded-xl border-2 border-muted/60 hover:border-primary/40">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base sm:text-lg font-semibold">Upcoming</CardTitle>
+                <CardTitle className="text-base sm:text-lg font-semibold">
+                  Upcoming
+                </CardTitle>
                 <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
                   <Calendar className="h-4 w-4 text-primary" />
                 </div>
@@ -466,7 +519,7 @@ export default function DashboardContent() {
               </p>
             </CardContent>
           </Card>
-{/* 
+          {/*
           Pending Refunds
           <Card className="hover:shadow-md transition-all rounded-xl border-2 border-muted/60 hover:border-destructive/40">
             <CardHeader className="pb-3">
@@ -494,11 +547,19 @@ export default function DashboardContent() {
             <CardHeader className="pb-4 border-b border-muted/40">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg sm:text-xl font-bold">Recent Events</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">Quick access to your events</p>
+                  <CardTitle className="text-lg sm:text-xl font-bold">
+                    Recent Events
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Quick access to your events
+                  </p>
                 </div>
                 <Link href={ROUTES.DASHBOARD_EVENT_CREATE()}>
-                  <Button size="sm" variant="outline" className="gap-2 rounded-lg">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-2 rounded-lg"
+                  >
                     <Plus className="h-4 w-4" />
                     New
                   </Button>
@@ -506,13 +567,18 @@ export default function DashboardContent() {
               </div>
             </CardHeader>
             <CardContent className="pt-4">
-              {!eventsData?.result?.results || eventsData.result.results.length === 0 ? (
+              {!eventsData?.result?.results ||
+              eventsData.result.results.length === 0 ? (
                 <div className="text-center p-6 border-2 border-dashed border-muted/40 rounded-xl bg-gradient-to-br from-muted/20 to-muted/10">
                   <div className="w-12 h-12 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-3">
                     <Calendar className="h-6 w-6 text-muted-foreground" />
                   </div>
-                  <p className="text-sm font-medium text-foreground mb-1">No events yet</p>
-                  <p className="text-xs text-muted-foreground mb-3">Start by creating your first event</p>
+                  <p className="text-sm font-medium text-foreground mb-1">
+                    No events yet
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Start by creating your first event
+                  </p>
                   <Link href={ROUTES.DASHBOARD_EVENT_CREATE()}>
                     <Button size="sm" className="gap-2 rounded-lg">
                       <Plus className="h-4 w-4" />
@@ -538,7 +604,11 @@ export default function DashboardContent() {
                   {eventsData.result.results.length > 3 && (
                     <div className="text-center pt-3 border-t border-muted/40">
                       <Link href={ROUTES.DASHBOARD_EVENTS}>
-                        <Button variant="outline" size="sm" className="w-full rounded-lg gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full rounded-lg gap-2"
+                        >
                           <span>View All Events</span>
                           <Badge variant="secondary" className="text-xs">
                             {eventsData.result.results.length}
@@ -558,7 +628,9 @@ export default function DashboardContent() {
           {/* Event Categories - Real Data */}
           <Card className="rounded-xl border-2 border-muted/60 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
             <CardHeader className="pb-4 border-b border-muted/40">
-              <CardTitle className="text-lg sm:text-xl font-bold">Event Categories</CardTitle>
+              <CardTitle className="text-lg sm:text-xl font-bold">
+                Event Categories
+              </CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
               <div className="space-y-4">
@@ -569,12 +641,17 @@ export default function DashboardContent() {
                       className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors border border-muted/50"
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`${category.color} p-2 rounded-xl border border-current/20`}>
+                        <div
+                          className={`${category.color} p-2 rounded-xl border border-current/20`}
+                        >
                           <category.icon className="h-4 w-4" />
                         </div>
                         <span className="font-semibold">{category.name}</span>
                       </div>
-                      <Badge variant="secondary" className="rounded-xl font-bold border border-secondary/30">
+                      <Badge
+                        variant="secondary"
+                        className="rounded-xl font-bold border border-secondary/30"
+                      >
                         {category.count}
                       </Badge>
                     </div>
@@ -582,7 +659,9 @@ export default function DashboardContent() {
                 ) : (
                   <div className="text-center text-muted-foreground py-8 border-2 border-dashed border-muted/40 rounded-xl">
                     <p className="font-medium">No events found</p>
-                    <p className="text-sm mt-1">Create your first event to see categories</p>
+                    <p className="text-sm mt-1">
+                      Create your first event to see categories
+                    </p>
                   </div>
                 )}
               </div>
@@ -592,7 +671,9 @@ export default function DashboardContent() {
           {/* Recent Attendees */}
           <Card className="rounded-xl border-2 border-muted/60 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
             <CardHeader className="pb-4 border-b border-muted/40">
-              <CardTitle className="text-lg sm:text-xl font-bold">Recent Attendees</CardTitle>
+              <CardTitle className="text-lg sm:text-xl font-bold">
+                Recent Attendees
+              </CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
               <div className="space-y-4">
@@ -603,7 +684,6 @@ export default function DashboardContent() {
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <Avatar className="h-10 w-10 flex-shrink-0 rounded-xl border-2 border-muted/40">
-                        
                         <AvatarFallback className="text-xs rounded-xl font-bold">
                           {attendee.owner_details?.first_name
                             ?.split(" ")
@@ -613,7 +693,8 @@ export default function DashboardContent() {
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-sm truncate">
-                          {attendee.owner_details?.first_name} {attendee.owner_details?.last_name}
+                          {attendee.owner_details.first_name}{" "}
+                          {attendee.owner_details.last_name}
                         </div>
                         <div className="text-xs text-muted-foreground truncate">
                           {attendee.ticket_type_name}
@@ -627,7 +708,10 @@ export default function DashboardContent() {
                           In
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="rounded-xl font-medium border border-secondary/30">
+                        <Badge
+                          variant="secondary"
+                          className="rounded-xl font-medium border border-secondary/30"
+                        >
                           <Users className="h-3 w-3 mr-1" />
                           Pending
                         </Badge>
@@ -642,21 +726,37 @@ export default function DashboardContent() {
           {/* Event Referral - Better Spacing */}
           <Card className="rounded-xl border-2 border-muted/60 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-muted/40">
-              <CardTitle className="text-lg sm:text-xl font-bold">Discount Codes</CardTitle>
+              <CardTitle className="text-lg sm:text-xl font-bold">
+                Discount Codes
+              </CardTitle>
               <Tooltip>
                 <TooltipTrigger asChild>
                   {selectedEvent ? (
-                    <Link href={ROUTES.DASHBOARD_EVENT_PROMOTIONS(selectedEvent.id)}>
-                      <Button variant="outline" size="sm" className="gap-2 rounded-xl border-2 hover:border-primary/50">
+                    <Link
+                      href={ROUTES.DASHBOARD_EVENT_PROMOTIONS(selectedEvent.id)}
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 rounded-xl border-2 hover:border-primary/50"
+                      >
                         <Plus className="h-4 w-4" />
-                        <span className="hidden sm:inline font-medium">Create</span>
+                        <span className="hidden sm:inline font-medium">
+                          Create
+                        </span>
                       </Button>
                     </Link>
                   ) : (
                     <Link href={ROUTES.DASHBOARD_EVENTS}>
-                      <Button variant="outline" size="sm" className="gap-2 rounded-xl border-2 hover:border-primary/50">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 rounded-xl border-2 hover:border-primary/50"
+                      >
                         <Plus className="h-4 w-4" />
-                        <span className="hidden sm:inline font-medium">Create</span>
+                        <span className="hidden sm:inline font-medium">
+                          Create
+                        </span>
                       </Button>
                     </Link>
                   )}
@@ -735,9 +835,19 @@ export default function DashboardContent() {
                 ))}
                 {!discountsData?.result?.results?.length && (
                   <div className="text-center p-6 border-2 border-dashed border-muted/40 rounded-xl bg-gradient-to-br from-muted/20 to-muted/10">
-                    <p className="text-sm font-medium text-foreground mb-1">No discount codes yet</p>
-                    <p className="text-xs text-muted-foreground mb-3">Create your first discount code</p>
-                    <Link href={selectedEvent ? ROUTES.DASHBOARD_EVENT_PROMOTIONS(selectedEvent.id) : ROUTES.DASHBOARD_EVENTS}>
+                    <p className="text-sm font-medium text-foreground mb-1">
+                      No discount codes yet
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Create your first discount code
+                    </p>
+                    <Link
+                      href={
+                        selectedEvent
+                          ? ROUTES.DASHBOARD_EVENT_PROMOTIONS(selectedEvent.id)
+                          : ROUTES.DASHBOARD_EVENTS
+                      }
+                    >
                       <Button size="sm" className="gap-2 rounded-lg">
                         <Plus className="h-4 w-4" />
                         Create Discount
@@ -749,7 +859,9 @@ export default function DashboardContent() {
 
               {/* Social Share Section */}
               <div className="pt-4 border-t-2 border-muted/40">
-                <div className="text-sm font-bold mb-3 text-muted-foreground">Share Event</div>
+                <div className="text-sm font-bold mb-3 text-muted-foreground">
+                  Share Event
+                </div>
                 <div className="flex gap-2">
                   {socialLinks.map((social, index) => (
                     <Tooltip key={index}>
@@ -769,7 +881,11 @@ export default function DashboardContent() {
                   ))}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-2 border-muted/50 hover:border-primary/50 hover:bg-primary/5">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-9 w-9 rounded-xl border-2 border-muted/50 hover:border-primary/50 hover:bg-primary/5"
+                      >
                         <Share2 className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>

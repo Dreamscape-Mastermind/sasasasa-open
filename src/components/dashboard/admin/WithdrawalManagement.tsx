@@ -1,14 +1,40 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, CheckCircle, XCircle, Clock, AlertTriangle, HandCoins } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Eye,
+  CheckCircle,
+  XCircle,
+  Clock,
+  AlertTriangle,
+  HandCoins,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { usePayouts } from "@/hooks/usePayouts";
 import { WithdrawalRequest, WithdrawalStatus } from "@/types/payouts";
@@ -20,7 +46,8 @@ export function WithdrawalManagement() {
 
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
   const [selectedWithdrawals, setSelectedWithdrawals] = useState<string[]>([]);
-  const [selectedRequest, setSelectedRequest] = useState<WithdrawalRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] =
+    useState<WithdrawalRequest | null>(null);
   const [failureReason, setFailureReason] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -34,11 +61,31 @@ export function WithdrawalManagement() {
   const getStatusBadge = (status: WithdrawalStatus) => {
     const configs = {
       Pending: { variant: "secondary" as const, icon: Clock, label: "Pending" },
-      "In Review": { variant: "outline" as const, icon: AlertTriangle, label: "In Review" },
-      Approved: { variant: "default" as const, icon: CheckCircle, label: "Approved" },
-      Rejected: { variant: "destructive" as const, icon: XCircle, label: "Rejected" },
-      Completed: { variant: "default" as const, icon: CheckCircle, label: "Completed" },
-      Failed: { variant: "destructive" as const, icon: XCircle, label: "Failed" }
+      "In Review": {
+        variant: "outline" as const,
+        icon: AlertTriangle,
+        label: "In Review",
+      },
+      Approved: {
+        variant: "default" as const,
+        icon: CheckCircle,
+        label: "Approved",
+      },
+      Rejected: {
+        variant: "destructive" as const,
+        icon: XCircle,
+        label: "Rejected",
+      },
+      Completed: {
+        variant: "default" as const,
+        icon: CheckCircle,
+        label: "Completed",
+      },
+      Failed: {
+        variant: "destructive" as const,
+        icon: XCircle,
+        label: "Failed",
+      },
     };
 
     const config = configs[status];
@@ -57,21 +104,26 @@ export function WithdrawalManagement() {
     const labels = {
       Crypto: "Cryptocurrency",
       MobileMoney: "Mobile Money",
-      BankAccount: "Bank Account"
+      BankAccount: "Bank Account",
     };
     return labels[method];
   };
 
   const handleApprove = (request: WithdrawalRequest) => {
-    reviewWithdrawal({ withdrawalId: request.id, status: "Approved" }, {
-      onSuccess: () => {
-        toast.success(`Withdrawal for ${request.destination} has been approved.`);
-        setIsDialogOpen(false);
-      },
-      onError: () => {
-        toast.error("Failed to approve withdrawal.");
+    reviewWithdrawal(
+      { withdrawalId: request.id, status: "Approved" },
+      {
+        onSuccess: () => {
+          toast.success(
+            `Withdrawal for ${request.destination} has been approved.`
+          );
+          setIsDialogOpen(false);
+        },
+        onError: () => {
+          toast.error("Failed to approve withdrawal.");
+        },
       }
-    });
+    );
   };
 
   const handleReject = (request: WithdrawalRequest) => {
@@ -80,21 +132,30 @@ export function WithdrawalManagement() {
       return;
     }
 
-    reviewWithdrawal({ withdrawalId: request.id, status: "Rejected", failure_reason: failureReason }, {
-      onSuccess: () => {
-        toast.error(`Withdrawal for ${request.destination} has been rejected.`);
-        setIsDialogOpen(false);
-        setFailureReason("");
+    reviewWithdrawal(
+      {
+        withdrawalId: request.id,
+        status: "Rejected",
+        failure_reason: failureReason,
       },
-      onError: () => {
-        toast.error("Failed to reject withdrawal.");
+      {
+        onSuccess: () => {
+          toast.error(
+            `Withdrawal for ${request.destination} has been rejected.`
+          );
+          setIsDialogOpen(false);
+          setFailureReason("");
+        },
+        onError: () => {
+          toast.error("Failed to reject withdrawal.");
+        },
       }
-    });
+    );
   };
 
   const handleBulkApprove = () => {
-    const pendingSelected = selectedWithdrawals.filter(id => {
-      const request = withdrawals.find(wd => wd.id === id);
+    const pendingSelected = selectedWithdrawals.filter((id) => {
+      const request = withdrawals.find((wd) => wd.id === id);
       return request?.status === "Pending";
     });
 
@@ -103,17 +164,19 @@ export function WithdrawalManagement() {
       return;
     }
 
-    pendingSelected.forEach(id => {
+    pendingSelected.forEach((id) => {
       reviewWithdrawal({ withdrawalId: id, status: "Approved" });
     });
 
-    toast.success(`${pendingSelected.length} withdrawal(s) have been approved.`);
+    toast.success(
+      `${pendingSelected.length} withdrawal(s) have been approved.`
+    );
     setSelectedWithdrawals([]);
   };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      const filteredIds = getFilteredWithdrawals().map(wd => wd.id);
+      const filteredIds = getFilteredWithdrawals().map((wd) => wd.id);
       setSelectedWithdrawals(filteredIds);
     } else {
       setSelectedWithdrawals([]);
@@ -122,7 +185,7 @@ export function WithdrawalManagement() {
 
   const getFilteredWithdrawals = () => {
     if (statusFilter === "all") return withdrawals;
-    return withdrawals.filter(wd => wd.status === statusFilter);
+    return withdrawals.filter((wd) => wd.status === statusFilter);
   };
 
   const formatDate = (dateString: Date | string) => {
@@ -131,27 +194,36 @@ export function WithdrawalManagement() {
       month: "short",
       day: "numeric",
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
     });
   };
 
   const formatAmount = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: currency
+      currency: currency,
     }).format(amount);
   };
 
   const filteredWithdrawals = getFilteredWithdrawals();
-  const totalPending = withdrawals.filter(wd => wd.status === "Pending").length;
+  const totalPending = withdrawals.filter(
+    (wd) => wd.status === "Pending"
+  ).length;
   const totalAmount = withdrawals
-    .filter(wd => wd.status === "Pending")
-    .reduce((sum, wd) => sum + wd.amount, 0);
+    .filter((wd) => wd.status === "Pending")
+    .reduce((sum, wd) => sum + Number(wd.amount), 0);
 
-  const completedWithdrawals = withdrawals.filter(wd => wd.status === "Completed").length;
-  const failedWithdrawals = withdrawals.filter(wd => wd.status === "Failed").length;
+  const completedWithdrawals = withdrawals.filter(
+    (wd) => wd.status === "Completed"
+  ).length;
+  const failedWithdrawals = withdrawals.filter(
+    (wd) => wd.status === "Failed"
+  ).length;
   const totalCompletedAndFailed = completedWithdrawals + failedWithdrawals;
-  const successRate = totalCompletedAndFailed > 0 ? (completedWithdrawals / totalCompletedAndFailed) * 100 : 0;
+  const successRate =
+    totalCompletedAndFailed > 0
+      ? (completedWithdrawals / totalCompletedAndFailed) * 100
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -161,26 +233,30 @@ export function WithdrawalManagement() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Pending Requests</p>
+                <p className="text-sm text-muted-foreground">
+                  Pending Requests
+                </p>
                 <p className="text-2xl font-bold">{totalPending}</p>
               </div>
               <Clock className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pending Amount</p>
-                <p className="text-2xl font-bold">{formatAmount(totalAmount, "KES")}</p>
+                <p className="text-2xl font-bold">
+                  {formatAmount(totalAmount, "KES")}
+                </p>
               </div>
               <HandCoins className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -189,7 +265,9 @@ export function WithdrawalManagement() {
                 {isLoading ? (
                   <div className="h-8 w-24 bg-muted rounded-md animate-pulse" />
                 ) : (
-                  <p className="text-2xl font-bold">{successRate.toFixed(0)}%</p>
+                  <p className="text-2xl font-bold">
+                    {successRate.toFixed(0)}%
+                  </p>
                 )}
               </div>
               <CheckCircle className="h-8 w-8 text-muted-foreground" />
@@ -220,8 +298,8 @@ export function WithdrawalManagement() {
                   <SelectItem value="Failed">Failed</SelectItem>
                 </SelectContent>
               </Select>
-              
-              <Button 
+
+              <Button
                 onClick={handleBulkApprove}
                 disabled={selectedWithdrawals.length === 0}
                 className="bg-gradient-success hover:opacity-90"
@@ -237,7 +315,11 @@ export function WithdrawalManagement() {
               <TableRow>
                 <TableHead>
                   <Checkbox
-                    checked={selectedWithdrawals.length === filteredWithdrawals.length && filteredWithdrawals.length > 0}
+                    checked={
+                      selectedWithdrawals.length ===
+                        filteredWithdrawals.length &&
+                      filteredWithdrawals.length > 0
+                    }
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
@@ -251,7 +333,11 @@ export function WithdrawalManagement() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={7} className="text-center">Loading...</TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center">
+                    Loading...
+                  </TableCell>
+                </TableRow>
               ) : (
                 filteredWithdrawals.map((request) => (
                   <TableRow key={request.id}>
@@ -260,15 +346,22 @@ export function WithdrawalManagement() {
                         checked={selectedWithdrawals.includes(request.id)}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setSelectedWithdrawals(prev => [...prev, request.id]);
+                            setSelectedWithdrawals((prev) => [
+                              ...prev,
+                              request.id,
+                            ]);
                           } else {
-                            setSelectedWithdrawals(prev => prev.filter(id => id !== request.id));
+                            setSelectedWithdrawals((prev) =>
+                              prev.filter((id) => id !== request.id)
+                            );
                           }
                         }}
                       />
                     </TableCell>
                     <TableCell className="max-w-xs truncate">
-                      <div className="font-medium">{JSON.stringify(request.destination)}</div>
+                      <div className="font-medium">
+                        {JSON.stringify(request.destination)}
+                      </div>
                     </TableCell>
                     <TableCell className="font-medium">
                       {formatAmount(request.amount, "KES")}
@@ -279,20 +372,23 @@ export function WithdrawalManagement() {
                     <TableCell className="text-sm">
                       {formatDate(request.created_at)}
                     </TableCell>
+                    <TableCell>{getStatusBadge(request.status)}</TableCell>
                     <TableCell>
-                      {getStatusBadge(request.status)}
-                    </TableCell>
-                    <TableCell>
-                      <Dialog open={isDialogOpen && selectedRequest?.id === request.id} onOpenChange={(open) => {
-                        setIsDialogOpen(open);
-                        if (!open) {
-                          setSelectedRequest(null);
-                          setFailureReason("");
+                      <Dialog
+                        open={
+                          isDialogOpen && selectedRequest?.id === request.id
                         }
-                      }}>
+                        onOpenChange={(open) => {
+                          setIsDialogOpen(open);
+                          if (!open) {
+                            setSelectedRequest(null);
+                            setFailureReason("");
+                          }
+                        }}
+                      >
                         <DialogTrigger asChild>
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => setSelectedRequest(request)}
                           >
@@ -302,38 +398,63 @@ export function WithdrawalManagement() {
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
                           <DialogHeader>
-                            <DialogTitle>Withdrawal Request Review - {`${request.destination}`}</DialogTitle>
+                            <DialogTitle>
+                              Withdrawal Request Review -{" "}
+                              {`${request.destination}`}
+                            </DialogTitle>
                           </DialogHeader>
-                          
+
                           <div className="space-y-4">
                             <Card>
                               <CardHeader>
-                                <CardTitle className="text-lg">Request Details</CardTitle>
+                                <CardTitle className="text-lg">
+                                  Request Details
+                                </CardTitle>
                               </CardHeader>
                               <CardContent className="space-y-3">
                                 <div className="grid grid-cols-2 gap-4">
                                   <div>
-                                    <label className="text-sm font-medium text-muted-foreground">Amount</label>
-                                    <p className="text-lg font-semibold">{formatAmount(request.amount, "KES")}</p>
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                      Amount
+                                    </label>
+                                    <p className="text-lg font-semibold">
+                                      {formatAmount(request.amount, "KES")}
+                                    </p>
                                   </div>
                                   <div>
-                                    <label className="text-sm font-medium text-muted-foreground">Payment Method</label>
-                                    <p className="text-sm">{getPaymentMethodLabel(request.method)}</p>
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                      Payment Method
+                                    </label>
+                                    <p className="text-sm">
+                                      {getPaymentMethodLabel(request.method)}
+                                    </p>
                                   </div>
                                   <div>
-                                    <label className="text-sm font-medium text-muted-foreground">Destination</label>
-                                    <p className="text-sm break-all">{JSON.stringify(request.destination)}</p>
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                      Destination
+                                    </label>
+                                    <p className="text-sm break-all">
+                                      {JSON.stringify(request.destination)}
+                                    </p>
                                   </div>
                                   <div>
-                                    <label className="text-sm font-medium text-muted-foreground">Requested At</label>
-                                    <p className="text-sm">{formatDate(request.created_at)}</p>
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                      Requested At
+                                    </label>
+                                    <p className="text-sm">
+                                      {formatDate(request.created_at)}
+                                    </p>
                                   </div>
                                 </div>
-                                
+
                                 {request.failure_reason && (
                                   <div>
-                                    <label className="text-sm font-medium text-muted-foreground">Failure Reason</label>
-                                    <p className="text-sm text-destructive">{request.failure_reason}</p>
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                      Failure Reason
+                                    </label>
+                                    <p className="text-sm text-destructive">
+                                      {request.failure_reason}
+                                    </p>
                                   </div>
                                 )}
                               </CardContent>
@@ -349,7 +470,9 @@ export function WithdrawalManagement() {
                                   <Textarea
                                     placeholder="Enter reason for rejection..."
                                     value={failureReason}
-                                    onChange={(e) => setFailureReason(e.target.value)}
+                                    onChange={(e) =>
+                                      setFailureReason(e.target.value)
+                                    }
                                     className="min-h-[80px]"
                                   />
                                 </div>
@@ -375,7 +498,9 @@ export function WithdrawalManagement() {
                             ) : (
                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 {getStatusBadge(request.status)}
-                                <span>This request has been {request.status}</span>
+                                <span>
+                                  This request has been {request.status}
+                                </span>
                               </div>
                             )}
                           </div>
