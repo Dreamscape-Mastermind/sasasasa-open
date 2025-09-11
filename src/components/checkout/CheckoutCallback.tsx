@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import { PaymentStatus } from "@/types/payment";
 import { PaymentStatusDialog } from "./PaymentStatusDialog";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { usePaymentVerification } from "@/hooks/usePaymentVerification";
@@ -56,8 +55,6 @@ export function CheckoutCallback({
   }, [reference]);
 
   const handleClose = () => {
-    const status =
-      transaction?.status === PaymentStatus.COMPLETED ? "success" : "failed";
     router.push(`/e/${localStorage.getItem("paidEventSlug")}`);
   };
 

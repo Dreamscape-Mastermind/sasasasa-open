@@ -14,6 +14,7 @@ export enum TicketStatus {
   PENDING = "PENDING",
   VALID = "VALID",
   USED = "USED",
+  INVALID = "INVALID",
   CANCELLED = "CANCELLED",
   REFUNDED = "REFUNDED",
 }
@@ -216,6 +217,91 @@ export interface TicketAnalyticsResponse
     sales_by_date: Record<string, number>;
     ticket_type_distribution: Record<string, number>;
   }> {}
+
+/**
+ * User ticket interface for cross-event tickets (enhanced)
+ */
+export interface UserTicket extends BaseTicketEntity {
+  ticket_number: string;
+  status: TicketStatus;
+  purchase_price: number;
+  checked_in_at: Nullable<string>;
+  checked_in_by: Nullable<string>;
+  qr_code: Nullable<string>;
+  qr_code_url: Nullable<string>;
+  metadata: Record<string, any>;
+
+  // Ticket type information
+  ticket_type: string;
+  ticket_type_name: string;
+  ticket_type_description: string;
+  ticket_type_price: string;
+  ticket_type_details: {
+    id: string;
+    name: string;
+    description: string;
+    price: string;
+    quantity: number;
+    remaining: number;
+    is_active: boolean;
+    is_free: boolean;
+    sale_start_date: string;
+    sale_end_date: string;
+    per_user_purchase_limit: number;
+    reserve_timeout_minutes: number;
+  };
+
+  // Event information (top-level fields from API)
+  event: string;
+  event_title: string;
+  event_date: string;
+  event_location: Nullable<string>;
+  event_cover_image: Nullable<string>;
+  event_details: Nullable<{
+    id: string;
+    title: string;
+    description: string;
+    start_date: string;
+    end_date: string;
+    location: string;
+    venue: string;
+    cover_image_url: Nullable<string>;
+    short_url: string;
+    status: string;
+    is_online: boolean;
+    max_attendees: number;
+    current_attendees: number;
+  }>;
+
+  // Purchase information (can be null for invalid tickets)
+  purchase_info: Nullable<{
+    payment_reference: string;
+    payment_status: string;
+    payment_provider: string;
+    payment_method: Nullable<string>;
+    amount_paid: string;
+    currency: string;
+    completed_at: string;
+    provider_reference: string;
+    balance_used: number;
+    is_free_ticket: boolean;
+    flash_sale_info: Nullable<any>;
+    discount_info: Nullable<{
+      code: string;
+      type: string;
+      value: number;
+      discount_amount: string;
+    }>;
+  }>;
+
+  owner_details: Owner;
+}
+
+/**
+ * User tickets response interface (enhanced API structure)
+ */
+export interface UserTicketsResponse
+  extends SuccessResponse<PaginatedResponse<UserTicket>> {}
 
 /**
  * Query parameter interfaces

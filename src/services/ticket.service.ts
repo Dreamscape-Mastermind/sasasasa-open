@@ -16,6 +16,7 @@ import {
   TicketTypesResponse,
   TicketsResponse,
   UpdateTicketTypeRequest,
+  UserTicketsResponse,
   type ExportTicketsQueryRequest,
 } from "@/types/ticket";
 
@@ -158,6 +159,20 @@ class TicketService {
       `${this.baseUrl}/events/${data.event_id}/tickets/export_tickets`,
       data
     );
+  }
+
+  /**
+   * User tickets operations (cross-event)
+   */
+  public async getUserTickets(params?: {
+    page?: number;
+    page_size?: number;
+    status?: string;
+    search?: string;
+  }): Promise<UserTicketsResponse> {
+    return apiClient.get<UserTicketsResponse>(`${this.baseUrl}/my-tickets`, {
+      params,
+    });
   }
 
   /**

@@ -40,6 +40,9 @@ interface TicketCardProps {
   transferLimit: number;
   transfersUsed: number;
   tokenId?: string;
+  qrCode?: string | null;
+  paymentStatus?: string;
+  paymentReference?: string;
   images?: string[];
 }
 
@@ -57,6 +60,9 @@ export default function EnhancedTicketCard({
   transferLimit = 2,
   transfersUsed = 1,
   tokenId = "0x7a69...4e21",
+  qrCode = null,
+  paymentStatus = "COMPLETED",
+  paymentReference = "",
   images = [
     "/placeholder.svg?height=200&width=400&text=Event+Image+1",
     "/placeholder.svg?height=200&width=400&text=Event+Image+2",
@@ -244,7 +250,10 @@ export default function EnhancedTicketCard({
                         />
                         <div className="bg-white p-2 rounded-lg relative">
                           <img
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${id}-${tokenId}`}
+                            src={
+                              qrCode ||
+                              `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${id}-${tokenId}`
+                            }
                             alt="Ticket QR Code"
                             width={150}
                             height={150}
@@ -261,6 +270,8 @@ export default function EnhancedTicketCard({
                         isBlockchainVerified={isBlockchainVerified}
                         transferLimit={transferLimit}
                         transfersUsed={transfersUsed}
+                        paymentStatus={paymentStatus}
+                        paymentReference={paymentReference}
                       />
                     </div>
                   )}
@@ -376,11 +387,15 @@ function TicketDetails({
   isBlockchainVerified,
   transferLimit,
   transfersUsed,
+  paymentStatus,
+  paymentReference,
 }: {
   tokenId?: string;
   isBlockchainVerified: boolean;
   transferLimit: number;
   transfersUsed: number;
+  paymentStatus?: string;
+  paymentReference?: string;
 }) {
   return (
     <div className="p-4 space-y-4">
@@ -559,6 +574,46 @@ function TicketDetails({
           </Button>
         </div>
       </div>
+
+      {/* Payment Information */}
+      {(paymentStatus || paymentReference) && (
+        <div className="space-y-1">
+          <h4 className="text-xs uppercase text-primary flex items-center gap-1">
+            <Tag className="h-3.5 w-3.5" /> Payment Details
+          </h4>
+          <div className="bg-muted/30 rounded-md p-3">
+            {paymentStatus && (
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs text-muted-foreground">Status</span>
+                <Badge
+                  variant="outline"
+                  className={`px-2 py-0 h-5 text-xs bg-background/80 rounded-full ${
+                    paymentStatus === "COMPLETED"
+                      ? "border-green-500/50 text-green-500"
+                      : "border-yellow-500/50 text-yellow-500"
+                  }`}
+                >
+                  {paymentStatus}
+                </Badge>
+              </div>
+            )}
+            {paymentReference && (
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Reference</span>
+                <motion.span
+                  className="text-xs font-mono text-foreground"
+                  whileHover={{
+                    color: "var(--primary)",
+                    x: 2,
+                  }}
+                >
+                  {paymentReference}
+                </motion.span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

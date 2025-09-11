@@ -107,17 +107,27 @@ export interface Payment extends BasePaymentEntity {
 }
 
 export interface TransactionResult {
+  // Core payment data
+  id: string;
   status: PaymentStatus;
   message: string;
   reference: string;
   amount: number;
-  eventId?: string;
-  eventTitle?: string;
-  currency?: string;
+  currency: string;
+  provider: PaymentProvider;
+  providerReference: string;
   paymentMethod?: string;
   providerStatus?: string;
+
+  // Customer information
   customerName?: string;
   customerEmail?: string;
+  customerFirstName?: string;
+  customerLastName?: string;
+
+  // Event and ticket information
+  eventId?: string;
+  eventTitle?: string;
   ticketCount?: number;
   ticketTypes?: Array<{
     id: string;
@@ -125,8 +135,23 @@ export interface TransactionResult {
     price: string;
     currency?: string;
   }>;
+
+  // Timestamps
+  createdAt: string;
   completedAt?: string;
-  provider?: string;
+
+  // Payment details
+  paystackDetails?: PaystackPaymentDetails;
+  pesapalDetails?: PesapalPaymentDetails;
+
+  // Status flags
+  requiresAction: boolean;
+  failureReason?: PaymentFailureReason;
+  lastErrorMessage?: string;
+  attempts: number;
+
+  // Additional metadata
+  metadata?: Record<string, any>;
 }
 
 /**
