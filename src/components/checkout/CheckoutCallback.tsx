@@ -1,15 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
-import { PaymentStatus } from "@/types/payment";
 import { PaymentStatusDialog } from "./PaymentStatusDialog";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { usePaymentVerification } from "@/hooks/usePaymentVerification";
+import { useRouter } from "next/navigation";
 import { useSearchParamsContext } from "@/providers/SearchParamsProvider";
 
-export function CheckoutCallback({ reference }: { reference: string }) {
+export function CheckoutCallback({
+  reference,
+  trxref,
+}: {
+  reference: string;
+  trxref: string;
+}) {
   const analytics = useAnalytics();
   const { trackEvent } = analytics;
   const router = useRouter();
@@ -42,16 +47,14 @@ export function CheckoutCallback({ reference }: { reference: string }) {
     });
 
     if (reference) {
-      verifyPayment(reference);
+      verifyPayment(reference, trxref);
     }
     if (!reference && searchReference) {
-      verifyPayment(searchReference);
+      verifyPayment(searchReference, trxref);
     }
   }, [reference]);
 
   const handleClose = () => {
-    const status =
-      transaction?.status === PaymentStatus.COMPLETED ? "success" : "failed";
     router.push(`/e/${localStorage.getItem("paidEventSlug")}`);
   };
 

@@ -139,6 +139,19 @@ export const useTicket = () => {
     });
   };
 
+  // User tickets (cross-event)
+  const useUserTickets = (params?: {
+    page?: number;
+    page_size?: number;
+    status?: string;
+    search?: string;
+  }) => {
+    return useQuery({
+      queryKey: ["user-tickets", params],
+      queryFn: () => ticketService.getUserTickets(params),
+    });
+  };
+
   // Refunds
   const useRefunds = (eventId: string, params?: TicketRefundQueryParams) => {
     return useQuery({
@@ -182,6 +195,8 @@ export const useTicket = () => {
     useCheckInTicket,
     useSendComplementaryTickets,
     useExportTickets,
+    // User Tickets (cross-event)
+    useUserTickets,
     // Refunds
     useRefunds,
     useRefund,

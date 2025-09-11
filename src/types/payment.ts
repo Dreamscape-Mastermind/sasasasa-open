@@ -107,12 +107,51 @@ export interface Payment extends BasePaymentEntity {
 }
 
 export interface TransactionResult {
+  // Core payment data
+  id: string;
   status: PaymentStatus;
   message: string;
   reference: string;
   amount: number;
+  currency: string;
+  provider: PaymentProvider;
+  providerReference: string;
+  paymentMethod?: string;
+  providerStatus?: string;
+
+  // Customer information
+  customerName?: string;
+  customerEmail?: string;
+  customerFirstName?: string;
+  customerLastName?: string;
+
+  // Event and ticket information
   eventId?: string;
   eventTitle?: string;
+  ticketCount?: number;
+  ticketTypes?: Array<{
+    id: string;
+    name: string;
+    price: string;
+    currency?: string;
+  }>;
+
+  // Timestamps
+  createdAt: string;
+  completedAt?: string;
+
+  // Payment details
+  paystackDetails?: PaystackPaymentDetails;
+  pesapalDetails?: PesapalPaymentDetails;
+
+  // Status flags
+  requiresAction: boolean;
+  failureReason?: PaymentFailureReason;
+  lastErrorMessage?: string;
+  attempts: number;
+
+  // Additional metadata
+  metadata?: Record<string, any>;
 }
 
 /**
@@ -148,6 +187,15 @@ export interface PaymentProvidersResponse
   extends SuccessResponse<PaginatedResponse<PaymentProviderConfig>> {}
 
 export interface PaymentVerificationResponse extends SuccessResponse<Payment> {}
+
+/**
+ * Actual API response structure for payment verification (matches real API)
+ */
+export interface PaymentVerificationApiResponse {
+  status: string;
+  message: string;
+  result: Payment;
+}
 
 export interface PaymentRefundResponse
   extends SuccessResponse<{

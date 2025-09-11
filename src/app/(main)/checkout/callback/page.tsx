@@ -22,7 +22,7 @@ type Props = {
 };
 
 export default function CheckoutCallbackPage({ searchParams }: Props) {
-  const { reference } = use(searchParams);
+  const { reference, trxref } = use(searchParams);
 
   return (
     <Suspense
@@ -42,7 +42,7 @@ export default function CheckoutCallbackPage({ searchParams }: Props) {
         </Dialog>
       }
     >
-      <CheckoutCallback reference={reference} />
+      <CheckoutCallback reference={reference} trxref={trxref} />
     </Suspense>
   );
 }
