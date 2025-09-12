@@ -1,18 +1,18 @@
-import React, { useEffect, useRef, useState } from "react";
-import { DollarSign, Percent, X } from "lucide-react";
-import DatePicker from "react-datepicker";
-import { AlertCircle } from "lucide-react";
+import "react-datepicker/dist/react-datepicker.css";
 
-import { DiscountStatus, DiscountType } from "@/types/discount";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DiscountStatus, DiscountType } from "@/types/discount";
+import { DollarSign, Percent, X } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+
+import { AlertCircle } from "lucide-react";
+import DatePicker from "react-datepicker";
 import { FlashSaleDiscountType } from "@/types/flashsale";
 import { TicketType } from "@/types/ticket";
+import styles from '@/components/Datepicker.module.css';
 import { useDiscount } from "@/hooks/useDiscount";
 import { useFlashSale } from "@/hooks/useFlashSale";
 import { useTicket } from "@/hooks/useTicket";
-import styles from '@/components/Datepicker.module.css';
-import "react-datepicker/dist/react-datepicker.css";
-
 
 interface CreatePromotionModalProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ export function CreatePromotionModal({
     flashSaleId || ""
   );
 
-  const { data: ticketTypesData } = useTicketTypes(eventId);
+  const { data: ticketTypesData } = useTicketTypes(eventId, { ordering: "-created_at" });
 
   const createDiscount = useCreateDiscount(eventId);
   const updateDiscount = useUpdateDiscount(eventId, discountId || "");
@@ -635,7 +635,7 @@ export function CreatePromotionModal({
                     showTimeSelect
                     timeFormat="HH:mm"
                     timeIntervals={30}
-                    popperClassName={styles.customDatepicker} 
+                    popperClassName={styles.customDatepicker}
                     required
                   />
                 </div>

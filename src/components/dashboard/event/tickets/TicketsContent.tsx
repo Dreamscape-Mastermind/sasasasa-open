@@ -1,7 +1,14 @@
 "use client";
 
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Plus, Tag } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import TicketFormPopup from "./TicketFormPopup";
 import TicketList from "./TicketList";
@@ -28,21 +35,30 @@ export function TicketsContent({ eventId }: { eventId: string }) {
 
   return (
     <div className="space-y-6 animate-in">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Ticket Types</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage ticket types for this event
-          </p>
-        </div>
-        <Button
-          onClick={handleCreateTicket}
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Add Ticket Type
-        </Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+            <div className="space-y-1">
+              <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+                <Tag className="h-5 w-5 sm:h-6 sm:w-6" />
+                Ticket Types
+              </CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                Create and manage different ticket categories for your event
+                with advanced pricing, limits, and custom attributes
+              </CardDescription>
+            </div>
+            <Button
+              onClick={handleCreateTicket}
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Create Ticket Type</span>
+              <span className="sm:hidden">Create</span>
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
 
       <TicketList eventId={eventId} onEditTicket={handleEditTicket} />
 

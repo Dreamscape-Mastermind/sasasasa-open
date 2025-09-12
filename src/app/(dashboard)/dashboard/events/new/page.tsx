@@ -3,6 +3,19 @@
 import * as z from "zod";
 
 import {
+  AlertCircle,
+  CheckCircle,
+  FileText,
+  Loader2,
+  Ticket,
+  Users,
+} from "lucide-react";
+import {
+  EventForm,
+  TeamMembersForm,
+  TicketForm,
+} from "@/components/dashboard/LazyDashboardComponents";
+import {
   Tabs,
   TabsContent,
   TabsList,
@@ -11,18 +24,16 @@ import {
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
-import { EventForm, TicketForm, TeamMembersForm } from "@/components/dashboard/LazyDashboardComponents";
-import { Loader2, CheckCircle, AlertCircle, Ticket, Users, FileText } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Suspense } from "react";
 // import { VenueSearchResult } from "@/types/venue";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEvent } from "@/hooks/useEvent";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useEvent } from "@/hooks/useEvent";
 import { useTicket } from "@/hooks/useTicket";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 // First, define the role type and schema
 const ROLES = {
@@ -66,14 +77,19 @@ function NewEventContent() {
   // Hook into existing API calls to track state
   const { useTeamMembers } = useEvent();
   const { useTicketTypes } = useTicket();
-  
+
   // Get real-time data about tickets and team members
-  const { data: ticketsData } = useTicketTypes(eventId || "");
+  const { data: ticketsData } = useTicketTypes(eventId || "", {
+    ordering: "-created_at",
+  });
   const { data: teamMembersData } = useTeamMembers(eventId || "");
 
   // Calculate state based on real data
-  const hasTickets = ticketsData?.result?.results && ticketsData.result.results.length > 0;
-  const hasTeamMembers = teamMembersData?.result?.results && teamMembersData.result.results.length > 0;
+  const hasTickets =
+    ticketsData?.result?.results && ticketsData.result.results.length > 0;
+  const hasTeamMembers =
+    teamMembersData?.result?.results &&
+    teamMembersData.result.results.length > 0;
 
   // Initialize the form
   const teamForm = useForm<z.infer<typeof teamSchema>>({
@@ -136,10 +152,18 @@ function NewEventContent() {
         return eventId ? "complete" : "current";
       case "tickets":
         if (!eventId) return "disabled";
-        return hasTickets ? "complete" : activeTab === "tickets" ? "current" : "pending";
+        return hasTickets
+          ? "complete"
+          : activeTab === "tickets"
+          ? "current"
+          : "pending";
       case "team":
         if (!eventId) return "disabled";
-        return hasTeamMembers ? "complete" : activeTab === "team" ? "current" : "pending";
+        return hasTeamMembers
+          ? "complete"
+          : activeTab === "team"
+          ? "current"
+          : "pending";
       default:
         return "pending";
     }
@@ -189,7 +213,7 @@ function NewEventContent() {
             <h1 className="text-2xl font-bold">Create New Event</h1>
             <div className="flex items-center gap-2">
               <div className="w-32 bg-gray-200 dark:bg-zinc-700 rounded-full h-2">
-                <div 
+                <div
                   className="bg-blue-500 h-2 rounded-full transition-all duration-500"
                   style={{ width: `${getCompletionPercentage()}%` }}
                 />
@@ -260,7 +284,8 @@ function NewEventContent() {
                       Start with the basics
                     </p>
                     <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
-                      Once you save your event details, you'll be able to add ticket types and team members.
+                      Once you save your event details, you'll be able to add
+                      ticket types and team members.
                     </p>
                   </div>
                 </div>
@@ -275,7 +300,8 @@ function NewEventContent() {
                       Great! Event details saved
                     </p>
                     <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                      Now let's add some ticket types to make your event bookable.
+                      Now let's add some ticket types to make your event
+                      bookable.
                     </p>
                   </div>
                 </div>
@@ -294,7 +320,9 @@ function NewEventContent() {
                       Tickets required for publication
                     </p>
                     <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">
-                      Your event needs at least one ticket type before it can be published. Create different ticket tiers, pricing, and availability.
+                      Your event needs at least one ticket type before it can be
+                      published. Create different ticket tiers, pricing, and
+                      availability.
                     </p>
                   </div>
                 </div>
@@ -309,7 +337,8 @@ function NewEventContent() {
                       Excellent! Tickets configured
                     </p>
                     <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                      Your event is ready to accept bookings. You can add team members or proceed to publish.
+                      Your event is ready to accept bookings. You can add team
+                      members or proceed to publish.
                     </p>
                   </div>
                 </div>
@@ -327,7 +356,8 @@ function NewEventContent() {
                     Almost ready to publish!
                   </p>
                   <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
-                    Add team members to help manage your event, or proceed to publish if you're managing it solo.
+                    Add team members to help manage your event, or proceed to
+                    publish if you're managing it solo.
                   </p>
                 </div>
               </div>
@@ -348,7 +378,7 @@ function NewEventContent() {
               </Button>
             )}
           </div>
-          
+
           <div className="flex gap-2">
             {activeTab === "event-details" && (
               <Button
@@ -359,21 +389,20 @@ function NewEventContent() {
                 {eventId ? "Next: Add Tickets" : "Save Event First"}
               </Button>
             )}
-            
+
             {activeTab === "tickets" && (
-              <Button
-                onClick={handleNext}
-                className="dark:bg-zinc-900"
-              >
+              <Button onClick={handleNext} className="dark:bg-zinc-900">
                 Next: Team & Publish
               </Button>
             )}
-            
+
             {activeTab === "team" && (
               <Button
                 type="submit"
                 disabled={!hasTickets}
-                className={`dark:bg-zinc-900 ${hasTickets ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400'}`}
+                className={`dark:bg-zinc-900 ${
+                  hasTickets ? "bg-green-600 hover:bg-green-700" : "bg-gray-400"
+                }`}
               >
                 {hasTickets ? "🚀 Publish Event" : "Add Tickets First"}
               </Button>

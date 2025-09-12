@@ -37,18 +37,45 @@ export interface BaseTicketEntity extends TimeStamp {
 }
 
 /**
+ * Custom attributes interface for ticket types
+ */
+export interface TicketCustomAttributes {
+  category?: string;
+  features?: string[];
+  color?: string;
+  metadata?: Record<string, any>;
+  // System-generated attributes
+  is_auto_generated?: boolean;
+  complementary_policy?: {
+    ratio: number;
+    max_per_purchase: number;
+  };
+  parent_ticket_type_id?: string;
+  [key: string]: any;
+}
+
+/**
  * Ticket type interface
  */
 export interface TicketType extends BaseTicketEntity {
   event: string; // Event ID
   name: string;
   description: string;
-  price: number;
+  price: string; // Changed to string to match API response
   quantity: number;
   remaining_tickets: number; // Read-only field from serializer
   is_active: boolean;
-  sale_start_date: Date;
-  sale_end_date: Date;
+  is_free: boolean; // New field
+  is_public: boolean; // New field - visible to public
+  reserve_timeout_minutes: number; // New field
+  per_user_purchase_limit: number | null; // New field
+  custom_attributes: TicketCustomAttributes; // New field
+  sale_start_date: string; // Changed to string to match API response
+  sale_end_date: string; // Changed to string to match API response
+  has_complementary_policy: boolean; // New field for complementary policy
+  complementary_ticket_type: string | null; // New field for complementary ticket type ID
+  complementary_ratio: number; // New field for complementary ratio
+  complementary_max_per_purchase: number | null; // New field for max complementary per purchase
   flash_sale?: TicketTypeWithFlashSale | null;
 }
 
@@ -119,11 +146,20 @@ export interface CreateTicketTypeRequest {
   id?: string | number;
   name: string;
   description?: string;
-  price: number;
+  price: string; // Changed to string to match API
   quantity: number;
   is_active?: boolean;
-  sale_start_date: Date;
-  sale_end_date: Date;
+  is_free?: boolean; // New field
+  is_public?: boolean; // New field - visible to public
+  reserve_timeout_minutes?: number; // New field
+  per_user_purchase_limit?: number | null; // New field
+  custom_attributes?: TicketCustomAttributes; // New field
+  sale_start_date: string; // Changed to string to match API
+  sale_end_date: string; // Changed to string to match API
+  has_complementary_policy?: boolean; // New field for complementary policy
+  complementary_ticket_type?: string | null; // New field for complementary ticket type ID
+  complementary_ratio?: number; // New field for complementary ratio
+  complementary_max_per_purchase?: number | null; // New field for max complementary per purchase
 }
 
 export interface UpdateTicketTypeRequest
@@ -245,10 +281,16 @@ export interface UserTicket extends BaseTicketEntity {
     remaining: number;
     is_active: boolean;
     is_free: boolean;
+    is_public: boolean;
     sale_start_date: string;
     sale_end_date: string;
     per_user_purchase_limit: number;
     reserve_timeout_minutes: number;
+    custom_attributes: TicketCustomAttributes;
+    has_complementary_policy: boolean;
+    complementary_ticket_type: string | null;
+    complementary_ratio: number;
+    complementary_max_per_purchase: number | null;
   };
 
   // Event information (top-level fields from API)
@@ -307,11 +349,12 @@ export interface UserTicketsResponse
  * Query parameter interfaces
  */
 export interface TicketTypeQueryParams {
-  event?: string;
+  page?: number;
+  page_size?: number;
   is_active?: boolean;
+  event?: string;
   search?: string;
   ordering?: string;
-  page?: number;
 }
 
 export interface TicketQueryParams {
@@ -349,3 +392,30 @@ export interface ExportTicketsQueryRequest {
 }
 
 export type ExportFormat = "excel" | "csv";
+
+/**
+ * Complementary policy configuration interface
+ */
+export interface ComplementaryPolicyConfig {
+  has_complementary_policy: boolean;
+  complementary_ticket_type: string | null;
+  complementary_ratio: number;
+  complementary_max_per_purchase: number | null;
+}
+
+/**
+ * Ticket type summary interface for quick display
+ */
+export interface TicketTypeSummary {
+  id: string;
+  name: string;
+  price: string;
+  quantity: number;
+  remaining_tickets: number;
+  is_active: boolean;
+  is_free: boolean;
+  is_public: boolean;
+  has_complementary_policy: boolean;
+  sale_start_date: string;
+  sale_end_date: string;
+}

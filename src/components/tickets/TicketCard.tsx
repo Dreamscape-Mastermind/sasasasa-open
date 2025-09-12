@@ -1,35 +1,36 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import {
+  AlertCircle,
   Calendar,
+  CheckCircle,
   Clock,
+  CreditCard,
+  Crown,
+  Download,
+  Eye,
+  Heart,
   MapPin,
   QrCode,
-  Ticket as TicketIcon,
-  Download,
   Share2,
-  Eye,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  CreditCard,
-  Smartphone,
-  Heart,
-  Sparkles,
-  Zap,
   Shield,
-  Crown,
+  Smartphone,
+  Sparkles,
+  Ticket as TicketIcon,
+  XCircle,
+  Zap,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { TicketStatus } from "@/types/ticket";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useState } from "react";
-import { TicketStatus } from "@/types/ticket";
-import Image from "next/image";
 
-interface ModernTicketCardProps {
+interface TicketCardProps {
   id: string;
   eventName: string;
   date: string;
@@ -53,7 +54,7 @@ interface ModernTicketCardProps {
   isSharing?: boolean;
 }
 
-export default function ModernTicketCard({
+export default function TicketCard({
   id,
   eventName,
   date,
@@ -75,7 +76,7 @@ export default function ModernTicketCard({
   onShare,
   onDownload,
   isSharing = false,
-}: ModernTicketCardProps) {
+}: TicketCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [isHovering, setIsHovering] = useState(false);

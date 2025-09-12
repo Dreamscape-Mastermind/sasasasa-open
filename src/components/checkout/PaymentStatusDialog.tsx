@@ -24,6 +24,7 @@ import {
 import { PaymentStatus, TransactionResult } from "@/types/payment";
 
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/constants";
 
 // Helper function to get status-specific information
 const getStatusInfo = (status: PaymentStatus, amount: number = 0) => {
@@ -203,7 +204,7 @@ const getActionButtons = (
         variant="outline"
         onClick={() => {
           // Navigate to user's tickets/dashboard
-          window.location.href = "/dashboard/tickets";
+          window.location.href = ROUTES.DASHBOARD_PURCHASES;
         }}
         className="border-border text-foreground hover:bg-accent"
       >

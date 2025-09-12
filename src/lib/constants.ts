@@ -135,11 +135,11 @@ export const NAV_ITEMS = {
     { label: "Dashboard", href: ROUTES.DASHBOARD, icon: Layout },
     { label: "Events", href: ROUTES.DASHBOARD_EVENTS, icon: Calendar },
     { label: "Settings", href: ROUTES.DASHBOARD_SETTINGS, icon: Settings },
-    // {
-    //   label: "My Purchases",
-    //   icon: Ticket,
-    //   href: "/dashboard/purchases",
-    // },
+    {
+      label: "My Purchases",
+      icon: Ticket,
+      href: ROUTES.DASHBOARD_PURCHASES,
+    },
   ],
   DASHBOARD_EVENT_ORGANIZER: [
     {
@@ -203,8 +203,8 @@ export const ROLES_CACHE_DURATION = 60 * 30; // 30 minutes in seconds
 export const MAX_RETRIES = 2;
 export const RETRY_DELAY = 1000; // 1 second
 
-export const CONSENT_STORAGE_KEY = 'user-consent-preferences';
-export const CONSENT_VERSION = '1.0';
+export const CONSENT_STORAGE_KEY = "user-consent-preferences";
+export const CONSENT_VERSION = "1.0";
 
 // Auth storage configuration
 export const AUTH_STORAGE = {

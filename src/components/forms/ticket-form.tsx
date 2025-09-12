@@ -20,7 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Loader2, Trash2 } from "lucide-react";
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { CreateTicketTypeRequest } from "@/types/ticket";
@@ -29,15 +29,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import styles from "@/components/Datepicker.module.css";
 import toast from "react-hot-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
 import { useForm } from "react-hook-form";
-import { useParams, useSearchParams } from "next/navigation";
 // import { TimePicker } from "@/components/ui/time-picker"
 import { useTicket } from "@/hooks/useTicket";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/contexts/AuthContext";
-import styles from '@/components/Datepicker.module.css';
 
 function combineDateTime(date: Date, time: string): Date {
   const [hours, minutes] = time.split(":").map(Number);
@@ -69,7 +68,13 @@ interface Event {
   }>;
 }
 
-export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSubmitSuccess?: () => void, eventId?: string }) {
+export default function TicketForm({
+  onFormSubmitSuccess,
+  eventId,
+}: {
+  onFormSubmitSuccess?: () => void;
+  eventId?: string;
+}) {
   if (!eventId) {
     eventId = "null";
   }
@@ -80,13 +85,18 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
     useUpdateTicketType,
     useDeleteTicketType,
   } = useTicket();
-  const { data: tickets, isLoading: isLoadingTickets } =
-    useTicketTypes(eventId);
-  const updateTicket = useUpdateTicketType({ eventId }, {
-    onSuccess: () => {
-      toast.success("Ticket updated successfully");
-    },
-  }); // We'll set the ticketId when editing
+  const { data: tickets, isLoading: isLoadingTickets } = useTicketTypes(
+    eventId,
+    { ordering: "-created_at" }
+  );
+  const updateTicket = useUpdateTicketType(
+    { eventId },
+    {
+      onSuccess: () => {
+        toast.success("Ticket updated successfully");
+      },
+    }
+  ); // We'll set the ticketId when editing
   const deleteTicket = useDeleteTicketType(eventId);
   const formRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -133,30 +143,39 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
     }
   }, [eventData, form]);
 
-  
-
   const handleSubmit = async (data: TicketFormData) => {
     setIsLoading(true);
 
     try {
       const ticketData: CreateTicketTypeRequest = {
         name: data.name,
-        price: parseInt(data.price.toString(), 10),
+        price: data.price.toString(),
         quantity: parseInt(data.quantity.toString(), 10) || 0,
         description: data.description,
-        sale_start_date: data.sale_start_date,
-        sale_end_date: data.sale_end_date,
+        sale_start_date: data.sale_start_date.toISOString(),
+        sale_end_date: data.sale_end_date.toISOString(),
         is_active: data.is_active,
       };
 
       if (data.isEdit && editingTicketId) {
-        await updateTicket.mutateAsync({ ...ticketData, ticketTypeId: editingTicketId as string });
+        await updateTicket.mutateAsync({
+          ...ticketData,
+          ticketTypeId: editingTicketId as string,
+        });
+        toast.success("Ticket updated successfully");
+        // Reset form after successful update
+        handleClearForm();
       } else {
         await createTicketType.mutateAsync(ticketData);
+        toast.success("Ticket created successfully");
+        // Reset form after successful creation
+        handleClearForm();
         onFormSubmitSuccess?.();
       }
     } catch (error) {
-      toast.error("Failed to update ticket");
+      toast.error(
+        data.isEdit ? "Failed to update ticket" : "Failed to create ticket"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -188,6 +207,7 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
       isEdit: false,
     });
     setIsEditing(false);
+    setEditingTicketId(null);
     setShowForm(false); // Hide form when clearing
   };
 
@@ -376,14 +396,15 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
                             </FormLabel>
                             <FormControl>
                               <Input
-                                className={cn(
-                                  "rounded-full"
-                                )}
+                                className={cn("rounded-full")}
                                 type="number"
                                 placeholder={"0.00"}
                                 value={field.value}
                                 onChange={(e) => {
-                                  const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+                                  const value =
+                                    e.target.value === ""
+                                      ? 0
+                                      : parseFloat(e.target.value);
                                   field.onChange(isNaN(value) ? 0 : value);
                                 }}
                               />
@@ -406,7 +427,10 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
                                 placeholder="100"
                                 value={field.value}
                                 onChange={(e) => {
-                                  const value = e.target.value === '' ? 0 : parseInt(e.target.value);
+                                  const value =
+                                    e.target.value === ""
+                                      ? 0
+                                      : parseInt(e.target.value);
                                   field.onChange(isNaN(value) ? 0 : value);
                                 }}
                               />
@@ -477,7 +501,11 @@ export default function TicketForm({ onFormSubmitSuccess, eventId }: { onFormSub
                       Cancel
                     </Button>
 
-                    <Button type="submit" disabled={isLoading} className="w-full">
+                    <Button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full"
+                    >
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
