@@ -74,6 +74,26 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
     }
   }, [event, analytics, logger]);
 
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && showImageModal) {
+        setShowImageModal(false);
+      }
+    };
+
+    if (showImageModal) {
+      document.addEventListener("keydown", handleKeyDown);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [showImageModal]);
+
   if (error && !event) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
@@ -308,26 +328,6 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
       event_name: event?.title,
     });
   };
-
-  // Handle ESC key to close modal
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && showImageModal) {
-        setShowImageModal(false);
-      }
-    };
-
-    if (showImageModal) {
-      document.addEventListener("keydown", handleKeyDown);
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = "hidden";
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
-    };
-  }, [showImageModal]);
 
   return (
     <div className="mx-auto px-4 sm:px-14">
