@@ -214,15 +214,18 @@ export interface TicketTypesResponse
 
 export interface TicketPurchaseResponse
   extends SuccessResponse<{
-    ticket_type: "paid" | "free";
+    ticket_type: "paid" | "free" | "balance_paid" | "partial_balance";
     redirect_type: "payment_provider" | "checkout_success";
     payment_reference: string;
     authorization_url?: string; // For paid tickets
     access_code?: string; // For paid tickets
     provider?: string; // For paid tickets
     amount?: number; // For paid tickets
+    total_amount?: number; // For partial balance payments
+    balance_used?: number; // For balance payments
     currency?: string; // For paid tickets
-    message?: string; // For free tickets
+    message?: string; // For free/balance tickets
+    payment_method?: string; // Payment method used
     tickets: Array<{
       ticket_number: string;
       status: TicketStatus;

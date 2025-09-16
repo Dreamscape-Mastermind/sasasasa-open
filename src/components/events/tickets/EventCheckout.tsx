@@ -2,15 +2,24 @@ import { ChevronRight, Info, Sparkles } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { PaymentProvider, PaymentStatus } from "@/types/payment";
+import {
+  TicketPurchaseErrorType,
+  getResponseAction,
+  handlePurchaseError,
+  handlePurchaseSuccess,
+  handleTicketPurchaseResponse,
+  isImmediateSuccess,
+  requiresPaymentRedirect,
+} from "@/lib/ticketPurchaseHandler";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PaymentStatus } from "@/types/payment";
 import { PaymentStatusDialog } from "@/components/checkout/PaymentStatusDialog";
+import { PurchaseErrorDisplay } from "./PurchaseErrorDisplay";
 import { TicketType } from "@/types/ticket";
 import { isFlashSaleValid } from "@/lib/utils";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -56,6 +65,10 @@ export function EventCheckout({
   const logger = useLogger({ context: "EventCheckout" });
   const [step, setStep] = useState<CheckoutStep>("details");
   const [error, setError] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<TicketPurchaseErrorType | null>(
+    null
+  );
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const { transaction } = usePaymentVerification();
 
   const {
@@ -73,7 +86,7 @@ export function EventCheckout({
   const onSubmit = async (data: FormData) => {
     if (!data || !data.email) {
       logger.error("Missing required form data", { formData: data });
-      setError("Missing required form data");
+      setError("Please fill in all required fields");
       setStep("error");
       return;
     }
@@ -115,26 +128,57 @@ export function EventCheckout({
       });
 
       const result = await purchaseTickets.mutateAsync(payload);
+      const response = handleTicketPurchaseResponse(result);
+      const action = getResponseAction(result);
 
-      if (result.status === "success" && result.result) {
-        const { ticket_type, redirect_type, payment_reference } = result.result;
-
-        // Save event slug to cache for both paid and free tickets
+      // Save event slug to cache for all successful purchases
+      if (response.success) {
         localStorage.setItem("paidEventSlug", slug);
+      }
 
-        if (ticket_type === "free" && redirect_type === "checkout_success") {
-          // Handle free tickets - redirect to checkout success page
-          const checkout_url = `/checkout/callback?trxref=${payment_reference}&reference=${payment_reference}`;
+      if (response.success) {
+        const {
+          ticketType,
+          redirectType,
+          paymentReference,
+          authorizationUrl,
+          message,
+          isFree,
+          isBalanceOnly,
+          isPartialBalance,
+          isPaid,
+        } = response as ReturnType<typeof handlePurchaseSuccess>;
 
-          logger.info("Free ticket purchase successful", {
-            reference: payment_reference,
+        logger.info("Ticket purchase successful", {
+          ticketType,
+          redirectType,
+          reference: paymentReference,
+          isFree,
+          isBalanceOnly,
+          isPartialBalance,
+          isPaid,
+        });
+
+        // Track success analytics
+        analytics.trackEvent({
+          event: "ticket_purchase_success",
+          ticket_type: ticketType,
+          reference: paymentReference,
+          ticket_count: tickets.reduce((sum, t) => sum + t.quantity, 0),
+          total_amount: total,
+          is_free: isFree,
+          is_balance_only: isBalanceOnly,
+          is_partial_balance: isPartialBalance,
+        });
+
+        if (isImmediateSuccess(ticketType, redirectType)) {
+          // Handle immediate success (free tickets or balance-only payments)
+          const checkout_url = `/checkout/callback?trxref=${paymentReference}&reference=${paymentReference}`;
+
+          logger.info("Immediate ticket purchase success", {
+            reference: paymentReference,
             checkout_url,
-          });
-
-          analytics.trackEvent({
-            event: "free_ticket_purchase_success",
-            reference: payment_reference,
-            ticket_count: tickets.reduce((sum, t) => sum + t.quantity, 0),
+            message,
           });
 
           // Redirect to checkout success page
@@ -144,48 +188,94 @@ export function EventCheckout({
           return;
         }
 
-        if (ticket_type === "paid" && redirect_type === "payment_provider") {
-          // Handle paid tickets - redirect to payment provider
-          const authorization_url = result.result.authorization_url;
-
-          if (!authorization_url) {
+        if (requiresPaymentRedirect(ticketType, redirectType)) {
+          // Handle payment provider redirect
+          if (!authorizationUrl) {
             throw new Error("No payment URL found for paid tickets");
           }
 
-          logger.info("Paid ticket checkout successful", {
+          logger.info("Payment provider redirect", {
             email: data.email,
             total,
-            paymentUrl: authorization_url,
-            reference: payment_reference,
-          });
-
-          analytics.trackEvent({
-            event: "paid_ticket_checkout_success",
-            total_amount: total,
-            ticket_count: tickets.reduce((sum, t) => sum + t.quantity, 0),
-            reference: payment_reference,
+            paymentUrl: authorizationUrl,
+            reference: paymentReference,
+            ticketType,
+            step: "payment_redirect",
           });
 
           // Redirect to payment provider
           if (typeof window !== "undefined") {
-            window.location.assign(authorization_url);
+            window.location.assign(authorizationUrl);
           }
           return;
         }
 
-        throw new Error(
-          `Unsupported ticket type or redirect type: ${ticket_type}/${redirect_type}`
+        // Fallback error for unsupported response types
+        throw new Error(`Unsupported response: ${ticketType}/${redirectType}`);
+      } else {
+        // Handle error response
+        const {
+          errorType,
+          message,
+          detail,
+          isValidationError,
+          isInventoryError,
+          isPaymentError,
+          isBusinessLogicError,
+        } = response as ReturnType<typeof handlePurchaseError>;
+
+        logger.error("Ticket purchase failed", {
+          errorType,
+          message,
+          detail:
+            typeof detail === "string"
+              ? detail
+              : Array.isArray(detail)
+              ? detail.join(", ")
+              : "No details",
+          payload,
+          total,
+          step,
+          isValidationError,
+          isInventoryError,
+          isPaymentError,
+          isBusinessLogicError,
+        });
+
+        analytics.trackEvent({
+          event: "ticket_purchase_error",
+          error_type: errorType,
+          error_message: message,
+          email: data.email,
+          total: total,
+          is_validation_error: isValidationError,
+          is_inventory_error: isInventoryError,
+          is_payment_error: isPaymentError,
+          is_business_logic_error: isBusinessLogicError,
+        });
+
+        setStep("error");
+        setError(message);
+        setErrorType(errorType);
+        setErrorDetail(
+          typeof detail === "string"
+            ? detail
+            : Array.isArray(detail)
+            ? detail[0] || null
+            : null
         );
       }
-
-      throw new Error(
-        result.message || "Invalid response format from payment service"
-      );
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      const errorStack = err instanceof Error ? err.stack : undefined;
+
       logger.error("Checkout error", {
-        error: err instanceof Error ? err.message : "Unknown error",
+        error: errorMessage,
+        stack: errorStack,
         payload,
         total,
+        step,
+        errorType: errorType || "general",
       });
 
       analytics.trackEvent({
@@ -200,6 +290,10 @@ export function EventCheckout({
         err instanceof Error
           ? `${err.message}. Please try again or contact support if the problem persists.`
           : "Failed to process ticket purchase. Please try again."
+      );
+      setErrorType("general");
+      setErrorDetail(
+        err instanceof Error ? err.message : "Unknown error occurred"
       );
     }
   };
@@ -223,7 +317,10 @@ export function EventCheckout({
                       </div>
                       <div className="text-right">
                         <div className="font-medium">
-                          KES {(ticket.price * ticket.quantity).toFixed(2)}
+                          KES{" "}
+                          {(parseFloat(ticket.price) * ticket.quantity).toFixed(
+                            2
+                          )}
                         </div>
                         {ticket.flash_sale &&
                           isFlashSaleValid(ticket.flash_sale) && (
@@ -354,21 +451,40 @@ export function EventCheckout({
 
       case "error":
         return (
-          <PaymentStatusDialog
-            isOpen={true}
-            onClose={onClose}
-            transaction={
-              transaction
-                ? transaction
-                : {
-                    status: PaymentStatus.FAILED,
-                    message: error || "Payment failed",
-                    reference: "",
-                    amount: 0,
-                  }
-            }
-            onPurchaseAgain={() => setStep("details")}
-          />
+          <div className="space-y-4">
+            {errorType && error ? (
+              <PurchaseErrorDisplay
+                errorType={errorType}
+                message={error}
+                detail={errorDetail || undefined}
+                onRetry={() => setStep("details")}
+                onClose={onClose}
+              />
+            ) : (
+              <PaymentStatusDialog
+                isOpen={true}
+                onClose={onClose}
+                transaction={
+                  transaction
+                    ? transaction
+                    : {
+                        id: "",
+                        status: PaymentStatus.FAILED,
+                        message: error || "Payment failed",
+                        reference: "",
+                        amount: 0,
+                        currency: "KES",
+                        provider: PaymentProvider.PAYSTACK,
+                        providerReference: "",
+                        createdAt: new Date().toISOString(),
+                        attempts: 1,
+                        requiresAction: false,
+                      }
+                }
+                onPurchaseAgain={() => setStep("details")}
+              />
+            )}
+          </div>
         );
 
       case "success":
@@ -380,10 +496,17 @@ export function EventCheckout({
               transaction
                 ? transaction
                 : {
+                    id: "",
                     status: PaymentStatus.COMPLETED,
                     message: "Your tickets have been purchased successfully",
                     reference: "",
                     amount: total,
+                    currency: "KES",
+                    provider: PaymentProvider.PAYSTACK,
+                    providerReference: "",
+                    createdAt: new Date().toISOString(),
+                    attempts: 1,
+                    requiresAction: false,
                   }
             }
           />
@@ -396,10 +519,8 @@ export function EventCheckout({
       <DialogContent className="sm:max-w-[500px] md:max-w-[600px] lg:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Checkout</DialogTitle>
-          <DialogDescription className="overflow-y-auto">
-            {renderStep()}
-          </DialogDescription>
         </DialogHeader>
+        <div className="overflow-y-auto">{renderStep()}</div>
       </DialogContent>
     </Dialog>
   );
