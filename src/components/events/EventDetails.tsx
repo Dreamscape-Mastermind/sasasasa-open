@@ -129,26 +129,30 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
         </div>
         {/* Tickets skeleton */}
         <div className="w-full max-w-3xl mt-10">
-          <div className="mb-3 h-6 w-32 bg-zinc-800 rounded animate-pulse" />
+          <div className="mb-6 h-6 w-32 bg-[#8B4545] rounded animate-pulse" />
           {Array.from({ length: 3 }).map((_, index) => (
             <div
               key={index}
-              className="flex items-center justify-between bg-zinc-900 rounded-lg p-4 mb-4 shadow"
+              className="flex items-center justify-between bg-background border border-[#8B4545] rounded-xl p-6 mb-4"
             >
-              {/* Ticket name */}
-              <div className="h-6 w-24 bg-zinc-800 rounded animate-pulse" />
-              {/* Price */}
-              <div className="h-6 w-20 bg-amber-400/30 rounded animate-pulse" />
-              {/* Quantity controls */}
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 bg-zinc-800 rounded-full animate-pulse" />
-                <div className="h-6 w-6 bg-zinc-800 rounded animate-pulse" />
-                <div className="h-8 w-8 bg-zinc-800 rounded-full animate-pulse" />
+              {/* Left side skeleton */}
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="h-6 w-24 bg-[#8B4545] rounded animate-pulse" />
+                  <div className="h-6 w-20 bg-[#8B4545] rounded animate-pulse" />
+                </div>
+                <div className="h-4 w-32 bg-[#8B4545]/60 rounded animate-pulse" />
+              </div>
+              {/* Right side - Quantity controls skeleton */}
+              <div className="flex items-center gap-3 ml-6">
+                <div className="h-10 w-10 bg-[#8B4545] rounded-full animate-pulse" />
+                <div className="h-8 w-8 bg-[#8B4545] rounded animate-pulse" />
+                <div className="h-10 w-10 bg-[#8B4545] rounded-full animate-pulse" />
               </div>
             </div>
           ))}
           {/* Checkout button skeleton */}
-          <div className="h-12 w-full bg-red-500/30 rounded-lg animate-pulse mt-2" />
+          <div className="h-12 w-full bg-[#8B4545] rounded-2xl animate-pulse mt-6" />
         </div>
       </div>
     );

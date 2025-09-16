@@ -106,12 +106,12 @@ const Tickets = memo(function Tickets({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-gradient-to-r from-zinc-800/80 to-zinc-700/80 backdrop-blur-sm rounded-2xl p-3 border border-zinc-600/50 shadow-xl mb-4"
+              className="bg-background backdrop-blur-sm rounded-xl p-4 border border-[#8B4545] shadow-xl mb-4"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-pink-500/20 rounded-lg">
-                    <ShoppingCart className="w-5 h-5 text-pink-400" />
+                  <div className="p-2 bg-[#8B4545]/20 rounded-lg">
+                    <ShoppingCart className="w-5 h-5 text-[#8B4545]" />
                   </div>
                   <div>
                     <h3 className="text-base font-semibold text-white">
@@ -124,7 +124,7 @@ const Tickets = memo(function Tickets({
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xl font-bold text-pink-400">
+                  <div className="text-xl font-bold text-white">
                     KES {calculateTotal().toFixed(0)}
                   </div>
                   <div className="text-xs text-gray-400">Total</div>
@@ -136,10 +136,10 @@ const Tickets = memo(function Tickets({
 
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Button
-            className={`w-full rounded-2xl h-12 text-base font-bold transition-all duration-300 ${
+            className={`w-full rounded-xl h-12 text-base font-bold transition-all duration-300 ${
               hasValidTickets()
-                ? "bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 shadow-lg hover:shadow-xl"
-                : "bg-gray-600 hover:bg-gray-700 cursor-not-allowed"
+                ? "bg-[#8B4545] hover:bg-[#A55A5A] shadow-lg hover:shadow-xl text-white"
+                : "bg-[#8B4545]/50 hover:bg-[#8B4545]/70 cursor-not-allowed text-white/70"
             }`}
             size="lg"
             onClick={handleCheckoutClick}

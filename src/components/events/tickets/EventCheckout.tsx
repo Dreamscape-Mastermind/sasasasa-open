@@ -15,6 +15,7 @@ import {
   isImmediateSuccess,
   requiresPaymentRedirect,
 } from "@/lib/ticketPurchaseHandler";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,11 +24,11 @@ import { PurchaseErrorDisplay } from "./PurchaseErrorDisplay";
 import { TicketType } from "@/types/ticket";
 import { isFlashSaleValid } from "@/lib/utils";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { useLogger } from "@/hooks/useLogger";
 import { usePaymentVerification } from "@/hooks/usePaymentVerification";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useTicket } from "@/hooks/useTicket";
 
 interface EventCheckoutProps {
@@ -58,6 +59,7 @@ export function EventCheckout({
 }: EventCheckoutProps) {
   const router = useRouter();
   const analytics = useAnalytics();
+  const { user, isAuthenticated } = useAuth();
   const { usePurchaseTickets } = useTicket();
   const purchaseTickets = usePurchaseTickets(
     tickets.length > 0 ? tickets[0].event : ""
@@ -74,8 +76,26 @@ export function EventCheckout({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<FormData>();
+
+  // Check if user has complete profile information
+  const hasCompleteProfile = user?.first_name && user?.last_name && user?.email;
+
+  // Determine which fields to show based on authentication status
+  const showFirstNameField = !isAuthenticated || !user?.first_name;
+  const showLastNameField = !isAuthenticated || !user?.last_name;
+  const showEmailField = !isAuthenticated || !user?.email;
+
+  // Pre-populate form fields when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.first_name) setValue("firstName", user.first_name);
+      if (user.last_name) setValue("lastName", user.last_name);
+      if (user.email) setValue("email", user.email);
+    }
+  }, [isAuthenticated, user, setValue]);
 
   const hasValidFlashSale = (): boolean => {
     return tickets.some(
@@ -84,9 +104,28 @@ export function EventCheckout({
   };
 
   const onSubmit = async (data: FormData) => {
-    if (!data || !data.email) {
-      logger.error("Missing required form data", { formData: data });
-      setError("Please fill in all required fields");
+    // For authenticated users, use their profile data if form fields are empty
+    const email = data.email || user?.email;
+    const firstName = data.firstName || user?.first_name;
+    const lastName = data.lastName || user?.last_name;
+
+    if (!email) {
+      logger.error("Missing required email", { formData: data, user });
+      setError("Email is required");
+      setStep("error");
+      return;
+    }
+
+    if (!firstName) {
+      logger.error("Missing required first name", { formData: data, user });
+      setError("First name is required");
+      setStep("error");
+      return;
+    }
+
+    if (!lastName) {
+      logger.error("Missing required last name", { formData: data, user });
+      setError("Last name is required");
       setStep("error");
       return;
     }
@@ -100,9 +139,9 @@ export function EventCheckout({
 
     setStep("processing");
     const payload = {
-      email: data.email,
-      first_name: data.firstName,
-      last_name: data.lastName,
+      email,
+      first_name: firstName,
+      last_name: lastName,
       discount_code: data.discountCode || null,
       tickets: tickets.map((ticket) => ({
         ticket_type_id: ticket.id,
@@ -360,48 +399,88 @@ export function EventCheckout({
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Customer Details</h3>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">First Name</label>
-                    <Input
-                      {...register("firstName", { required: true })}
-                      className={errors.firstName ? "border-red-500" : ""}
-                      placeholder="John"
-                    />
-                    {errors.firstName && (
-                      <span className="text-xs text-red-500">Required</span>
-                    )}
+                {isAuthenticated && hasCompleteProfile && (
+                  <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                      <Info className="h-4 w-4" />
+                      <span className="text-sm font-medium">
+                        Using your account information: {user?.first_name}{" "}
+                        {user?.last_name} ({user?.email})
+                      </span>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Last Name</label>
-                    <Input
-                      {...register("lastName", { required: true })}
-                      className={errors.lastName ? "border-red-500" : ""}
-                      placeholder="Doe"
-                    />
-                    {errors.lastName && (
-                      <span className="text-xs text-red-500">Required</span>
-                    )}
-                  </div>
-                </div>
+                )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Email</label>
-                  <Input
-                    type="email"
-                    {...register("email", {
-                      required: true,
-                      pattern: /^\S+@\S+$/i,
-                    })}
-                    className={errors.email ? "border-red-500" : ""}
-                    placeholder="john.doe@example.com"
-                  />
-                  {errors.email && (
-                    <span className="text-xs text-red-500">
-                      Valid email required
-                    </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {showFirstNameField && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        First Name{" "}
+                        {isAuthenticated && !user?.first_name && (
+                          <span className="text-red-500">*</span>
+                        )}
+                      </label>
+                      <Input
+                        {...register("firstName", {
+                          required: showFirstNameField,
+                          value: user?.first_name || "",
+                        })}
+                        className={errors.firstName ? "border-red-500" : ""}
+                        placeholder="John"
+                      />
+                      {errors.firstName && (
+                        <span className="text-xs text-red-500">Required</span>
+                      )}
+                    </div>
+                  )}
+                  {showLastNameField && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Last Name{" "}
+                        {isAuthenticated && !user?.last_name && (
+                          <span className="text-red-500">*</span>
+                        )}
+                      </label>
+                      <Input
+                        {...register("lastName", {
+                          required: showLastNameField,
+                          value: user?.last_name || "",
+                        })}
+                        className={errors.lastName ? "border-red-500" : ""}
+                        placeholder="Doe"
+                      />
+                      {errors.lastName && (
+                        <span className="text-xs text-red-500">Required</span>
+                      )}
+                    </div>
                   )}
                 </div>
+
+                {showEmailField && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Email{" "}
+                      {isAuthenticated && !user?.email && (
+                        <span className="text-red-500">*</span>
+                      )}
+                    </label>
+                    <Input
+                      type="email"
+                      {...register("email", {
+                        required: showEmailField,
+                        pattern: /^\S+@\S+$/i,
+                        value: user?.email || "",
+                      })}
+                      className={errors.email ? "border-red-500" : ""}
+                      placeholder="john.doe@example.com"
+                    />
+                    {errors.email && (
+                      <span className="text-xs text-red-500">
+                        Valid email required
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {!hasValidFlashSale() && (
                   <div className="space-y-2">
