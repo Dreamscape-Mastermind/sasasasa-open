@@ -33,7 +33,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
   const enableMotion = !(prefersReducedMotion || isMobile);
 
   // HomepageEvent doesn't have available_tickets, so no flash sale functionality
-  const activeFlashSale = null;
+  const activeFlashSale: any = null;
 
   const checkTimeWindow = useCallback(() => {
     const now = Date.now();
@@ -52,7 +52,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
     } else {
       setIsFlashSaleActive(false);
     }
-  }, [activeFlashSale, event, isFlashSaleActive]);
+  }, [activeFlashSale, isFlashSaleActive]);
 
   useEffect(() => {
     checkTimeWindow();
