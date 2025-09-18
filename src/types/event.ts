@@ -138,7 +138,7 @@ export interface CreateEventRequest {
   title: string;
   description: string;
   start_date: string; // ISO string
-  end_date: string;   // ISO string
+  end_date: string; // ISO string
   timezone: string;
   venue: string;
   capacity: number;
@@ -253,3 +253,50 @@ export interface PerformerQueryParams {
   page?: number;
   event?: string;
 }
+
+/**
+ * Homepage API types
+ * Specialized event data structure for homepage display
+ */
+export interface HomepageFlashSale {
+  id: string;
+  name: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  discount_type: "PERCENTAGE" | "FIXED";
+  discount_amount: string;
+  max_tickets: number;
+  tickets_sold: number;
+}
+
+export interface HomepageEvent {
+  id: string;
+  title: string;
+  short_url: string;
+  cover_image: Nullable<string>;
+  start_date: string;
+  end_date: string;
+  price: string;
+  venue: string;
+  location: Nullable<Location>;
+  flash_sale: Nullable<HomepageFlashSale>;
+  has_flash_sale: boolean;
+  featured: boolean;
+}
+
+export interface HomepageAllEvents {
+  results: HomepageEvent[];
+  count: number;
+  showing: number;
+  has_more: boolean;
+}
+
+export interface HomepageData {
+  carousel: HomepageEvent[];
+  featured_events: HomepageEvent[];
+  all_events: HomepageAllEvents;
+  flash_sale_events: HomepageEvent[];
+}
+
+export interface HomepageResponse extends SuccessResponse<HomepageData> {}

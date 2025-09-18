@@ -1,12 +1,13 @@
 "use client";
 
-import { EventQueryParams, EventStatus } from "@/types/event";
+import { useCallback, useMemo } from "react";
 
 import { CTASection } from "./CTASection";
-import { FeaturedEvents } from "./FeaturedEvents";
 import { Features } from "./Features";
 import { Hero } from "./Hero";
-import { HomeEventListing } from "./HomeEventListing";
+import HomepageEventCard from "@/components/HomepageEventCard";
+import Link from "next/link";
+import { NoDataCard } from "./NoDataCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import dynamic from "next/dynamic";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -66,55 +67,54 @@ const FeaturedCarousel = dynamic(
 );
 
 export default function HomeContent() {
-  const { useEvents } = useEvent();
+  const { useHomepageEvents } = useEvent();
   const { hasAnyAccessLevel } = useAuth();
   const analytics = useAnalytics();
   const logger = useLogger({ context: "HomeContent" });
 
-  // Query parameters for featured events
-  const featuredParams: EventQueryParams = {
-    featured: true,
-    status: EventStatus.PUBLISHED,
-    ordering: "-start_date",
-  };
-
-  // Query parameters for past events
-  const eventsParams: EventQueryParams = {
-    status: EventStatus.PUBLISHED,
-    ordering: "-start_date",
-    page: 1,
-  };
-
   const {
-    data: featuredEvents,
-    isLoading: isLoadingFeatured,
-    error: featuredError,
-  } = useEvents(featuredParams);
+    data: homepageData,
+    isLoading: isLoadingHomepage,
+    error: homepageError,
+    refetch: refetchHomepage,
+  } = useHomepageEvents();
 
-  const {
-    data: eventListing,
-    isLoading: isLoadingEventListing,
-    error: eventListingError,
-  } = useEvents(eventsParams);
+  // Memoize extracted data to prevent unnecessary re-renders
+  const homepageDataMemo = useMemo(() => {
+    if (!homepageData?.result) return null;
 
-  // Handle errors
-  if (featuredError || eventListingError) {
-    const error = featuredError || eventListingError;
-    logger.error("Failed to fetch events", error);
-    analytics.trackError(error as Error);
-    return null;
-  }
+    return {
+      carouselEvents: homepageData.result.carousel || [],
+      featuredEvents: homepageData.result.featured_events || [],
+      allEvents: homepageData.result.all_events?.results || [],
+      flashSaleEvents: homepageData.result.flash_sale_events || [],
+    };
+  }, [homepageData]);
 
-  // Get the most recent featured event for the banner
-  const bannerEvent = featuredEvents?.result?.results?.[0];
-  const hasMultipleFeaturedEvents =
-    (featuredEvents?.result?.results?.length || 0) > 1;
+  // Memoize banner event and carousel state
+  const bannerState = useMemo(() => {
+    if (!homepageDataMemo)
+      return { bannerEvent: null, hasMultipleFeaturedEvents: false };
+
+    const bannerEvent = homepageDataMemo.carouselEvents[0];
+    const hasMultipleFeaturedEvents =
+      homepageDataMemo.carouselEvents.length > 1;
+
+    return { bannerEvent, hasMultipleFeaturedEvents };
+  }, [homepageDataMemo]);
+
+  // Memoize retry function
+  const handleRetry = useCallback(() => {
+    refetchHomepage();
+  }, [refetchHomepage]);
 
   return (
     <main className="mx-0 px-0">
       <div className="min-h-screen">
         <Hero />
-        {isLoadingFeatured ? (
+
+        {/* Featured Banner/Carousel Section */}
+        {isLoadingHomepage ? (
           <div className="relative w-full h-[450px] sm:h-[450px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-xl mb-8">
             <Skeleton className="w-full h-full" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 sm:from-black/80 via-black/60 sm:via-black/40 to-transparent">
@@ -132,25 +132,159 @@ export default function HomeContent() {
               </div>
             </div>
           </div>
-        ) : hasMultipleFeaturedEvents ? (
+        ) : homepageError ? (
           <div className="my-8 relative px-1 md:px-2">
-            <FeaturedCarousel
-              events={featuredEvents?.result?.results?.slice(0, 3) || []}
-            />
+            <NoDataCard type="carousel" onRetry={handleRetry} isError={true} />
           </div>
-        ) : bannerEvent ? (
-          <FeaturedEventBanner event={bannerEvent} />
-        ) : null}
-        {featuredEvents?.result?.results?.length ? (
-          <FeaturedEvents
-            featuredEvents={featuredEvents.result.results?.slice(0, 3)}
-            isLoading={isLoadingFeatured}
-          />
-        ) : null}
-        <HomeEventListing
-          eventListing={eventListing?.result?.results}
-          isLoading={isLoadingEventListing}
-        />
+        ) : bannerState.hasMultipleFeaturedEvents ? (
+          <div className="my-8 relative px-1 md:px-2">
+            <FeaturedCarousel events={homepageDataMemo?.carouselEvents || []} />
+          </div>
+        ) : bannerState.bannerEvent ? (
+          <FeaturedEventBanner event={bannerState.bannerEvent} />
+        ) : (
+          <div className="my-8 relative px-1 md:px-2">
+            <NoDataCard type="carousel" />
+          </div>
+        )}
+
+        {/* Featured Events Section */}
+        {isLoadingHomepage ? (
+          <div className="container mx-auto px-4 py-16">
+            <div className="space-y-8">
+              <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+                <h2 className="text-3xl font-bold">Featured Experiences</h2>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="space-y-4">
+                    <Skeleton className="aspect-video w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : homepageError ? (
+          <div className="container mx-auto px-4 py-16">
+            <div className="space-y-8">
+              <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+                <h2 className="text-3xl font-bold">Featured Experiences</h2>
+              </div>
+              <NoDataCard
+                type="featured"
+                onRetry={handleRetry}
+                isError={true}
+              />
+            </div>
+          </div>
+        ) : (homepageDataMemo?.featuredEvents.length ?? 0) > 0 ? (
+          <div className="container mx-auto px-4 py-16">
+            <div className="space-y-8">
+              <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+                <h2 className="text-3xl font-bold">Featured Experiences</h2>
+                <Link href="/e">
+                  <button className="w-fit text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                    View All Experiences
+                  </button>
+                </Link>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {homepageDataMemo?.featuredEvents.map((event) => (
+                  <HomepageEventCard key={event.id} item={event} />
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="container mx-auto px-4 py-16">
+            <div className="space-y-8">
+              <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+                <h2 className="text-3xl font-bold">Featured Experiences</h2>
+              </div>
+              <NoDataCard type="featured" />
+            </div>
+          </div>
+        )}
+
+        {/* All Events Section */}
+        {isLoadingHomepage ? (
+          <div className="container mx-auto px-4 py-16">
+            <div className="space-y-8">
+              <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+                <h2 className="text-3xl font-bold">All Experiences</h2>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="space-y-4">
+                    <Skeleton className="aspect-video w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : homepageError ? (
+          <div className="container mx-auto px-4 py-16">
+            <div className="space-y-8">
+              <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+                <h2 className="text-3xl font-bold">All Experiences</h2>
+              </div>
+              <NoDataCard type="recent" onRetry={handleRetry} isError={true} />
+            </div>
+          </div>
+        ) : (homepageDataMemo?.allEvents.length ?? 0) > 0 ? (
+          <div className="container mx-auto px-4 py-16">
+            <div className="space-y-8">
+              <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+                <h2 className="text-3xl font-bold">All Experiences</h2>
+                <Link href="/e">
+                  <button className="w-fit text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                    View All Experiences
+                  </button>
+                </Link>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {homepageDataMemo?.allEvents.map((event) => (
+                  <HomepageEventCard key={event.id} item={event} />
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="container mx-auto px-4 py-16">
+            <div className="space-y-8">
+              <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+                <h2 className="text-3xl font-bold">All Experiences</h2>
+              </div>
+              <NoDataCard type="recent" />
+            </div>
+          </div>
+        )}
+
+        {/* Flash Sale Events Section */}
+        {(homepageDataMemo?.flashSaleEvents.length ?? 0) > 0 && (
+          <div className="container mx-auto px-4 py-16">
+            <div className="space-y-8">
+              <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+                <h2 className="text-3xl font-bold">🔥 Flash Sale Events</h2>
+                <Link href="/e">
+                  <button className="w-fit text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                    View All Flash Sales
+                  </button>
+                </Link>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {homepageDataMemo?.flashSaleEvents.slice(0, 3).map((event) => (
+                  <HomepageEventCard key={event.id} item={event} />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         <Features />
         <CTASection />
       </div>

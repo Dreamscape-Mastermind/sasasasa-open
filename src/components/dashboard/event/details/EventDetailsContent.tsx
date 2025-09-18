@@ -10,15 +10,16 @@ import {
 } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/constants";
 import { TicketType } from "@/types/ticket";
 import moment from "moment-timezone";
 import { useEvent } from "@/hooks/useEvent";
 import { useRouter } from "next/navigation";
-import { ROUTES } from "@/lib/constants";
 
 export function EventDetailsContent({ eventId }: { eventId: string }) {
   const { useEvent: useEventQuery } = useEvent();
   const { data: eventData, isLoading, error } = useEventQuery(eventId || "");
+  const router = useRouter();
   const currentEvent = eventData?.result;
 
   if (isLoading) {
@@ -61,8 +62,6 @@ export function EventDetailsContent({ eventId }: { eventId: string }) {
         total + (Number(ticket.quantity) - Number(ticket.remaining_tickets)),
       0
     ) || 0;
-
-  const router = useRouter();
 
   return (
     <div className="space-y-6 animate-in pb-8">

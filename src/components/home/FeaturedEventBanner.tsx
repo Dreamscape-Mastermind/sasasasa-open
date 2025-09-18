@@ -1,17 +1,17 @@
 "use client";
 
+import { Variants, motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Event } from "@/types/event";
+import { HomepageEvent } from "@/types/event";
 import Image from "next/image";
-import { motion, Variants, useReducedMotion } from "framer-motion";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogger } from "@/hooks/useLogger";
 import { useRouter } from "next/navigation";
 
 interface FeaturedEventBannerProps {
-  event: Event;
+  event: HomepageEvent;
 }
 
 const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
@@ -32,7 +32,9 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
 
   const enableMotion = !(prefersReducedMotion || isMobile);
 
-  const activeFlashSale = event.available_tickets?.[0]?.flash_sale;
+  // Get flash sale data from the new API structure
+  const activeFlashSale =
+    event.flash_sale && event.has_flash_sale ? event.flash_sale : null;
 
   const checkTimeWindow = useCallback(() => {
     const now = Date.now();
@@ -42,8 +44,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
       const endTime = new Date(activeFlashSale.end_date).getTime();
       const hasStarted = now >= startTime;
       const hasEnded = now > endTime;
-      const isActive =
-        hasStarted && !hasEnded && activeFlashSale.status === "ACTIVE";
+      const isActive = hasStarted && !hasEnded;
 
       if (isActive !== isFlashSaleActive) {
         setIsFlashSaleActive(isActive);
@@ -51,7 +52,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
     } else {
       setIsFlashSaleActive(false);
     }
-  }, [activeFlashSale, event, isFlashSaleActive]);
+  }, [activeFlashSale, isFlashSaleActive]);
 
   useEffect(() => {
     checkTimeWindow();
@@ -116,16 +117,12 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
     }
   };
 
-  const handlePerformerClick = (
-    performer: Event["performers"][0],
-    e: React.MouseEvent
-  ) => {
+  const handlePerformerClick = (performerName: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      analytics.trackUserAction("view_performer", "performer", performer.name);
+      analytics.trackUserAction("view_performer", "performer", performerName);
       logger.info("User clicked performer link", {
-        performerId: performer.id,
-        performerName: performer.name,
+        performerName: performerName,
         eventId: event?.id,
         eventTitle: event?.title,
       });
@@ -154,7 +151,9 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
           priority
           style={{
             transform: enableMotion ? "scale(1.1)" : undefined,
-            animation: enableMotion ? "zoomOut 1.5s ease-out forwards" : undefined,
+            animation: enableMotion
+              ? "zoomOut 1.5s ease-out forwards"
+              : undefined,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 sm:from-black/80 via-black/60 sm:via-black/40 to-transparent z-20">
@@ -196,45 +195,27 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
                 drop-shadow-lg text-shadow-sm mb-4 font-medium
                 [text-shadow:_0_1px_2px_rgba(0,0,0,0.8)]"
             >
-              {event.description}
+              {event.title}
             </motion.p>
 
-            {event.performers && event.performers.length > 0 && (
-              <motion.div
-                className="flex flex-wrap justify-between gap-2 sm:gap-3 mt-2 w-full"
-                variants={containerVariants}
-              >
-                {event.performers.map((performer) => (
-                  <motion.a
-                    key={performer.id}
-                    href={performer.spotify_url || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => handlePerformerClick(performer, e)}
-                    className="text-lg sm:text-xl md:text-2xl font-semibold text-white
-                      hover:text-primary transition-colors duration-200
-                      flex items-center gap-2 drop-shadow-lg
-                      [text-shadow:_0_1px_2px_rgba(0,0,0,0.8)]"
-                    variants={itemVariants}
-                    whileHover={enableMotion ? { scale: 1.05 } : undefined}
-                    whileTap={enableMotion ? { scale: 0.95 } : undefined}
-                  >
-                    {performer.name}
-                    {performer.spotify_url && (
-                      <motion.svg
-                        className="w-5 h-5 inline-block"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        whileHover={enableMotion ? { rotate: 360 } : undefined}
-                        transition={enableMotion ? { duration: 0.5 } : undefined}
-                      >
-                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
-                      </motion.svg>
-                    )}
-                  </motion.a>
-                ))}
-              </motion.div>
-            )}
+            {/* Price Display */}
+            <motion.div
+              variants={itemVariants}
+              className="flex items-center gap-2 mb-4"
+            >
+              <span className="text-lg sm:text-xl font-bold text-white">
+                {parseFloat(event.price) === 0
+                  ? "Free"
+                  : `KES ${parseFloat(event.price).toLocaleString()}`}
+              </span>
+              {activeFlashSale && isFlashSaleActive && (
+                <span className="text-sm text-orange-400 font-medium">
+                  {activeFlashSale.discount_type === "PERCENTAGE"
+                    ? `${activeFlashSale.discount_amount}% OFF`
+                    : `KES ${activeFlashSale.discount_amount} OFF`}
+                </span>
+              )}
+            </motion.div>
 
             <motion.div
               variants={itemVariants}
@@ -252,7 +233,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
                     <p className="text-xs sm:text-sm md:text-base">
                       {activeFlashSale.discount_type === "PERCENTAGE"
                         ? `${activeFlashSale.discount_amount}% OFF`
-                        : `KES ${activeFlashSale.discount_amount}/- OFF`}
+                        : `KES ${activeFlashSale.discount_amount} OFF`}
                     </p>
                   </div>
                 </motion.div>

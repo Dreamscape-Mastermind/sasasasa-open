@@ -10,14 +10,18 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 import Autoplay from "embla-carousel-autoplay";
-import { Event } from "@/types/event";
 import FeaturedEventBanner from "./FeaturedEventBanner";
+import { HomepageEvent } from "@/types/event";
 import { cn } from "@/lib/utils";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import useEmblaCarousel from "embla-carousel-react";
 import { useLogger } from "@/hooks/useLogger";
 
-export default function FeaturedCarousel({ events }: { events: Event[] }) {
+export default function FeaturedCarousel({
+  events,
+}: {
+  events: HomepageEvent[];
+}) {
   const [plugin, setPlugin] = useState<any>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [disableMotion, setDisableMotion] = useState(false);
