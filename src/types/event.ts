@@ -138,7 +138,7 @@ export interface CreateEventRequest {
   title: string;
   description: string;
   start_date: string; // ISO string
-  end_date: string;   // ISO string
+  end_date: string; // ISO string
   timezone: string;
   venue: string;
   capacity: number;
@@ -252,4 +252,41 @@ export interface PerformerQueryParams {
   search?: string;
   page?: number;
   event?: string;
+}
+
+/**
+ * Homepage API types
+ * Specialized event data structure for homepage display
+ */
+export interface HomepageEvent {
+  id: string;
+  title: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  venue: string;
+  cover_image: Nullable<string>;
+  short_url: string;
+  share_url: Nullable<string>;
+  organizer_name: string;
+  location_name: Nullable<string>;
+  location_city: Nullable<string>;
+  featured: boolean;
+  performers: string[];
+}
+
+export interface HomepageEventsData {
+  featured_events: HomepageEvent[];
+  recent_events: HomepageEvent[];
+  featured_count: number;
+  recent_count: number;
+  total_count: number;
+}
+
+export interface HomepageEventsResponse {
+  status: string;
+  message: string;
+  result: {
+    results: HomepageEventsData;
+  };
 }

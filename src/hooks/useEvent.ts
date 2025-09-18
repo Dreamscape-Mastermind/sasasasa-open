@@ -6,8 +6,8 @@ import type {
   LocationQueryParams,
   PerformerQueryParams,
   TeamMemberQueryParams,
-  UpdateEventRequest,
   TeamMemberRole,
+  UpdateEventRequest,
 } from "@/types/event";
 import type {
   EventAnalyticsExportRequest,
@@ -138,6 +138,16 @@ export const useEvent = () => {
     });
   };
 
+  // Homepage Events
+  const useHomepageEvents = () => {
+    return useQuery({
+      queryKey: ["homepage-events"],
+      queryFn: () => eventService.getHomepageEvents(),
+      staleTime: 5 * 60 * 1000, // 5 minutes - data is considered fresh for 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes - cache garbage collection time
+    });
+  };
+
   // Locations
   const useLocations = (params?: LocationQueryParams) => {
     return useQuery({
@@ -225,7 +235,8 @@ export const useEvent = () => {
 
   const useResendTeamInvite = (eventId: string) => {
     return useMutation({
-      mutationFn: (memberId: string) => eventService.resendTeamInvite(eventId, memberId),
+      mutationFn: (memberId: string) =>
+        eventService.resendTeamInvite(eventId, memberId),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["team-members", eventId] });
       },
@@ -235,14 +246,18 @@ export const useEvent = () => {
   const useUpdateTeamMemberRole = (eventId: string) => {
     return useMutation({
       mutationFn: (data: { memberId: string; role: TeamMemberRole }) =>
-        eventService.updateTeamMemberRole(eventId, data.memberId, { role: data.role }),
+        eventService.updateTeamMemberRole(eventId, data.memberId, {
+          role: data.role,
+        }),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["team-members", eventId] });
       },
     });
   };
 
-  const useMyInvites = (params?: { status?: "PENDING" | "ACCEPTED" | "DECLINED" }) => {
+  const useMyInvites = (params?: {
+    status?: "PENDING" | "ACCEPTED" | "DECLINED";
+  }) => {
     return useQuery({
       queryKey: ["my-invites", params],
       queryFn: () => eventService.listMyInvites(params),
@@ -274,6 +289,8 @@ export const useEvent = () => {
     useExportEventAnalytics,
     // Featured Events
     useFeaturedEvents,
+    // Homepage Events
+    useHomepageEvents,
     // Locations
     useLocations,
     useLocation,
