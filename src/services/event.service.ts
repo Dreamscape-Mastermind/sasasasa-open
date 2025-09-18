@@ -4,6 +4,7 @@ import {
   EventQueryParams,
   EventResponse,
   EventsResponse,
+  HomepageEventsResponse,
   InviteTeamMemberRequest,
   LocationQueryParams,
   LocationResponse,
@@ -23,8 +24,8 @@ import type {
   EventAnalyticsResponse,
 } from "@/types/analytics";
 
-import { apiClient } from "./api.service";
 import type { EventRevenueResponse } from "@/types/event";
+import { apiClient } from "./api.service";
 
 /**
  * Event service for handling all event-related operations
@@ -186,6 +187,13 @@ class EventService {
    */
   public async getFeaturedEvents(): Promise<EventsResponse> {
     return apiClient.get<EventsResponse>(`${this.baseUrl}/featured`);
+  }
+
+  /**
+   * Homepage events - optimized endpoint for homepage display
+   */
+  public async getHomepageEvents(): Promise<HomepageEventsResponse> {
+    return apiClient.get<HomepageEventsResponse>(`${this.baseUrl}/homepage`);
   }
 
   /**
