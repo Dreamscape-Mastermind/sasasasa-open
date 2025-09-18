@@ -32,8 +32,9 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
 
   const enableMotion = !(prefersReducedMotion || isMobile);
 
-  // HomepageEvent doesn't have available_tickets, so no flash sale functionality
-  const activeFlashSale = null;
+  // Get flash sale data from the new API structure
+  const activeFlashSale =
+    event.flash_sale && event.has_flash_sale ? event.flash_sale : null;
 
   const checkTimeWindow = useCallback(() => {
     const now = Date.now();
@@ -43,8 +44,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
       const endTime = new Date(activeFlashSale.end_date).getTime();
       const hasStarted = now >= startTime;
       const hasEnded = now > endTime;
-      const isActive =
-        hasStarted && !hasEnded && activeFlashSale.status === "ACTIVE";
+      const isActive = hasStarted && !hasEnded;
 
       if (isActive !== isFlashSaleActive) {
         setIsFlashSaleActive(isActive);
@@ -52,7 +52,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
     } else {
       setIsFlashSaleActive(false);
     }
-  }, [activeFlashSale, event, isFlashSaleActive]);
+  }, [activeFlashSale, isFlashSaleActive]);
 
   useEffect(() => {
     checkTimeWindow();
@@ -195,31 +195,27 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
                 drop-shadow-lg text-shadow-sm mb-4 font-medium
                 [text-shadow:_0_1px_2px_rgba(0,0,0,0.8)]"
             >
-              {event.description}
+              {event.title}
             </motion.p>
 
-            {event.performers && event.performers.length > 0 && (
-              <motion.div
-                className="flex flex-wrap justify-between gap-2 sm:gap-3 mt-2 w-full"
-                variants={containerVariants}
-              >
-                {event.performers.map((performerName, index) => (
-                  <motion.span
-                    key={index}
-                    onClick={(e) => handlePerformerClick(performerName, e)}
-                    className="text-lg sm:text-xl md:text-2xl font-semibold text-white
-                      hover:text-primary transition-colors duration-200
-                      flex items-center gap-2 drop-shadow-lg cursor-pointer
-                      [text-shadow:_0_1px_2px_rgba(0,0,0,0.8)]"
-                    variants={itemVariants}
-                    whileHover={enableMotion ? { scale: 1.05 } : undefined}
-                    whileTap={enableMotion ? { scale: 0.95 } : undefined}
-                  >
-                    {performerName}
-                  </motion.span>
-                ))}
-              </motion.div>
-            )}
+            {/* Price Display */}
+            <motion.div
+              variants={itemVariants}
+              className="flex items-center gap-2 mb-4"
+            >
+              <span className="text-lg sm:text-xl font-bold text-white">
+                {parseFloat(event.price) === 0
+                  ? "Free"
+                  : `KES ${parseFloat(event.price).toLocaleString()}`}
+              </span>
+              {activeFlashSale && isFlashSaleActive && (
+                <span className="text-sm text-orange-400 font-medium">
+                  {activeFlashSale.discount_type === "PERCENTAGE"
+                    ? `${activeFlashSale.discount_amount}% OFF`
+                    : `KES ${activeFlashSale.discount_amount} OFF`}
+                </span>
+              )}
+            </motion.div>
 
             <motion.div
               variants={itemVariants}
@@ -237,7 +233,7 @@ const FeaturedEventBanner = ({ event }: FeaturedEventBannerProps) => {
                     <p className="text-xs sm:text-sm md:text-base">
                       {activeFlashSale.discount_type === "PERCENTAGE"
                         ? `${activeFlashSale.discount_amount}% OFF`
-                        : `KES ${activeFlashSale.discount_amount}/- OFF`}
+                        : `KES ${activeFlashSale.discount_amount} OFF`}
                     </p>
                   </div>
                 </motion.div>

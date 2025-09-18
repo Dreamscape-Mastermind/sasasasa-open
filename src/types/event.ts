@@ -258,35 +258,45 @@ export interface PerformerQueryParams {
  * Homepage API types
  * Specialized event data structure for homepage display
  */
-export interface HomepageEvent {
+export interface HomepageFlashSale {
   id: string;
-  title: string;
+  name: string;
   description: string;
   start_date: string;
   end_date: string;
-  venue: string;
-  cover_image: Nullable<string>;
+  discount_type: "PERCENTAGE" | "FIXED";
+  discount_amount: string;
+  max_tickets: number;
+  tickets_sold: number;
+}
+
+export interface HomepageEvent {
+  id: string;
+  title: string;
   short_url: string;
-  share_url: Nullable<string>;
-  organizer_name: string;
-  location_name: Nullable<string>;
-  location_city: Nullable<string>;
+  cover_image: Nullable<string>;
+  start_date: string;
+  end_date: string;
+  price: string;
+  venue: string;
+  location: Nullable<Location>;
+  flash_sale: Nullable<HomepageFlashSale>;
+  has_flash_sale: boolean;
   featured: boolean;
-  performers: string[];
 }
 
-export interface HomepageEventsData {
+export interface HomepageAllEvents {
+  results: HomepageEvent[];
+  count: number;
+  showing: number;
+  has_more: boolean;
+}
+
+export interface HomepageData {
+  carousel: HomepageEvent[];
   featured_events: HomepageEvent[];
-  recent_events: HomepageEvent[];
-  featured_count: number;
-  recent_count: number;
-  total_count: number;
+  all_events: HomepageAllEvents;
+  flash_sale_events: HomepageEvent[];
 }
 
-export interface HomepageEventsResponse {
-  status: string;
-  message: string;
-  result: {
-    results: HomepageEventsData;
-  };
-}
+export interface HomepageResponse extends SuccessResponse<HomepageData> {}

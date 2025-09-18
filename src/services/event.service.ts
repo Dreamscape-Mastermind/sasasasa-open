@@ -4,7 +4,7 @@ import {
   EventQueryParams,
   EventResponse,
   EventsResponse,
-  HomepageEventsResponse,
+  HomepageResponse,
   InviteTeamMemberRequest,
   LocationQueryParams,
   LocationResponse,
@@ -192,8 +192,8 @@ class EventService {
   /**
    * Homepage events - optimized endpoint for homepage display
    */
-  public async getHomepageEvents(): Promise<HomepageEventsResponse> {
-    return apiClient.get<HomepageEventsResponse>(`${this.baseUrl}/homepage`);
+  public async getHomepageEvents(): Promise<HomepageResponse> {
+    return apiClient.get<HomepageResponse>("/api/v1/homepage");
   }
 
   /**
