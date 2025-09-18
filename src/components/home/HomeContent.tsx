@@ -1,9 +1,12 @@
 "use client";
 
+import { useCallback, useMemo } from "react";
+
 import { CTASection } from "./CTASection";
 import { Features } from "./Features";
 import { Hero } from "./Hero";
 import HomepageEventCard from "@/components/HomepageEventCard";
+import Link from "next/link";
 import { NoDataCard } from "./NoDataCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import dynamic from "next/dynamic";
@@ -76,18 +79,34 @@ export default function HomeContent() {
     refetch: refetchHomepage,
   } = useHomepageEvents();
 
-  // Extract data from homepage response (note: data is nested under result.results)
-  const featuredEvents = homepageData?.result?.results?.featured_events || [];
-  const recentEvents = homepageData?.result?.results?.recent_events || [];
+  // Memoize extracted data to prevent unnecessary re-renders
+  const homepageDataMemo = useMemo(() => {
+    if (!homepageData?.result) return null;
 
-  // Get the most recent featured event for the banner
-  const bannerEvent = featuredEvents[0];
-  const hasMultipleFeaturedEvents = featuredEvents.length > 1;
+    return {
+      carouselEvents: homepageData.result.carousel || [],
+      featuredEvents: homepageData.result.featured_events || [],
+      allEvents: homepageData.result.all_events?.results || [],
+      flashSaleEvents: homepageData.result.flash_sale_events || [],
+    };
+  }, [homepageData]);
 
-  // Handle retry function
-  const handleRetry = () => {
+  // Memoize banner event and carousel state
+  const bannerState = useMemo(() => {
+    if (!homepageDataMemo)
+      return { bannerEvent: null, hasMultipleFeaturedEvents: false };
+
+    const bannerEvent = homepageDataMemo.carouselEvents[0];
+    const hasMultipleFeaturedEvents =
+      homepageDataMemo.carouselEvents.length > 1;
+
+    return { bannerEvent, hasMultipleFeaturedEvents };
+  }, [homepageDataMemo]);
+
+  // Memoize retry function
+  const handleRetry = useCallback(() => {
     refetchHomepage();
-  };
+  }, [refetchHomepage]);
 
   return (
     <main className="mx-0 px-0">
@@ -117,12 +136,12 @@ export default function HomeContent() {
           <div className="my-8 relative px-1 md:px-2">
             <NoDataCard type="carousel" onRetry={handleRetry} isError={true} />
           </div>
-        ) : hasMultipleFeaturedEvents ? (
+        ) : bannerState.hasMultipleFeaturedEvents ? (
           <div className="my-8 relative px-1 md:px-2">
-            <FeaturedCarousel events={featuredEvents.slice(0, 3)} />
+            <FeaturedCarousel events={homepageDataMemo?.carouselEvents || []} />
           </div>
-        ) : bannerEvent ? (
-          <FeaturedEventBanner event={bannerEvent} />
+        ) : bannerState.bannerEvent ? (
+          <FeaturedEventBanner event={bannerState.bannerEvent} />
         ) : (
           <div className="my-8 relative px-1 md:px-2">
             <NoDataCard type="carousel" />
@@ -160,19 +179,19 @@ export default function HomeContent() {
               />
             </div>
           </div>
-        ) : featuredEvents.length > 0 ? (
+        ) : (homepageDataMemo?.featuredEvents.length ?? 0) > 0 ? (
           <div className="container mx-auto px-4 py-16">
             <div className="space-y-8">
               <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
                 <h2 className="text-3xl font-bold">Featured Experiences</h2>
-                <a href="/e">
+                <Link href="/e">
                   <button className="w-fit text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
                     View All Experiences
                   </button>
-                </a>
+                </Link>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {featuredEvents.slice(0, 3).map((event) => (
+                {homepageDataMemo?.featuredEvents.map((event) => (
                   <HomepageEventCard key={event.id} item={event} />
                 ))}
               </div>
@@ -216,19 +235,19 @@ export default function HomeContent() {
               <NoDataCard type="recent" onRetry={handleRetry} isError={true} />
             </div>
           </div>
-        ) : recentEvents.length > 0 ? (
+        ) : (homepageDataMemo?.allEvents.length ?? 0) > 0 ? (
           <div className="container mx-auto px-4 py-16">
             <div className="space-y-8">
               <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
                 <h2 className="text-3xl font-bold">All Experiences</h2>
-                <a href="/e">
+                <Link href="/e">
                   <button className="w-fit text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
                     View All Experiences
                   </button>
-                </a>
+                </Link>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recentEvents.slice(0, 6).map((event) => (
+                {homepageDataMemo?.allEvents.map((event) => (
                   <HomepageEventCard key={event.id} item={event} />
                 ))}
               </div>
@@ -241,6 +260,27 @@ export default function HomeContent() {
                 <h2 className="text-3xl font-bold">All Experiences</h2>
               </div>
               <NoDataCard type="recent" />
+            </div>
+          </div>
+        )}
+
+        {/* Flash Sale Events Section */}
+        {(homepageDataMemo?.flashSaleEvents.length ?? 0) > 0 && (
+          <div className="container mx-auto px-4 py-16">
+            <div className="space-y-8">
+              <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+                <h2 className="text-3xl font-bold">🔥 Flash Sale Events</h2>
+                <Link href="/e">
+                  <button className="w-fit text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                    View All Flash Sales
+                  </button>
+                </Link>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {homepageDataMemo?.flashSaleEvents.slice(0, 3).map((event) => (
+                  <HomepageEventCard key={event.id} item={event} />
+                ))}
+              </div>
             </div>
           </div>
         )}
