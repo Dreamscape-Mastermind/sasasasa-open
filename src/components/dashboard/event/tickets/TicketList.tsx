@@ -92,28 +92,28 @@ export default function TicketList({ eventId, onEditTicket }: TicketListProps) {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
         {[1, 2, 4, 5, 6].map((i) => (
           <Card key={i} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                 <div className="flex-1 space-y-2">
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-5 sm:h-6 w-3/4" />
+                  <Skeleton className="h-3 sm:h-4 w-full" />
                 </div>
                 <Skeleton className="h-6 w-16" />
               </div>
             </CardHeader>
 
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 p-3 bg-muted/50 rounded-lg">
+              <div className="grid grid-cols-2 gap-2 sm:gap-4 p-2 sm:p-3 bg-muted/50 rounded-lg">
                 <div className="space-y-2">
                   <Skeleton className="h-3 w-12" />
-                  <Skeleton className="h-5 w-16" />
+                  <Skeleton className="h-4 sm:h-5 w-16" />
                 </div>
                 <div className="space-y-2">
                   <Skeleton className="h-3 w-16" />
-                  <Skeleton className="h-5 w-20" />
+                  <Skeleton className="h-4 sm:h-5 w-20" />
                 </div>
               </div>
 
@@ -128,7 +128,7 @@ export default function TicketList({ eventId, onEditTicket }: TicketListProps) {
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-2">
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
                 <Skeleton className="h-9 flex-1" />
                 <Skeleton className="h-9 flex-1" />
               </div>
@@ -156,80 +156,82 @@ export default function TicketList({ eventId, onEditTicket }: TicketListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
       {tickets.result.results.map((ticket) => (
         <Card key={ticket.id} className="hover:shadow-md transition-shadow">
           <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  {ticket.name}
-                  {ticket.is_free && (
-                    <Badge variant="secondary" className="text-xs">
-                      Free
-                    </Badge>
-                  )}
-                  {!ticket.is_active && (
-                    <Badge variant="outline" className="text-xs">
-                      Inactive
-                    </Badge>
-                  )}
-                  {!ticket.is_public && (
-                    <Badge variant="secondary" className="text-xs">
-                      Private
-                    </Badge>
-                  )}
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <CardTitle className="text-base sm:text-lg flex flex-wrap items-center gap-1 mb-1">
+                  <span className="truncate">{ticket.name}</span>
+                  <div className="flex flex-wrap gap-1">
+                    {ticket.is_free && (
+                      <Badge variant="secondary" className="text-xs">
+                        Free
+                      </Badge>
+                    )}
+                    {!ticket.is_active && (
+                      <Badge variant="outline" className="text-xs">
+                        Inactive
+                      </Badge>
+                    )}
+                    {!ticket.is_public && (
+                      <Badge variant="secondary" className="text-xs">
+                        Private
+                      </Badge>
+                    )}
+                  </div>
                 </CardTitle>
-                <CardDescription className="mt-1">
+                <CardDescription className="text-sm line-clamp-2">
                   {ticket.description || "No description provided"}
                 </CardDescription>
               </div>
-              {getStatusBadge(ticket)}
+              <div className="flex-shrink-0">{getStatusBadge(ticket)}</div>
             </div>
           </CardHeader>
 
           <CardContent className="space-y-4">
             {/* Price and Availability */}
-            <div className="grid grid-cols-2 gap-4 p-3 bg-muted/50 rounded-lg">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 p-2 sm:p-3 bg-muted/50 rounded-lg">
               <div>
-                <p className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-                  <DollarSign className="h-3 w-3" />
-                  Price
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1">
+                  <DollarSign className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">Price</span>
                 </p>
-                <p className="text-lg font-bold text-foreground">
+                <p className="text-sm sm:text-lg font-bold text-foreground truncate">
                   {ticket.is_free
                     ? "Free"
                     : `KES ${parseFloat(ticket.price).toFixed(2)}`}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
                   Available
                 </p>
-                <p className="text-lg font-bold text-foreground">
+                <p className="text-sm sm:text-lg font-bold text-foreground">
                   {ticket.remaining_tickets} / {ticket.quantity}
                 </p>
               </div>
             </div>
 
             {/* Advanced Settings */}
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Timeout:
+            <div className="space-y-2 text-xs sm:text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground flex items-center gap-1 min-w-0">
+                  <Clock className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">Timeout:</span>
                 </span>
-                <span className="font-medium">
+                <span className="font-medium text-right">
                   {ticket.reserve_timeout_minutes} min
                 </span>
               </div>
               {ticket.per_user_purchase_limit && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    Limit:
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground flex items-center gap-1 min-w-0">
+                    <Users className="h-3 w-3 flex-shrink-0" />
+                    <span className="truncate">Limit:</span>
                   </span>
-                  <span className="font-medium">
+                  <span className="font-medium text-right">
                     {ticket.per_user_purchase_limit} per user
                   </span>
                 </div>
@@ -237,19 +239,21 @@ export default function TicketList({ eventId, onEditTicket }: TicketListProps) {
             </div>
 
             {/* Sale Period */}
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  Sale Start:
+            <div className="space-y-2 text-xs sm:text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground flex items-center gap-1 min-w-0">
+                  <Calendar className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">Sale Start:</span>
                 </span>
-                <span className="font-medium">
+                <span className="font-medium text-right text-xs sm:text-sm">
                   {format(new Date(ticket.sale_start_date), "MMM d, yyyy")}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Sale End:</span>
-                <span className="font-medium">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground truncate">
+                  Sale End:
+                </span>
+                <span className="font-medium text-right text-xs sm:text-sm">
                   {format(new Date(ticket.sale_end_date), "MMM d, yyyy")}
                 </span>
               </div>
@@ -258,9 +262,9 @@ export default function TicketList({ eventId, onEditTicket }: TicketListProps) {
             {/* Complementary Policy */}
             {ticket.has_complementary_policy && (
               <div className="space-y-2">
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Users className="h-3 w-3" />
-                  Complementary Policy:
+                <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                  <Users className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">Complementary Policy:</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   <Badge variant="secondary" className="text-xs">
@@ -291,9 +295,9 @@ export default function TicketList({ eventId, onEditTicket }: TicketListProps) {
                   {/* System Attributes */}
                   {hasSystemAttrs && (
                     <div className="space-y-2">
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Tag className="h-3 w-3" />
-                        System Info:
+                      <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                        <Tag className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">System Info:</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {systemAttrs.is_auto_generated && (
@@ -321,9 +325,9 @@ export default function TicketList({ eventId, onEditTicket }: TicketListProps) {
                   {/* User Custom Attributes */}
                   {hasUserAttrs && (
                     <div className="space-y-2">
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Tag className="h-3 w-3" />
-                        Custom Attributes:
+                      <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                        <Tag className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">Custom Attributes:</span>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {Object.entries(userAttrs)
@@ -352,7 +356,7 @@ export default function TicketList({ eventId, onEditTicket }: TicketListProps) {
               );
             })()}
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-col sm:flex-row gap-2 pt-2">
               <Button
                 onClick={() => onEditTicket(ticket)}
                 variant="outline"
@@ -360,7 +364,8 @@ export default function TicketList({ eventId, onEditTicket }: TicketListProps) {
                 className="flex-1"
               >
                 <Edit className="h-4 w-4 mr-2" />
-                Edit
+                <span className="hidden sm:inline">Edit</span>
+                <span className="sm:hidden">Edit Ticket</span>
               </Button>
 
               <AlertDialog>
@@ -376,7 +381,8 @@ export default function TicketList({ eventId, onEditTicket }: TicketListProps) {
                     ) : (
                       <Trash2 className="h-4 w-4 mr-2" />
                     )}
-                    Delete
+                    <span className="hidden sm:inline">Delete</span>
+                    <span className="sm:hidden">Delete Ticket</span>
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>

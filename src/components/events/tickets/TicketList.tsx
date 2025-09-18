@@ -158,27 +158,69 @@ export function TicketList({
                 delay: index * 0.1,
                 ease: "easeOut",
               }}
-              className={`group relative rounded-xl border transition-all duration-300 ease-out
-                ${soldOut || ticketEnded ? "opacity-60" : ""}
+              className={`group relative rounded-xl border transition-all duration-300 ease-out overflow-hidden
+                ${soldOut || ticketEnded ? "cursor-not-allowed" : ""}
                 bg-background border-[#8B4545] hover:border-[#A55A5A]
               `}
             >
-              <div className="flex items-center justify-between p-6">
+              {/* Diagonal SOLD OUT ribbon */}
+              {soldOut && (
+                <div className="absolute top-0 right-0 z-20">
+                  <div className="relative">
+                    <div className="absolute top-0 right-0 w-0 h-0 border-l-[60px] border-l-transparent border-t-[60px] border-t-red-600"></div>
+                    <div className="absolute top-2 right-1 text-white text-xs font-bold transform rotate-45 origin-center">
+                      SOLD OUT
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Sales Ended ribbon */}
+              {ticketEnded && !soldOut && (
+                <div className="absolute top-0 right-0 z-20">
+                  <div className="relative">
+                    <div className="absolute top-0 right-0 w-0 h-0 border-l-[60px] border-l-transparent border-t-[60px] border-t-orange-600"></div>
+                    <div className="absolute top-2 right-1 text-white text-xs font-bold transform rotate-45 origin-center">
+                      ENDED
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Overlay for sold-out/ended tickets */}
+              {(soldOut || ticketEnded) && (
+                <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px] z-10 rounded-xl"></div>
+              )}
+              <div className="flex items-center justify-between p-6 relative z-20">
                 {/* Left side - Ticket info */}
                 <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3
-                      className={`text-xl font-bold ${
-                        soldOut || ticketEnded ? "text-gray-500" : "text-white"
-                      }`}
-                    >
-                      {ticket.name}
-                    </h3>
-                    <div className="text-right">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex-1">
+                      <h3
+                        className={`text-xl font-bold mb-1 ${
+                          soldOut || ticketEnded
+                            ? "text-gray-400"
+                            : "text-white"
+                        }`}
+                      >
+                        {ticket.name}
+                      </h3>
+                      {(soldOut || ticketEnded) && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <XCircle className="w-4 h-4 text-red-400" />
+                          <span className="text-sm font-medium text-red-300">
+                            {soldOut
+                              ? "No tickets available"
+                              : "Sales have ended"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right ml-4">
                       <div
                         className={`text-xl font-bold ${
                           soldOut || ticketEnded
-                            ? "text-gray-500"
+                            ? "text-gray-400 line-through"
                             : "text-white"
                         }`}
                       >
@@ -193,6 +235,11 @@ export function TicketList({
                             ).toFixed(2)}`
                           : `KES ${parseFloat(ticket.price).toFixed(2)}`}
                       </div>
+                      {(soldOut || ticketEnded) && (
+                        <div className="text-sm text-gray-500 mt-1">
+                          {soldOut ? "Unavailable" : "No longer on sale"}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -259,11 +306,22 @@ export function TicketList({
                 {/* Right side - Quantity selector */}
                 <div className="flex items-center gap-3 ml-6">
                   {soldOut || ticketEnded ? (
-                    <div className="text-center">
-                      <XCircle className="w-8 h-8 text-gray-500 mx-auto mb-2" />
-                      <p className="text-gray-400 text-sm">
-                        {soldOut ? "Sold Out" : "Sales Ended"}
-                      </p>
+                    <div className="text-center bg-red-900/30 border border-red-600/50 rounded-xl p-4 min-w-[120px]">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="p-2 bg-red-600/20 rounded-full">
+                          <XCircle className="w-6 h-6 text-red-400" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-red-300 text-sm font-semibold">
+                            {soldOut ? "SOLD OUT" : "SALES ENDED"}
+                          </p>
+                          <p className="text-red-400/80 text-xs mt-1">
+                            {soldOut
+                              ? "No tickets available"
+                              : "No longer on sale"}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <>
