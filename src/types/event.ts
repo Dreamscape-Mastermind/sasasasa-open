@@ -99,6 +99,54 @@ export interface EventTeamMember extends BaseEventEntity {
 }
 
 /**
+ * Category types
+ * Represents event categories for organization
+ */
+export interface Category extends BaseEventEntity {
+  name: string;
+  slug: string;
+  description: Nullable<string>;
+  parent: Nullable<string>; // Parent category ID
+  is_active: boolean;
+  sort_order: number;
+}
+
+/**
+ * Event type types
+ * Represents different types of events (concert, conference, etc.)
+ */
+export interface EventType extends BaseEventEntity {
+  name: string;
+  slug: string;
+  description: Nullable<string>;
+  is_active: boolean;
+  sort_order: number;
+}
+
+/**
+ * Event format types
+ * Represents event formats (in-person, virtual, hybrid)
+ */
+export interface EventFormat extends BaseEventEntity {
+  name: string;
+  slug: string;
+  description: Nullable<string>;
+  is_active: boolean;
+  sort_order: number;
+}
+
+/**
+ * Event tag types
+ * Represents tags for events
+ */
+export interface EventTag extends BaseEventEntity {
+  name: string;
+  slug: string;
+  is_trending: boolean;
+  usage_count: number;
+}
+
+/**
  * Event types
  * Core event entity with all related data
  */
@@ -129,6 +177,28 @@ export interface Event extends BaseEventEntity {
   featured: boolean;
   featured_until: Nullable<string>;
   performers: Performer[];
+  // New fields from updated API
+  category: Nullable<Category>;
+  event_type: Nullable<EventType>;
+  format: Nullable<EventFormat>;
+  tags: EventTag[];
+  age_restriction: Nullable<string>;
+  content_rating: Nullable<string>;
+  minimum_age: Nullable<number>;
+  maximum_age: Nullable<number>;
+  is_recurring: boolean;
+  is_series: boolean;
+  series_name: Nullable<string>;
+  series_number: Nullable<number>;
+  virtual_meeting_url: Nullable<string>;
+  virtual_platform: Nullable<string>;
+  virtual_instructions: Nullable<string>;
+  virtual_capacity: Nullable<number>;
+  // Additional computed fields from API
+  category_path: Nullable<string>;
+  is_age_restricted: boolean;
+  format_display: Nullable<string>;
+  tag_names: string[];
 }
 
 /**
@@ -186,6 +256,26 @@ export interface PerformerResponse extends SuccessResponse<Performer> {}
 export interface PerformersResponse
   extends SuccessResponse<PaginatedResponse<Performer>> {}
 
+export interface CategoryResponse extends SuccessResponse<Category> {}
+
+export interface CategoriesResponse
+  extends SuccessResponse<PaginatedResponse<Category>> {}
+
+export interface EventTypeResponse extends SuccessResponse<EventType> {}
+
+export interface EventTypesResponse
+  extends SuccessResponse<PaginatedResponse<EventType>> {}
+
+export interface EventFormatResponse extends SuccessResponse<EventFormat> {}
+
+export interface EventFormatsResponse
+  extends SuccessResponse<PaginatedResponse<EventFormat>> {}
+
+export interface EventTagResponse extends SuccessResponse<EventTag> {}
+
+export interface EventTagsResponse
+  extends SuccessResponse<PaginatedResponse<EventTag>> {}
+
 /**
  * Revenue types
  */
@@ -207,16 +297,31 @@ export interface EventRevenueResponse extends SuccessResponse<EventRevenue> {}
  * Query parameter interfaces
  */
 export interface EventQueryParams {
+  // Standard filtering
   status?: EventStatus;
   venue?: string;
   organizer?: string;
   short_url?: string;
   featured?: boolean;
   featured_until?: string;
+  category?: string;
+  event_type?: string;
+  format?: string;
+  is_recurring?: boolean;
+  is_series?: boolean;
+  age_restriction?: string;
+  minimum_age?: number;
+  maximum_age?: number;
+
+  // Search and ordering
   search?: string;
   ordering?: string;
+
+  // Pagination
   page?: number;
   page_size?: number;
+
+  // Legacy filters (kept for backward compatibility)
   is_past?: boolean;
   is_featured?: boolean;
   owner?: boolean;
@@ -252,6 +357,36 @@ export interface PerformerQueryParams {
   search?: string;
   page?: number;
   event?: string;
+}
+
+export interface CategoryQueryParams {
+  parent_id?: string;
+  include_inactive?: boolean;
+  search?: string;
+  ordering?: string;
+  page?: number;
+}
+
+export interface EventTypeQueryParams {
+  include_inactive?: boolean;
+  search?: string;
+  ordering?: string;
+  page?: number;
+}
+
+export interface EventFormatQueryParams {
+  include_inactive?: boolean;
+  search?: string;
+  ordering?: string;
+  page?: number;
+}
+
+export interface EventTagQueryParams {
+  trending?: boolean;
+  limit?: number;
+  search?: string;
+  ordering?: string;
+  page?: number;
 }
 
 /**

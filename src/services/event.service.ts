@@ -1,8 +1,17 @@
 import {
   AcceptTeamInvitationRequest,
+  CategoriesResponse,
+  CategoryQueryParams,
+  CategoryResponse,
   CreateEventRequest,
+  EventFormatQueryParams,
+  EventFormatsResponse,
   EventQueryParams,
   EventResponse,
+  EventTagQueryParams,
+  EventTagsResponse,
+  EventTypeQueryParams,
+  EventTypesResponse,
   EventsResponse,
   HomepageResponse,
   InviteTeamMemberRequest,
@@ -325,6 +334,104 @@ class EventService {
    */
   public async getMyEvents(params?: EventQueryParams): Promise<EventsResponse> {
     return apiClient.get<EventsResponse>(`${this.baseUrl}/my_events`, {
+      params,
+    });
+  }
+
+  /**
+   * Categorization endpoints
+   */
+  public async getCategories(
+    params?: CategoryQueryParams
+  ): Promise<CategoriesResponse> {
+    return apiClient.get<CategoriesResponse>(`${this.baseUrl}/categories`, {
+      params,
+    });
+  }
+
+  public async getCategory(id: string): Promise<CategoryResponse> {
+    return apiClient.get<CategoryResponse>(`${this.baseUrl}/categories/${id}`);
+  }
+
+  public async getEventTypes(
+    params?: EventTypeQueryParams
+  ): Promise<EventTypesResponse> {
+    return apiClient.get<EventTypesResponse>(`${this.baseUrl}/types`, {
+      params,
+    });
+  }
+
+  public async getEventFormats(
+    params?: EventFormatQueryParams
+  ): Promise<EventFormatsResponse> {
+    return apiClient.get<EventFormatsResponse>(`${this.baseUrl}/formats`, {
+      params,
+    });
+  }
+
+  public async getEventTags(
+    params?: EventTagQueryParams
+  ): Promise<EventTagsResponse> {
+    return apiClient.get<EventTagsResponse>(`${this.baseUrl}/tags`, {
+      params,
+    });
+  }
+
+  /**
+   * Filtered event lists
+   */
+  public async getEventsByCategory(
+    params: {
+      category_id?: string;
+      category_slug?: string;
+      include_subcategories?: boolean;
+    } & EventQueryParams
+  ): Promise<EventsResponse> {
+    return apiClient.get<EventsResponse>(`${this.baseUrl}/by_category`, {
+      params,
+    });
+  }
+
+  public async getEventsByType(
+    params: { type_id?: string; type_slug?: string } & EventQueryParams
+  ): Promise<EventsResponse> {
+    return apiClient.get<EventsResponse>(`${this.baseUrl}/by_type`, {
+      params,
+    });
+  }
+
+  public async getEventsByFormat(
+    params: { format_id?: string; format_slug?: string } & EventQueryParams
+  ): Promise<EventsResponse> {
+    return apiClient.get<EventsResponse>(`${this.baseUrl}/by_format`, {
+      params,
+    });
+  }
+
+  public async getEventsByTag(
+    params: { tag?: string; tag_id?: string } & EventQueryParams
+  ): Promise<EventsResponse> {
+    return apiClient.get<EventsResponse>(`${this.baseUrl}/by_tag`, {
+      params,
+    });
+  }
+
+  public async getAgeRestrictedEvents(
+    params: {
+      min_age?: number;
+      max_age?: number;
+      age_restriction?: string;
+    } & EventQueryParams
+  ): Promise<EventsResponse> {
+    return apiClient.get<EventsResponse>(`${this.baseUrl}/age_restricted`, {
+      params,
+    });
+  }
+
+  public async getVirtualEvents(
+    params: { format?: "all" | "virtual" | "hybrid" } & EventQueryParams
+  ): Promise<EventsResponse> {
+    return apiClient.get<EventsResponse>(`${this.baseUrl}/virtual_events`, {
       params,
     });
   }

@@ -1,7 +1,11 @@
 import type {
   AcceptTeamInvitationRequest,
+  CategoryQueryParams,
   CreateEventRequest,
+  EventFormatQueryParams,
   EventQueryParams,
+  EventTagQueryParams,
+  EventTypeQueryParams,
   InviteTeamMemberRequest,
   LocationQueryParams,
   PerformerQueryParams,
@@ -274,6 +278,136 @@ export const useEvent = () => {
     });
   };
 
+  // Categories
+  const useCategories = (params?: CategoryQueryParams) => {
+    return useQuery({
+      queryKey: ["categories", params],
+      queryFn: () => eventService.getCategories(params),
+      staleTime: 10 * 60 * 1000, // 10 minutes - categories don't change often
+      gcTime: 30 * 60 * 1000, // 30 minutes - keep in cache longer
+      retry: 2, // Retry failed requests twice
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    });
+  };
+
+  const useCategory = (id: string) => {
+    return useQuery({
+      queryKey: ["category", id],
+      enabled: !!id,
+      queryFn: () => eventService.getCategory(id),
+      staleTime: 10 * 60 * 1000,
+    });
+  };
+
+  // Event Types
+  const useEventTypes = (params?: EventTypeQueryParams) => {
+    return useQuery({
+      queryKey: ["event-types", params],
+      queryFn: () => eventService.getEventTypes(params),
+      staleTime: 10 * 60 * 1000,
+      gcTime: 30 * 60 * 1000, // 30 minutes - keep in cache longer
+      retry: 2, // Retry failed requests twice
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    });
+  };
+
+  // Event Formats
+  const useEventFormats = (params?: EventFormatQueryParams) => {
+    return useQuery({
+      queryKey: ["event-formats", params],
+      queryFn: () => eventService.getEventFormats(params),
+      staleTime: 10 * 60 * 1000,
+      gcTime: 30 * 60 * 1000, // 30 minutes - keep in cache longer
+      retry: 2, // Retry failed requests twice
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    });
+  };
+
+  // Event Tags
+  const useEventTags = (params?: EventTagQueryParams) => {
+    return useQuery({
+      queryKey: ["event-tags", params],
+      queryFn: () => eventService.getEventTags(params),
+      staleTime: 5 * 60 * 1000, // 5 minutes - tags might change more frequently
+      gcTime: 15 * 60 * 1000, // 15 minutes - keep in cache
+      retry: 2, // Retry failed requests twice
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    });
+  };
+
+  // Filtered Event Lists
+  const useEventsByCategory = (
+    params: {
+      category_id?: string;
+      category_slug?: string;
+      include_subcategories?: boolean;
+    } & EventQueryParams,
+    options?: { enabled?: boolean }
+  ) => {
+    return useQuery({
+      queryKey: ["events-by-category", params],
+      queryFn: () => eventService.getEventsByCategory(params),
+      staleTime: 5 * 60 * 1000,
+      enabled: options?.enabled !== false,
+    });
+  };
+
+  const useEventsByType = (
+    params: { type_id?: string; type_slug?: string } & EventQueryParams
+  ) => {
+    return useQuery({
+      queryKey: ["events-by-type", params],
+      queryFn: () => eventService.getEventsByType(params),
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
+  const useEventsByFormat = (
+    params: { format_id?: string; format_slug?: string } & EventQueryParams
+  ) => {
+    return useQuery({
+      queryKey: ["events-by-format", params],
+      queryFn: () => eventService.getEventsByFormat(params),
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
+  const useEventsByTag = (
+    params: { tag?: string; tag_id?: string } & EventQueryParams,
+    options?: { enabled?: boolean }
+  ) => {
+    return useQuery({
+      queryKey: ["events-by-tag", params],
+      queryFn: () => eventService.getEventsByTag(params),
+      staleTime: 5 * 60 * 1000,
+      enabled: options?.enabled !== false,
+    });
+  };
+
+  const useAgeRestrictedEvents = (
+    params: {
+      min_age?: number;
+      max_age?: number;
+      age_restriction?: string;
+    } & EventQueryParams
+  ) => {
+    return useQuery({
+      queryKey: ["age-restricted-events", params],
+      queryFn: () => eventService.getAgeRestrictedEvents(params),
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
+  const useVirtualEvents = (
+    params: { format?: "all" | "virtual" | "hybrid" } & EventQueryParams
+  ) => {
+    return useQuery({
+      queryKey: ["virtual-events", params],
+      queryFn: () => eventService.getVirtualEvents(params),
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
   return {
     // Events
     useEvents,
@@ -310,5 +444,21 @@ export const useEvent = () => {
     // User's Events
     useMyEvents,
     useEventRevenue,
+    // Categories
+    useCategories,
+    useCategory,
+    // Event Types
+    useEventTypes,
+    // Event Formats
+    useEventFormats,
+    // Event Tags
+    useEventTags,
+    // Filtered Event Lists
+    useEventsByCategory,
+    useEventsByType,
+    useEventsByFormat,
+    useEventsByTag,
+    useAgeRestrictedEvents,
+    useVirtualEvents,
   };
 };

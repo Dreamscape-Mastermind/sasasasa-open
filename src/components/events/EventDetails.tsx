@@ -9,10 +9,12 @@ import {
 import React, { useEffect, useState } from "react";
 
 import Error from "@/components/ui/error";
-import { Event, type EventQueryParams } from "@/types/event";
+import { Event } from "@/types/event";
 import Image from "next/image";
 import Link from "next/link";
+import { ROUTES } from "@/lib/constants";
 import ReactMarkdown from "react-markdown";
+import SimilarEvents from "@/components/events/SimilarEvents";
 import { TicketType } from "@/types/ticket";
 import { TicketTypeWithFlashSale } from "@/types/flashsale";
 import { Tickets } from "@/components/events/tickets/Tickets";
@@ -20,8 +22,6 @@ import { formatDateCustom } from "@/lib/dataFormatters";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useEvent } from "@/hooks/useEvent";
 import { useLogger } from "@/hooks/useLogger";
-import { ROUTES } from "@/lib/constants";
-import image from "public/images/placeholdere.jpeg";
 
 type EventDetailsProps = {
   slug: string;
@@ -274,243 +274,360 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
     });
   };
 
-
-
-
   return (
     <div className="mx-auto px-4 sm:px-14">
       <div className="full-w overflow-hidden max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row gap-8 bg-zinc-900 text-white max-w-6xl sm:max-w-5xl items-left sm:items-start mx-auto sm:p-8 transition-all duration-300 ease-in-out hover:shadow-xl">
-          <div className="basis-1/2 relative aspect-square transition-transform duration-500 ease-in-out hover:scale-[1.02]">
-            {event.cover_image ? (
-              <div className="relative w-full h-full">
-                <Image
-                  src={hasError ? '/images/placeholdere.jpeg' : event.cover_image}
-                  alt={`${event.title} event poster`}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  style={{ objectFit: "contain" }}
-                  className="transition-opacity duration-300 ease-in-out"
-                  priority
-                  onError={(e) => {
-                    setHasError(true);
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="relative w-full h-full">
-                <Image
-                  src='/images/placeholdere.jpeg'
-                  alt="Default event image"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  style={{ objectFit: "contain" }}
-                  className="transition-opacity duration-300 ease-in-out"
-                  priority
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="basis-1/2 text-left px-5 pb-4 sm:px-0 sm:pb-0 sm:pt-4 transition-all duration-300 ease-in-out">
-            <div className="flex flex-col gap-1 text-gray-300">
-              {event.start_date && (
-                <>
-                  <span className="text-lg transform transition-all duration-300 ease-in-out hover:text-white">
-                    {formatEventDate(event.start_date)}
-                  </span>
-                  <div className="flex items-center gap-2 text-base">
-                    <span>{formatEventTime(event.start_date)}</span>
-                    {event.end_date && (
-                      <>
-                        <span>-</span>
-                        <span>{formatEventTime(event.end_date)}</span>
-                      </>
-                    )}
-                    <span className="text-sm">
-                      {event.timezone ? `(${event.timezone})` : "(EAT)"}
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-
-            <h1 className="text-3xl sm:text-5xl font-bold my-4 sm:my-6 transition-all duration-300 ease-in-out hover:text-blue-400">
-              {event.title || "Untitled Event"}
-            </h1>
-
-            <div className="my-4 sm:my-6 text-gray-200 text-lg leading-relaxed markdown-content transition-all duration-300 ease-in-out hover:text-white">
-              {event.description ? (
-                <ReactMarkdown>{event.description}</ReactMarkdown>
-              ) : (
-                <p className="italic text-gray-400">No description available</p>
-              )}
-            </div>
-
-            {/* Performers section */}
-            {event.performers && event.performers.length > 0 && (
-              <div className="mt-6 transform transition-all duration-300 ease-in-out">
-                <h4 className="text-xl font-semibold mb-4">
-                  Featured Artists:
-                </h4>
-                <div className="flex flex-wrap gap-4">
-                  {event.performers.map((performer) => (
-                    <Link
-                      key={performer.name}
-                      href={performer.spotify_url || "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => handlePerformerClick(performer)}
-                      className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-full transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-md"
-                    >
-                      <span>{performer.name}</span>
-                      {performer.spotify_url && (
-                        <svg
-                          className="w-4 h-4"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.48.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
-                        </svg>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+        {/* Event Poster - Full Width at Top */}
+        <div className="relative w-full aspect-[4/3] mb-8 bg-zinc-900 rounded-xl overflow-hidden transition-transform duration-500 ease-in-out hover:scale-[1.02]">
+          {event.cover_image ? (
+            <Image
+              src={hasError ? "/images/placeholdere.jpeg" : event.cover_image}
+              alt={`${event.title} event poster`}
+              fill
+              sizes="(max-width: 768px) 100vw, 100vw"
+              style={{ objectFit: "cover" }}
+              className="transition-opacity duration-300 ease-in-out"
+              priority
+              onError={(e) => {
+                setHasError(true);
+              }}
+            />
+          ) : (
+            <Image
+              src="/images/placeholdere.jpeg"
+              alt="Default event image"
+              fill
+              sizes="(max-width: 768px) 100vw, 100vw"
+              style={{ objectFit: "cover" }}
+              className="transition-opacity duration-300 ease-in-out"
+              priority
+            />
+          )}
         </div>
 
-        <div className="max-w-3xl mx-auto text-[14px] sm:text-base px-3 sm:px-0 sm:mt-12">
-          {/* Venue section */}
-          <div className="my-8 transform transition-all duration-300 ease-in-out hover:translate-x-1">
-            <h2 className="text-xl font-bold mb-3">VENUE</h2>
-            {!event.venue || event.venue === "Location TBA" ? (
-              <p className="font-helvetica text-lg">Location to be announced</p>
-            ) : (
-              <div className="space-y-3">
-                <Link
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                    event.venue
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={handleVenueClick}
-                  className="font-helvetica hover:underline text-blue-400 text-lg inline-flex items-center gap-2 transition-all duration-300 ease-in-out hover:text-blue-300"
-                >
-                  <svg
-                    className="w-5 h-5 transition-transform duration-300 ease-in-out group-hover:scale-110"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 0c-4.198 0-8 3.403-8 7.602 0 4.198 3.469 9.21 8 16.398 4.531-7.188 8-12.2 8-16.398 0-4.199-3.801-7.602-8-7.602zm0 11c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z" />
-                  </svg>
-                  {event.venue}
-                </Link>
-
-                <Accordion
-                  type="single"
-                  collapsible
-                  className="w-full border-none"
-                >
-                  <AccordionItem value="map" className="border-none">
-                    <AccordionTrigger className="py-2 text-blue-400 hover:text-blue-300 transition-all duration-300 ease-in-out">
-                      View on map
-                    </AccordionTrigger>
-                    <AccordionContent className="transition-all duration-500 ease-in-out">
-                      <div className="w-full h-40 rounded-lg overflow-hidden shadow-lg bg-zinc-800 transition-all duration-300 ease-in-out hover:shadow-xl">
-                        <iframe
-                          title="Event Location"
-                          width="100%"
-                          height="100%"
-                          frameBorder="0"
-                          style={{ border: 0 }}
-                          src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                            event.venue
-                          )}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
-                          allowFullScreen
-                        ></iframe>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </div>
+        {/* Event Content - Single Column Below */}
+        <div className="bg-zinc-900 text-white p-6 sm:p-8 rounded-xl transition-all duration-300 ease-in-out hover:shadow-xl">
+          <div className="flex flex-col gap-1 text-gray-300">
+            {event.start_date && (
+              <>
+                <span className="text-lg transform transition-all duration-300 ease-in-out hover:text-white">
+                  {formatEventDate(event.start_date)}
+                </span>
+                <div className="flex items-center gap-2 text-base">
+                  <span>{formatEventTime(event.start_date)}</span>
+                  {event.end_date && (
+                    <>
+                      <span>-</span>
+                      <span>{formatEventTime(event.end_date)}</span>
+                    </>
+                  )}
+                  <span className="text-sm">
+                    {event.timezone ? `(${event.timezone})` : "(EAT)"}
+                  </span>
+                </div>
+              </>
             )}
           </div>
 
-          {/* Tickets section */}
-          <div className="my-8 sm:my-12 transform transition-all duration-300 ease-in-out hover:translate-x-1">
-            <h2 className="text-xl font-bold mb-3">TICKETS</h2>
-            {event.available_tickets && event.available_tickets.length > 0 ? (
-              <Tickets
-                tickets={event.available_tickets as TicketType[]}
-                formatDate={formatDateCustom}
-                slug={slug}
-              />
-            ) : (
-              <div>
-                <p className="text-gray-500 italic">Tickets TBA</p>
-              </div>
+          <h1 className="text-3xl sm:text-5xl font-bold my-4 sm:my-6 transition-all duration-300 ease-in-out hover:text-blue-400">
+            {event.title || "Untitled Event"}
+          </h1>
+
+          {/* Event metadata */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {event.category && (
+              <span className="px-3 py-1 bg-blue-600/20 text-blue-300 rounded-full text-sm border border-blue-600/30">
+                {event.category.name}
+              </span>
+            )}
+            {event.event_type && (
+              <span className="px-3 py-1 bg-green-600/20 text-green-300 rounded-full text-sm border border-green-600/30">
+                {event.event_type.name}
+              </span>
+            )}
+            {event.format && (
+              <span className="px-3 py-1 bg-purple-600/20 text-purple-300 rounded-full text-sm border border-purple-600/30">
+                {event.format.name}
+              </span>
+            )}
+            {event.is_recurring && (
+              <span className="px-3 py-1 bg-orange-600/20 text-orange-300 rounded-full text-sm border border-orange-600/30">
+                Recurring
+              </span>
+            )}
+            {event.is_series && (
+              <span className="px-3 py-1 bg-pink-600/20 text-pink-300 rounded-full text-sm border border-pink-600/30">
+                Series
+              </span>
+            )}
+            {event.featured && (
+              <span className="px-3 py-1 bg-yellow-600/20 text-yellow-300 rounded-full text-sm border border-yellow-600/30">
+                Featured
+              </span>
             )}
           </div>
 
-          {/* Social sharing section */}
-          <div className="my-8 transform transition-all duration-300 ease-in-out hover:translate-x-1">
-            <h2 className="text-xl font-bold mb-3">SHARE THIS EVENT</h2>
-            <div className="flex gap-3">
-              <button
-                onClick={() => shareEvent("facebook")}
-                className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
-                aria-label="Share on Facebook"
-              >
+          {/* Age restrictions */}
+          {event.is_age_restricted && (
+            <div className="mb-4 p-3 bg-red-600/10 border border-red-600/20 rounded-lg">
+              <div className="flex items-center gap-2 text-red-300">
                 <svg
-                  className="w-6 h-6"
+                  className="w-4 h-4"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                 </svg>
-              </button>
-              <button
-                onClick={() => shareEvent("twitter")}
-                className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
-                aria-label="Share on Twitter"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
-                </svg>
-              </button>
-              <button
-                onClick={() => shareEvent("whatsapp")}
-                className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
-                aria-label="Share on WhatsApp"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                </svg>
-              </button>
-              <button
-                onClick={() => shareEvent("copy")}
-                className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
-                aria-label="Copy link"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M7.127 22.562l-7.127 1.438 1.438-7.128 5.689 5.69zm1.414-1.414l11.228-11.225-5.69-5.692-11.227 11.227 5.689 5.69zm9.768-21.148l-2.816 2.817 5.691 5.691 2.816-2.819-5.691-5.689z" />
-                </svg>
-              </button>
+                <span className="text-sm font-medium">
+                  {event.age_restriction ||
+                    (event.minimum_age && event.maximum_age
+                      ? `Ages ${event.minimum_age}-${event.maximum_age}`
+                      : event.minimum_age
+                      ? `Ages ${event.minimum_age}+`
+                      : event.maximum_age
+                      ? `Ages up to ${event.maximum_age}`
+                      : "Age Restricted")}
+                </span>
+              </div>
             </div>
+          )}
+
+          <div className="my-4 sm:my-6 text-gray-200 text-lg leading-relaxed markdown-content transition-all duration-300 ease-in-out hover:text-white">
+            {event.description ? (
+              <ReactMarkdown>{event.description}</ReactMarkdown>
+            ) : (
+              <p className="italic text-gray-400">No description available</p>
+            )}
+          </div>
+
+          {/* Tags section */}
+          {event.tags && event.tags.length > 0 && (
+            <div className="mt-4 transform transition-all duration-300 ease-in-out">
+              <h4 className="text-lg font-semibold mb-3 text-gray-300">
+                Tags:
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {event.tags.map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="px-2 py-1 bg-gray-700/50 text-gray-300 rounded-md text-sm border border-gray-600/30"
+                  >
+                    #{tag.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Virtual event information */}
+          {event.virtual_meeting_url && (
+            <div className="mt-4 p-4 bg-blue-600/10 border border-blue-600/20 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <svg
+                  className="w-5 h-5 text-blue-400"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM14 13h-3v3H9v-3H6v-2h3V8h2v3h3v2z" />
+                </svg>
+                <span className="text-blue-400 font-medium">Virtual Event</span>
+              </div>
+              {event.virtual_platform && (
+                <p className="text-blue-300 text-sm mb-2">
+                  Platform: {event.virtual_platform}
+                </p>
+              )}
+              {event.virtual_instructions && (
+                <p className="text-gray-300 text-sm mb-2">
+                  {event.virtual_instructions}
+                </p>
+              )}
+              <Link
+                href={event.virtual_meeting_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                Join Virtual Event
+              </Link>
+            </div>
+          )}
+
+          {/* Series information */}
+          {event.is_series && event.series_name && (
+            <div className="mt-4 p-3 bg-purple-600/10 border border-purple-600/20 rounded-lg">
+              <div className="flex items-center gap-2">
+                <svg
+                  className="w-4 h-4 text-purple-400"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                <span className="text-purple-400 font-medium">
+                  {event.series_name}
+                  {event.series_number && ` - Episode ${event.series_number}`}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Performers section */}
+          {event.performers && event.performers.length > 0 && (
+            <div className="mt-6 transform transition-all duration-300 ease-in-out">
+              <h4 className="text-xl font-semibold mb-4">Featured Artists:</h4>
+              <div className="flex flex-wrap gap-4">
+                {event.performers.map((performer) => (
+                  <Link
+                    key={performer.name}
+                    href={performer.spotify_url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => handlePerformerClick(performer)}
+                    className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-full transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-md"
+                  >
+                    <span>{performer.name}</span>
+                    {performer.spotify_url && (
+                      <svg
+                        className="w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.48.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+                      </svg>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Additional Content Sections */}
+      <div className="max-w-3xl mx-auto text-[14px] sm:text-base px-3 sm:px-0 mt-8">
+        {/* Venue section */}
+        <div className="my-8 transform transition-all duration-300 ease-in-out hover:translate-x-1">
+          <h2 className="text-xl font-bold mb-3">VENUE</h2>
+          {!event.venue || event.venue === "Location TBA" ? (
+            <p className="font-helvetica text-lg">Location to be announced</p>
+          ) : (
+            <div className="space-y-3">
+              <Link
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  event.venue
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleVenueClick}
+                className="font-helvetica hover:underline text-blue-400 text-lg inline-flex items-center gap-2 transition-all duration-300 ease-in-out hover:text-blue-300"
+              >
+                <svg
+                  className="w-5 h-5 transition-transform duration-300 ease-in-out group-hover:scale-110"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 0c-4.198 0-8 3.403-8 7.602 0 4.198 3.469 9.21 8 16.398 4.531-7.188 8-12.2 8-16.398 0-4.199-3.801-7.602-8-7.602zm0 11c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z" />
+                </svg>
+                {event.venue}
+              </Link>
+
+              <Accordion
+                type="single"
+                collapsible
+                className="w-full border-none"
+              >
+                <AccordionItem value="map" className="border-none">
+                  <AccordionTrigger className="py-2 text-blue-400 hover:text-blue-300 transition-all duration-300 ease-in-out">
+                    View on map
+                  </AccordionTrigger>
+                  <AccordionContent className="transition-all duration-500 ease-in-out">
+                    <div className="w-full h-40 rounded-lg overflow-hidden shadow-lg bg-zinc-800 transition-all duration-300 ease-in-out hover:shadow-xl">
+                      <iframe
+                        title="Event Location"
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        style={{ border: 0 }}
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                          event.venue
+                        )}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+          )}
+        </div>
+
+        {/* Tickets section */}
+        <div className="my-8 sm:my-12 transform transition-all duration-300 ease-in-out hover:translate-x-1">
+          <h2 className="text-xl font-bold mb-3">TICKETS</h2>
+          {event.available_tickets && event.available_tickets.length > 0 ? (
+            <Tickets
+              tickets={event.available_tickets as TicketType[]}
+              formatDate={formatDateCustom}
+              slug={slug}
+            />
+          ) : (
+            <div>
+              <p className="text-gray-500 italic">Tickets TBA</p>
+            </div>
+          )}
+        </div>
+
+        {/* Similar Events section */}
+        <SimilarEvents currentEvent={event} />
+
+        {/* Social sharing section */}
+        <div className="my-8 transform transition-all duration-300 ease-in-out hover:translate-x-1">
+          <h2 className="text-xl font-bold mb-3">SHARE THIS EVENT</h2>
+          <div className="flex gap-3">
+            <button
+              onClick={() => shareEvent("facebook")}
+              className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+              aria-label="Share on Facebook"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => shareEvent("twitter")}
+              className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+              aria-label="Share on Twitter"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => shareEvent("whatsapp")}
+              className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+              aria-label="Share on WhatsApp"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => shareEvent("copy")}
+              className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+              aria-label="Copy link"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7.127 22.562l-7.127 1.438 1.438-7.128 5.689 5.69zm1.414-1.414l11.228-11.225-5.69-5.692-11.227 11.227 5.689 5.69zm9.768-21.148l-2.816 2.817 5.691 5.691 2.816-2.819-5.691-5.689z" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
