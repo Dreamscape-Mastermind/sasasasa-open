@@ -20,7 +20,7 @@ import type {
   EventAnalyticsResponse,
 } from "@/types/analytics";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
+import { useMemo } from "react";
 import { eventService } from "@/services/event.service";
 
 export const useEvent = () => {

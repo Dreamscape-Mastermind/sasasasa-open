@@ -199,6 +199,17 @@ export interface Event extends BaseEventEntity {
   is_age_restricted: boolean;
   format_display: Nullable<string>;
   tag_names: string[];
+  similar_events: Event[];
+}
+
+export interface SimilarEvent {
+  id: string;
+  title: string;
+  short_url: string;
+  start_date: string;
+  venue: string;
+  cover_image?: string | null;
+  featured?: boolean;
 }
 
 /**

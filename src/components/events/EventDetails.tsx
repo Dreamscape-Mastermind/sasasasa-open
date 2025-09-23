@@ -6,6 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import React, { useEffect, useState } from "react";
 
 import Error from "@/components/ui/error";
@@ -14,7 +15,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants";
 import ReactMarkdown from "react-markdown";
-import SimilarEvents from "@/components/events/SimilarEvents";
+import { SimilarEvent } from "@/types/event";
+import SimilarEvents from "./SimilarEvents";
 import { TicketType } from "@/types/ticket";
 import { TicketTypeWithFlashSale } from "@/types/flashsale";
 import { Tickets } from "@/components/events/tickets/Tickets";
@@ -54,7 +56,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
         event_name: event.title,
       });
     }
-  }, [event, analytics, logger]);
+  }, [event]);
 
   if (error && !event) {
     const errorMessage =
@@ -73,44 +75,47 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
   // Handle loading state (only if no provided event and still loading)
   if (isLoading && !event) {
     return (
-      <div className="flex flex-col items-center min-h-[60vh] w-full px-4">
-        <div className="bg-zinc-900 rounded-xl shadow-lg flex flex-col sm:flex-row w-full max-w-5xl overflow-hidden">
+      <div className="flex flex-col items-center min-h-[60vh] w-full px-3 sm:px-4">
+        <div className="bg-zinc-900 rounded-lg sm:rounded-xl shadow-lg w-full max-w-6xl overflow-hidden">
           {/* Image skeleton */}
-          <div className="sm:w-1/2 w-full aspect-square bg-zinc-800 flex items-center justify-center">
+          <div
+            className="w-full bg-zinc-800 flex items-center justify-center"
+            style={{ minHeight: "300px", maxHeight: "60vh" }}
+          >
             <div className="w-4/5 h-4/5 bg-zinc-700 rounded-lg animate-pulse" />
           </div>
           {/* Text skeleton */}
-          <div className="sm:w-1/2 w-full flex flex-col gap-4 p-8 justify-center">
-            <div className="h-6 w-2/3 bg-zinc-800 rounded animate-pulse mb-2" />
-            <div className="h-4 w-1/3 bg-zinc-800 rounded animate-pulse mb-4" />
-            <div className="h-10 w-full bg-zinc-800 rounded animate-pulse mb-4" />
-            <div className="h-24 w-full bg-zinc-800 rounded animate-pulse mb-4" />
-            <div className="h-8 w-1/2 bg-zinc-800 rounded animate-pulse mb-2" />
-            <div className="h-6 w-1/3 bg-zinc-800 rounded animate-pulse" />
+          <div className="w-full flex flex-col gap-4 p-4 sm:p-6 lg:p-8">
+            <div className="h-4 sm:h-6 w-2/3 bg-zinc-800 rounded animate-pulse mb-2" />
+            <div className="h-3 sm:h-4 w-1/3 bg-zinc-800 rounded animate-pulse mb-4" />
+            <div className="h-8 sm:h-10 w-full bg-zinc-800 rounded animate-pulse mb-4" />
+            <div className="h-16 sm:h-24 w-full bg-zinc-800 rounded animate-pulse mb-4" />
+            <div className="h-6 sm:h-8 w-1/2 bg-zinc-800 rounded animate-pulse mb-2" />
+            <div className="h-4 sm:h-6 w-1/3 bg-zinc-800 rounded animate-pulse" />
           </div>
         </div>
         {/* Tickets skeleton */}
-        <div className="w-full max-w-3xl mt-10">
-          <div className="mb-3 h-6 w-32 bg-zinc-800 rounded animate-pulse" />
+        <div className="w-full max-w-3xl mt-6 sm:mt-10">
+          <div className="mb-3 h-5 sm:h-6 w-24 sm:w-32 bg-zinc-800 rounded animate-pulse" />
           {Array.from({ length: 3 }).map((_, index) => (
             <div
               key={index}
-              className="flex items-center justify-between bg-zinc-900 rounded-lg p-4 mb-4 shadow"
+              className="flex items-center justify-between bg-zinc-900 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4 shadow"
             >
               {/* Ticket name */}
-              <div className="h-6 w-24 bg-zinc-800 rounded animate-pulse" />
+              <div className="h-5 sm:h-6 w-20 sm:w-24 bg-zinc-800 rounded animate-pulse" />
               {/* Price */}
-              <div className="h-6 w-20 bg-amber-400/30 rounded animate-pulse" />
+              <div className="h-5 sm:h-6 w-16 sm:w-20 bg-amber-400/30 rounded animate-pulse" />
               {/* Quantity controls */}
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 bg-zinc-800 rounded-full animate-pulse" />
-                <div className="h-6 w-6 bg-zinc-800 rounded animate-pulse" />
-                <div className="h-8 w-8 bg-zinc-800 rounded-full animate-pulse" />
+                <div className="h-6 sm:h-8 w-6 sm:w-8 bg-zinc-800 rounded-full animate-pulse" />
+                <div className="h-5 sm:h-6 w-5 sm:w-6 bg-zinc-800 rounded animate-pulse" />
+                <div className="h-6 sm:h-8 w-6 sm:w-8 bg-zinc-800 rounded-full animate-pulse" />
               </div>
             </div>
           ))}
           {/* Checkout button skeleton */}
-          <div className="h-12 w-full bg-red-500/30 rounded-lg animate-pulse mt-2" />
+          <div className="h-10 sm:h-12 w-full bg-red-500/30 rounded-lg animate-pulse mt-2" />
         </div>
       </div>
     );
@@ -275,53 +280,111 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
   };
 
   return (
-    <div className="mx-auto px-4 sm:px-14">
-      <div className="full-w overflow-hidden max-w-6xl mx-auto">
-        {/* Event Poster - Full Width at Top */}
-        <div className="relative w-full aspect-[4/3] mb-8 bg-zinc-900 rounded-xl overflow-hidden transition-transform duration-500 ease-in-out hover:scale-[1.02]">
-          {event.cover_image ? (
-            <Image
-              src={hasError ? "/images/placeholdere.jpeg" : event.cover_image}
-              alt={`${event.title} event poster`}
-              fill
-              sizes="(max-width: 768px) 100vw, 100vw"
-              style={{ objectFit: "cover" }}
-              className="transition-opacity duration-300 ease-in-out"
-              priority
-              onError={(e) => {
-                setHasError(true);
-              }}
-            />
-          ) : (
-            <Image
-              src="/images/placeholdere.jpeg"
-              alt="Default event image"
-              fill
-              sizes="(max-width: 768px) 100vw, 100vw"
-              style={{ objectFit: "cover" }}
-              className="transition-opacity duration-300 ease-in-out"
-              priority
-            />
-          )}
-        </div>
+    <div className="mx-auto px-3 sm:px-6 lg:px-14">
+      <div className="w-full overflow-hidden max-w-6xl mx-auto">
+        {/* Event Poster - Full Width at Top with Modal */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <div className="relative w-full mb-6 sm:mb-8 rounded-lg sm:rounded-xl overflow-hidden transition-transform duration-500 ease-in-out hover:scale-[1.02] cursor-pointer group flex justify-center">
+              {event.cover_image ? (
+                <Image
+                  src={
+                    hasError ? "/images/placeholdere.jpeg" : event.cover_image
+                  }
+                  alt={`${event.title} event poster`}
+                  width={1200}
+                  height={800}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
+                  style={{
+                    objectFit: "contain",
+                    width: "100%",
+                    height: "auto",
+                    maxHeight: "70vh",
+                    backgroundColor: "#18181b",
+                  }}
+                  className="transition-opacity duration-300 ease-in-out group-hover:opacity-90 rounded-lg sm:rounded-xl"
+                  priority
+                  onError={(e) => {
+                    setHasError(true);
+                  }}
+                />
+              ) : (
+                <Image
+                  src="/images/placeholdere.jpeg"
+                  alt="Default event image"
+                  width={1200}
+                  height={800}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
+                  style={{
+                    objectFit: "contain",
+                    width: "100%",
+                    height: "auto",
+                    maxHeight: "70vh",
+                    backgroundColor: "#18181b",
+                  }}
+                  className="transition-opacity duration-300 ease-in-out group-hover:opacity-90 rounded-lg sm:rounded-xl"
+                  priority
+                />
+              )}
+              {/* Overlay with zoom icon */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 ease-in-out flex items-center justify-center pointer-events-none">
+                <div className="opacity-60 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+                  <div className="bg-black/50 rounded-full p-2 sm:p-3 backdrop-blur-sm">
+                    <svg
+                      className="w-6 h-6 sm:w-8 sm:h-8 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl w-[95vw] h-[90vh] p-0 bg-black border-none">
+            <div className="relative w-full h-full">
+              <Image
+                src={
+                  hasError
+                    ? "/images/placeholdere.jpeg"
+                    : event.cover_image || "/images/placeholdere.jpeg"
+                }
+                alt={`${event.title} event poster - Full View`}
+                fill
+                sizes="95vw"
+                style={{ objectFit: "contain" }}
+                className="transition-opacity duration-300 ease-in-out"
+                priority
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Event Content - Single Column Below */}
-        <div className="bg-zinc-900 text-white p-6 sm:p-8 rounded-xl transition-all duration-300 ease-in-out hover:shadow-xl">
+        <div className="bg-zinc-900 text-white p-4 sm:p-6 lg:p-8 rounded-lg sm:rounded-xl transition-all duration-300 ease-in-out hover:shadow-xl">
           <div className="flex flex-col gap-1 text-gray-300">
             {event.start_date && (
               <>
-                <span className="text-lg transform transition-all duration-300 ease-in-out hover:text-white">
+                <span className="text-base sm:text-lg transform transition-all duration-300 ease-in-out hover:text-white">
                   {formatEventDate(event.start_date)}
                 </span>
-                <div className="flex items-center gap-2 text-base">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm sm:text-base">
                   <span>{formatEventTime(event.start_date)}</span>
                   {event.end_date && (
                     <>
-                      <span>-</span>
+                      <span className="hidden sm:inline">-</span>
+                      <span className="sm:hidden">to</span>
                       <span>{formatEventTime(event.end_date)}</span>
                     </>
                   )}
-                  <span className="text-sm">
+                  <span className="text-xs sm:text-sm">
                     {event.timezone ? `(${event.timezone})` : "(EAT)"}
                   </span>
                 </div>
@@ -329,39 +392,39 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
             )}
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-bold my-4 sm:my-6 transition-all duration-300 ease-in-out hover:text-blue-400">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold my-3 sm:my-4 lg:my-6 transition-all duration-300 ease-in-out hover:text-blue-400 leading-tight">
             {event.title || "Untitled Event"}
           </h1>
 
           {/* Event metadata */}
           <div className="flex flex-wrap gap-2 mb-4">
             {event.category && (
-              <span className="px-3 py-1 bg-blue-600/20 text-blue-300 rounded-full text-sm border border-blue-600/30">
+              <span className="px-2 sm:px-3 py-1 bg-blue-600/20 text-blue-300 rounded-full text-xs sm:text-sm border border-blue-600/30">
                 {event.category.name}
               </span>
             )}
             {event.event_type && (
-              <span className="px-3 py-1 bg-green-600/20 text-green-300 rounded-full text-sm border border-green-600/30">
+              <span className="px-2 sm:px-3 py-1 bg-green-600/20 text-green-300 rounded-full text-xs sm:text-sm border border-green-600/30">
                 {event.event_type.name}
               </span>
             )}
             {event.format && (
-              <span className="px-3 py-1 bg-purple-600/20 text-purple-300 rounded-full text-sm border border-purple-600/30">
+              <span className="px-2 sm:px-3 py-1 bg-purple-600/20 text-purple-300 rounded-full text-xs sm:text-sm border border-purple-600/30">
                 {event.format.name}
               </span>
             )}
             {event.is_recurring && (
-              <span className="px-3 py-1 bg-orange-600/20 text-orange-300 rounded-full text-sm border border-orange-600/30">
+              <span className="px-2 sm:px-3 py-1 bg-orange-600/20 text-orange-300 rounded-full text-xs sm:text-sm border border-orange-600/30">
                 Recurring
               </span>
             )}
             {event.is_series && (
-              <span className="px-3 py-1 bg-pink-600/20 text-pink-300 rounded-full text-sm border border-pink-600/30">
+              <span className="px-2 sm:px-3 py-1 bg-pink-600/20 text-pink-300 rounded-full text-xs sm:text-sm border border-pink-600/30">
                 Series
               </span>
             )}
             {event.featured && (
-              <span className="px-3 py-1 bg-yellow-600/20 text-yellow-300 rounded-full text-sm border border-yellow-600/30">
+              <span className="px-2 sm:px-3 py-1 bg-yellow-600/20 text-yellow-300 rounded-full text-xs sm:text-sm border border-yellow-600/30">
                 Featured
               </span>
             )}
@@ -392,7 +455,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
             </div>
           )}
 
-          <div className="my-4 sm:my-6 text-gray-200 text-lg leading-relaxed markdown-content transition-all duration-300 ease-in-out hover:text-white">
+          <div className="my-4 sm:my-6 text-gray-200 text-sm sm:text-base lg:text-lg leading-relaxed markdown-content transition-all duration-300 ease-in-out hover:text-white">
             {event.description ? (
               <ReactMarkdown>{event.description}</ReactMarkdown>
             ) : (
@@ -403,14 +466,14 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
           {/* Tags section */}
           {event.tags && event.tags.length > 0 && (
             <div className="mt-4 transform transition-all duration-300 ease-in-out">
-              <h4 className="text-lg font-semibold mb-3 text-gray-300">
+              <h4 className="text-base sm:text-lg font-semibold mb-3 text-gray-300">
                 Tags:
               </h4>
               <div className="flex flex-wrap gap-2">
                 {event.tags.map((tag) => (
                   <span
                     key={tag.id}
-                    className="px-2 py-1 bg-gray-700/50 text-gray-300 rounded-md text-sm border border-gray-600/30"
+                    className="px-2 py-1 bg-gray-700/50 text-gray-300 rounded-md text-xs sm:text-sm border border-gray-600/30"
                   >
                     #{tag.name}
                   </span>
@@ -421,24 +484,26 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
 
           {/* Virtual event information */}
           {event.virtual_meeting_url && (
-            <div className="mt-4 p-4 bg-blue-600/10 border border-blue-600/20 rounded-lg">
+            <div className="mt-4 p-3 sm:p-4 bg-blue-600/10 border border-blue-600/20 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <svg
-                  className="w-5 h-5 text-blue-400"
+                  className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM14 13h-3v3H9v-3H6v-2h3V8h2v3h3v2z" />
                 </svg>
-                <span className="text-blue-400 font-medium">Virtual Event</span>
+                <span className="text-blue-400 font-medium text-sm sm:text-base">
+                  Virtual Event
+                </span>
               </div>
               {event.virtual_platform && (
-                <p className="text-blue-300 text-sm mb-2">
+                <p className="text-blue-300 text-xs sm:text-sm mb-2">
                   Platform: {event.virtual_platform}
                 </p>
               )}
               {event.virtual_instructions && (
-                <p className="text-gray-300 text-sm mb-2">
+                <p className="text-gray-300 text-xs sm:text-sm mb-2">
                   {event.virtual_instructions}
                 </p>
               )}
@@ -446,10 +511,10 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
                 href={event.virtual_meeting_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+                className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 text-sm sm:text-base"
               >
                 <svg
-                  className="w-4 h-4"
+                  className="w-3 h-3 sm:w-4 sm:h-4"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -481,9 +546,11 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
 
           {/* Performers section */}
           {event.performers && event.performers.length > 0 && (
-            <div className="mt-6 transform transition-all duration-300 ease-in-out">
-              <h4 className="text-xl font-semibold mb-4">Featured Artists:</h4>
-              <div className="flex flex-wrap gap-4">
+            <div className="mt-4 sm:mt-6 transform transition-all duration-300 ease-in-out">
+              <h4 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
+                Featured Artists:
+              </h4>
+              <div className="flex flex-wrap gap-2 sm:gap-4">
                 {event.performers.map((performer) => (
                   <Link
                     key={performer.name}
@@ -491,12 +558,14 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => handlePerformerClick(performer)}
-                    className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-full transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-md"
+                    className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-2 sm:px-3 py-1 sm:py-2 rounded-full transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-md text-sm sm:text-base"
                   >
-                    <span>{performer.name}</span>
+                    <span className="truncate max-w-[120px] sm:max-w-none">
+                      {performer.name}
+                    </span>
                     {performer.spotify_url && (
                       <svg
-                        className="w-4 h-4"
+                        className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0"
                         viewBox="0 0 24 24"
                         fill="currentColor"
                       >
@@ -508,16 +577,79 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
               </div>
             </div>
           )}
+
+          {/* Social sharing section */}
+          <div className="my-6 sm:my-8 transform transition-all duration-300 ease-in-out hover:translate-x-1">
+            <h2 className="text-lg sm:text-xl font-bold mb-3">
+              SHARE THIS EVENT
+            </h2>
+            <div className="flex gap-2 sm:gap-3">
+              <button
+                onClick={() => shareEvent("facebook")}
+                className="p-2 sm:p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+                aria-label="Share on Facebook"
+              >
+                <svg
+                  className="w-5 h-5 sm:w-6 sm:h-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => shareEvent("twitter")}
+                className="p-2 sm:p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+                aria-label="Share on Twitter"
+              >
+                <svg
+                  className="w-5 h-5 sm:w-6 sm:h-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => shareEvent("whatsapp")}
+                className="p-2 sm:p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+                aria-label="Share on WhatsApp"
+              >
+                <svg
+                  className="w-5 h-5 sm:w-6 sm:h-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => shareEvent("copy")}
+                className="p-2 sm:p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+                aria-label="Copy link"
+              >
+                <svg
+                  className="w-5 h-5 sm:w-6 sm:h-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M7.127 22.562l-7.127 1.438 1.438-7.128 5.689 5.69zm1.414-1.414l11.228-11.225-5.69-5.692-11.227 11.227 5.689 5.69zm9.768-21.148l-2.816 2.817 5.691 5.691 2.816-2.819-5.691-5.689z" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Additional Content Sections */}
-      <div className="max-w-3xl mx-auto text-[14px] sm:text-base px-3 sm:px-0 mt-8">
+      <div className="max-w-3xl mx-auto text-sm sm:text-base px-3 sm:px-0 mt-6 sm:mt-8">
         {/* Venue section */}
-        <div className="my-8 transform transition-all duration-300 ease-in-out hover:translate-x-1">
-          <h2 className="text-xl font-bold mb-3">VENUE</h2>
+        <div className="my-6 sm:my-8 transform transition-all duration-300 ease-in-out hover:translate-x-1">
+          <h2 className="text-lg sm:text-xl font-bold mb-3">VENUE</h2>
           {!event.venue || event.venue === "Location TBA" ? (
-            <p className="font-helvetica text-lg">Location to be announced</p>
+            <p className="font-helvetica text-base sm:text-lg">
+              Location to be announced
+            </p>
           ) : (
             <div className="space-y-3">
               <Link
@@ -527,10 +659,10 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={handleVenueClick}
-                className="font-helvetica hover:underline text-blue-400 text-lg inline-flex items-center gap-2 transition-all duration-300 ease-in-out hover:text-blue-300"
+                className="font-helvetica hover:underline text-blue-400 text-base sm:text-lg inline-flex items-center gap-2 transition-all duration-300 ease-in-out hover:text-blue-300"
               >
                 <svg
-                  className="w-5 h-5 transition-transform duration-300 ease-in-out group-hover:scale-110"
+                  className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 ease-in-out group-hover:scale-110"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -570,66 +702,27 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
         </div>
 
         {/* Tickets section */}
-        <div className="my-8 sm:my-12 transform transition-all duration-300 ease-in-out hover:translate-x-1">
-          <h2 className="text-xl font-bold mb-3">TICKETS</h2>
+        <div className="my-6 sm:my-8 lg:my-12 transform transition-all duration-300 ease-in-out hover:translate-x-1">
+          <h2 className="text-lg sm:text-xl font-bold mb-3">TICKETS</h2>
           {event.available_tickets && event.available_tickets.length > 0 ? (
             <Tickets
               tickets={event.available_tickets as TicketType[]}
-              formatDate={formatDateCustom}
+              formatDate={async (dateString: string) =>
+                formatDateCustom(dateString)
+              }
               slug={slug}
             />
           ) : (
             <div>
-              <p className="text-gray-500 italic">Tickets TBA</p>
+              <p className="text-gray-500 italic text-sm sm:text-base">
+                Tickets TBA
+              </p>
             </div>
           )}
         </div>
 
         {/* Similar Events section */}
-        <SimilarEvents currentEvent={event} />
-
-        {/* Social sharing section */}
-        <div className="my-8 transform transition-all duration-300 ease-in-out hover:translate-x-1">
-          <h2 className="text-xl font-bold mb-3">SHARE THIS EVENT</h2>
-          <div className="flex gap-3">
-            <button
-              onClick={() => shareEvent("facebook")}
-              className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
-              aria-label="Share on Facebook"
-            >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
-              </svg>
-            </button>
-            <button
-              onClick={() => shareEvent("twitter")}
-              className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
-              aria-label="Share on Twitter"
-            >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
-              </svg>
-            </button>
-            <button
-              onClick={() => shareEvent("whatsapp")}
-              className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
-              aria-label="Share on WhatsApp"
-            >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-              </svg>
-            </button>
-            <button
-              onClick={() => shareEvent("copy")}
-              className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
-              aria-label="Copy link"
-            >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M7.127 22.562l-7.127 1.438 1.438-7.128 5.689 5.69zm1.414-1.414l11.228-11.225-5.69-5.692-11.227 11.227 5.689 5.69zm9.768-21.148l-2.816 2.817 5.691 5.691 2.816-2.819-5.691-5.689z" />
-              </svg>
-            </button>
-          </div>
-        </div>
+        <SimilarEvents similarEvents={event.similar_events as SimilarEvent[]} />
       </div>
     </div>
   );
