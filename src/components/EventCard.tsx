@@ -17,12 +17,18 @@ interface EventCardProps {
 }
 
 // Helper function to truncate description
-const truncateDescription = (description: string, maxLength: number = 150): string => {
+const truncateDescription = (
+  description: string,
+  maxLength: number = 150
+): string => {
   return truncateText(description, maxLength);
 };
 
-export default function EventCard({ item, className = "", variant = "default" }: EventCardProps) {
-
+export default function EventCard({
+  item,
+  className = "",
+  variant = "default",
+}: EventCardProps) {
   const [hasError, setHasError] = useState(false);
   const analytics = useAnalytics();
   const logger = useLogger({ context: "EventCard" });
@@ -49,12 +55,14 @@ export default function EventCard({ item, className = "", variant = "default" }:
   };
 
   // Default poster image if no cover image is provided
-  const defaultPoster = '/images/placeholdere.jpeg';
+  const defaultPoster = "/images/placeholdere.jpeg";
 
   // Compact variant for dashboard
   if (variant === "compact") {
     return (
-      <div className={`flex items-center gap-4 p-4 rounded-xl border border-muted/50 hover:bg-muted/30 transition-all cursor-pointer ${className}`}>
+      <div
+        className={`flex items-center gap-4 p-4 rounded-xl border border-muted/50 hover:bg-muted/30 transition-all cursor-pointer ${className}`}
+      >
         <div className="relative w-14 h-14 flex-shrink-0">
           <Image
             src={hasError ? defaultPoster : item.cover_image || defaultPoster}
@@ -74,7 +82,7 @@ export default function EventCard({ item, className = "", variant = "default" }:
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3 flex-shrink-0" />
             <span className="truncate">
-              {moment(item.start_date).format('MMM D, YYYY')}
+              {moment(item.start_date).format("MMM D, YYYY")}
             </span>
           </div>
           {item.venue && (
@@ -87,9 +95,9 @@ export default function EventCard({ item, className = "", variant = "default" }:
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Clock className="h-3 w-3 flex-shrink-0" />
               <span className="truncate">
-                {item.timezone 
-                  ? moment(item.start_date).tz(item.timezone).format('h:mm A')
-                  : moment(item.start_date).format('h:mm A')}
+                {item.timezone
+                  ? moment(item.start_date).tz(item.timezone).format("h:mm A")
+                  : moment(item.start_date).format("h:mm A")}
               </span>
             </div>
           )}
@@ -100,72 +108,88 @@ export default function EventCard({ item, className = "", variant = "default" }:
       </div>
     );
   }
-  
+
   return (
-    <Link href={`/e/${item.short_url || item.id}`} className={`block ${className}`} onClick={handleClick}>
-        <div className="h-[220px] w-full overflow-hidden relative group">
-          <Image
-            src={hasError ? defaultPoster : item.cover_image || defaultPoster}
-            height={560}
-            width={560} 
-            alt={`${item.title} poster`}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            onError={(e) => {
-              setHasError(true);
-            }}
+    <Link
+      href={`/e/${item.short_url || item.id}`}
+      className={`block ${className}`}
+      onClick={handleClick}
+    >
+      <div className="h-[220px] w-full overflow-hidden relative group">
+        <Image
+          src={hasError ? defaultPoster : item.cover_image || defaultPoster}
+          height={560}
+          width={560}
+          alt={`${item.title} poster`}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          onError={(e) => {
+            setHasError(true);
+          }}
+        />
+        <div className="absolute top-3 right-3 bg-red-600 text-white text-xs font-medium px-2.5 py-0.5 rounded-full animate-fadeIn animation-delay-300">
+          {"Event"}
+        </div>
+
+        {/* Description overlay */}
+        {item.description && (
+          <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4 overflow-y-auto">
+            <p className="text-white text-sm leading-relaxed max-h-full overflow-y-auto">
+              {truncateDescription(item.description)}
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="p-4 text-left relative">
+        <h3 className="font-semibold text-gray-800 dark:text-gray-100 text-lg mb-2 line-clamp-2 hover:text-red-600 transition-colors duration-150">
+          {item.title}
+        </h3>
+
+        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-2 opacity-0 animate-fadeIn animation-delay-400">
+          <Calendar
+            size={15}
+            strokeWidth={1.5}
+            className="mr-1.5 text-red-600"
           />
-          <div className="absolute top-3 right-3 bg-red-600 text-white text-xs font-medium px-2.5 py-0.5 rounded-full animate-fadeIn animation-delay-300">
-            {"Event"}
-          </div>
-          
-          {/* Description overlay */}
-          {item.description && (
-            <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4 overflow-y-auto">
-              <p className="text-white text-sm leading-relaxed max-h-full overflow-y-auto">
-                {truncateDescription(item.description)}
-              </p>
-            </div>
-          )}
+          <span className="text-sm">
+            {moment(item.start_date).format("MMM D")}
+            {item.end_date && ` - ${moment(item.end_date).format("MMM D")}`}
+          </span>
         </div>
-        
-        <div className="p-4 text-left relative">
-          <h3 className="font-semibold text-gray-800 dark:text-gray-100 text-lg mb-2 line-clamp-2 hover:text-red-600 transition-colors duration-150">
-            {item.title}
-          </h3>
-          
-          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-2 opacity-0 animate-fadeIn animation-delay-400">
-            <Calendar size={15} strokeWidth={1.5} className="mr-1.5 text-red-600" />
+
+        {item.venue && (
+          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-2 opacity-0 animate-fadeIn animation-delay-300">
+            <MapPin
+              size={15}
+              strokeWidth={1.5}
+              className="mr-1.5 text-red-600"
+            />
+            <span className="text-sm line-clamp-1">{item.venue}</span>
+          </div>
+        )}
+
+        {item.start_date && (
+          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 opacity-0 animate-fadeIn animation-delay-200">
+            <Clock
+              size={15}
+              strokeWidth={1.5}
+              className="mr-1.5 text-red-600"
+            />
             <span className="text-sm">
-              {moment(item.start_date).format('MMM D')}
-              {item.end_date && ` - ${moment(item.end_date).format('MMM D')}`}
+              {item.timezone
+                ? moment(item.start_date).tz(item.timezone).format("h:mm A z")
+                : moment(item.start_date).format("h:mm A")}
             </span>
           </div>
-          
-          {item.venue && (
-            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-2 opacity-0 animate-fadeIn animation-delay-300">
-              <MapPin size={15} strokeWidth={1.5} className="mr-1.5 text-red-600" />
-              <span className="text-sm line-clamp-1">{item.venue}</span>
-            </div>
-          )}
-          
-          {item.start_date && (
-            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 opacity-0 animate-fadeIn animation-delay-200">
-              <Clock size={15} strokeWidth={1.5} className="mr-1.5 text-red-600" />
-              <span className="text-sm">
-                {item.timezone 
-                  ? moment(item.start_date).tz(item.timezone).format('h:mm A z')
-                  : moment(item.start_date).format('h:mm A')}
-              </span>
-            </div>
-          )}
-          
-          <div className="mt-4 opacity-0 animate-fadeIn animation-delay-100">
-            <span className="inline-block text-sm font-medium text-white bg-red-600 hover:bg-red-700 px-5 py-1.5 rounded-full transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
-              View Details
-            </span>
-          </div>
+        )}
+
+        <div className="mt-4 opacity-0 animate-fadeIn animation-delay-100">
+          <span className="inline-block text-sm font-medium text-white bg-red-600 hover:bg-red-700 px-5 py-1.5 rounded-full transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+            View Details
+          </span>
         </div>
-      </Link>
+      </div>
+    </Link>
   );
 }
 

@@ -464,16 +464,17 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
           </div>
 
           {/* Tags section */}
-          {event.tags && event.tags.length > 0 && (
+          {event.tags_data && event.tags_data.length > 0 && (
             <div className="mt-4 transform transition-all duration-300 ease-in-out">
               <h4 className="text-base sm:text-lg font-semibold mb-3 text-gray-300">
                 Tags:
               </h4>
               <div className="flex flex-wrap gap-2">
-                {event.tags.map((tag) => (
+                {event.tags_data.map((tag) => (
                   <span
                     key={tag.id}
                     className="px-2 py-1 bg-gray-700/50 text-gray-300 rounded-md text-xs sm:text-sm border border-gray-600/30"
+                    style={tag.color ? { borderColor: tag.color } : {}}
                   >
                     #{tag.name}
                   </span>

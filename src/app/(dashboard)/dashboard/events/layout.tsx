@@ -1,10 +1,3 @@
-import { PlusCircle, Search } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import Link from "next/link";
-import { ROUTES } from "@/lib/constants";
-
 export default function EventsLayout({
   children,
 }: {
@@ -13,7 +6,7 @@ export default function EventsLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex-1 w-full">
-        <div className="space-y-8 animate-in  p-4 sm:p-6">
+        <div className="space-y-8 animate-in  py-4 sm:py-6">
           {/* Event Selector */}
           {/* <div className="flex justify-between items-center">
             <div className="relative w-96">

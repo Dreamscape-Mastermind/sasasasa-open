@@ -1,4 +1,5 @@
 import type {
+  AcceptPublicInvitationRequest,
   AcceptTeamInvitationRequest,
   CategoryQueryParams,
   CreateEventRequest,
@@ -9,9 +10,13 @@ import type {
   InviteTeamMemberRequest,
   LocationQueryParams,
   PerformerQueryParams,
+  TagSearchQueryParams,
   TeamMemberQueryParams,
   TeamMemberRole,
   UpdateEventRequest,
+  UploadMediaRequest,
+  UploadGalleryMediaRequest,
+  UploadCoverImageRequest,
 } from "@/types/event";
 import type {
   EventAnalyticsExportRequest,
@@ -20,7 +25,7 @@ import type {
   EventAnalyticsResponse,
 } from "@/types/analytics";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+
 import { eventService } from "@/services/event.service";
 
 export const useEvent = () => {
@@ -76,8 +81,8 @@ export const useEvent = () => {
 
   const useUpdateEvent = (id: string, config?: { onSuccess?: () => void }) => {
     return useMutation({
-      mutationFn: (data: UpdateEventRequest) =>
-        eventService.updateEvent(id, data),
+      mutationFn: (data: UpdateEventRequest | FormData) =>
+        eventService.updateEvent(id, data as UpdateEventRequest),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["events"] });
         queryClient.invalidateQueries({ queryKey: ["event", id] });
@@ -227,6 +232,17 @@ export const useEvent = () => {
     });
   };
 
+  const useAcceptPublicInvitation = () => {
+    return useMutation({
+      mutationFn: (data: AcceptPublicInvitationRequest) =>
+        eventService.acceptPublicInvitation(data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["my-invites"] });
+        queryClient.invalidateQueries({ queryKey: ["my-events"] });
+      },
+    });
+  };
+
   const useDeclineTeamInvitation = (eventId: string) => {
     return useMutation({
       mutationFn: (data: AcceptTeamInvitationRequest) =>
@@ -335,6 +351,96 @@ export const useEvent = () => {
     });
   };
 
+  // Tag Search for autocomplete
+  const useTagSearch = (
+    params: TagSearchQueryParams,
+    options?: { enabled?: boolean }
+  ) => {
+    return useQuery({
+      queryKey: ["tag-search", params],
+      queryFn: () => eventService.searchTags(params),
+      enabled:
+        options?.enabled !== false &&
+        !!params.search &&
+        params.search.length >= 2,
+      staleTime: 2 * 60 * 1000, // 2 minutes - search results can be cached briefly
+      gcTime: 5 * 60 * 1000, // 5 minutes - keep in cache
+      retry: 1, // Only retry once for search queries
+    });
+  };
+
+  // Media and Content
+  const useEventMedia = (eventId: string) => {
+    return useQuery({
+      queryKey: ["event-media", eventId],
+      queryFn: () => eventService.getEventMedia(eventId),
+      enabled: !!eventId,
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
+  const useUploadEventMedia = (eventId: string) => {
+    return useMutation({
+      mutationFn: (data: UploadMediaRequest) =>
+        eventService.uploadEventMedia(eventId, data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["event-media", eventId] });
+        queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      },
+    });
+  };
+
+  const useUploadCoverImage = (eventId: string) => {
+    return useMutation({
+      mutationFn: (data: UploadCoverImageRequest) =>
+        eventService.uploadCoverImage(eventId, data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+        queryClient.invalidateQueries({ queryKey: ["event-media", eventId] });
+      },
+    });
+  };
+
+  const useUploadGalleryMedia = (eventId: string) => {
+    return useMutation({
+      mutationFn: (data: UploadGalleryMediaRequest) =>
+        eventService.uploadGalleryMedia(eventId, data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["event-media", eventId] });
+        queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      },
+    });
+  };
+
+  const useSetFeaturedMedia = (eventId: string) => {
+    return useMutation({
+      mutationFn: (mediaId: string) =>
+        eventService.setFeaturedMedia(eventId, mediaId),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["event-media", eventId] });
+      },
+    });
+  };
+
+  const useReorderMedia = (eventId: string) => {
+    return useMutation({
+      mutationFn: (data: { mediaId: string; order: number }) =>
+        eventService.reorderMedia(eventId, data.mediaId, { order: data.order }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["event-media", eventId] });
+      },
+    });
+  };
+
+  const useEventContent = (eventId: string) => {
+    return useQuery({
+      queryKey: ["event-content", eventId],
+      queryFn: () => eventService.getEventContent(eventId),
+      enabled: !!eventId,
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
   // Filtered Event Lists
   const useEventsByCategory = (
     params: {
@@ -437,6 +543,7 @@ export const useEvent = () => {
     useInviteTeamMember,
     useRemoveTeamMember,
     useAcceptTeamInvitation,
+    useAcceptPublicInvitation,
     useDeclineTeamInvitation,
     useResendTeamInvite,
     useUpdateTeamMemberRole,
@@ -453,6 +560,15 @@ export const useEvent = () => {
     useEventFormats,
     // Event Tags
     useEventTags,
+    useTagSearch,
+    // Media and Content
+    useEventMedia,
+    useUploadEventMedia,
+    useUploadCoverImage,
+    useUploadGalleryMedia,
+    useSetFeaturedMedia,
+    useReorderMedia,
+    useEventContent,
     // Filtered Event Lists
     useEventsByCategory,
     useEventsByType,

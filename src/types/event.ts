@@ -23,6 +23,7 @@ export enum EventStatus {
  */
 export enum TeamMemberRole {
   EVENT_ORGANIZER = "EVENT_ORGANIZER",
+  EVENT_MANAGER = "EVENT_MANAGER",
   EVENT_TEAM = "EVENT_TEAM",
   SELLER = "SELLER",
   CUSTOMER = "CUSTOMER",
@@ -68,7 +69,8 @@ export interface Location extends BaseEventEntity {
  */
 export interface Performer extends BaseEventEntity {
   name: string;
-  bio: Nullable<string>;
+  description: Nullable<string>; // Updated from bio to description to match API
+  bio: Nullable<string>; // Keep for backward compatibility
   image_url: Nullable<string>;
   website_url: Nullable<string>;
   facebook_url: Nullable<string>;
@@ -142,6 +144,8 @@ export interface EventFormat extends BaseEventEntity {
 export interface EventTag extends BaseEventEntity {
   name: string;
   slug: string;
+  description: Nullable<string>;
+  color: Nullable<string>;
   is_trending: boolean;
   usage_count: number;
 }
@@ -177,29 +181,141 @@ export interface Event extends BaseEventEntity {
   featured: boolean;
   featured_until: Nullable<string>;
   performers: Performer[];
-  // New fields from updated API
+
+  // Categorization
   category: Nullable<Category>;
   event_type: Nullable<EventType>;
   format: Nullable<EventFormat>;
-  tags: EventTag[];
+  tags: string[]; // Tag names array
+  tags_data: EventTag[]; // Full tag objects array
+
+  // Age & Content Restrictions
   age_restriction: Nullable<string>;
   content_rating: Nullable<string>;
   minimum_age: Nullable<number>;
   maximum_age: Nullable<number>;
+  is_age_restricted: boolean;
+
+  // Event Characteristics
   is_recurring: boolean;
   is_series: boolean;
   series_name: Nullable<string>;
   series_number: Nullable<number>;
+
+  // Virtual/Hybrid Event Fields
   virtual_meeting_url: Nullable<string>;
   virtual_platform: Nullable<string>;
   virtual_instructions: Nullable<string>;
   virtual_capacity: Nullable<number>;
-  // Additional computed fields from API
+
+  // Rich Content Fields (JSON arrays) - FAQ was missing!
+  agenda: any[]; // Structured agenda data
+  speakers: any[]; // Speaker information
+  sponsors: any[]; // Sponsor information
+  faq: any[]; // FAQ items - this was missing!
+  highlights: any[]; // Event highlights
+
+  // Additional Social Media URLs
+  youtube_url: Nullable<string>;
+  tiktok_url: Nullable<string>;
+  snapchat_url: Nullable<string>;
+  discord_url: Nullable<string>;
+  telegram_url: Nullable<string>;
+  spotify_url: Nullable<string>;
+
+  // SEO & Meta Fields
+  meta_title: Nullable<string>;
+  meta_description: Nullable<string>;
+  meta_keywords: Nullable<string>;
+  canonical_url: Nullable<string>;
+  language: string;
+  subtitles_available: boolean;
+  sign_language_available: boolean;
+
+  // Computed Fields
   category_path: Nullable<string>;
-  is_age_restricted: boolean;
   format_display: Nullable<string>;
   tag_names: string[];
   similar_events: Event[];
+
+  // Media Fields
+  media_gallery?: EventMedia[];
+  hero_image?: Nullable<EventMedia>;
+
+  // Content Sections
+  content_sections?: EventContent[];
+}
+
+/**
+ * Event media types
+ * Represents media files associated with events
+ */
+export interface EventMedia extends BaseEventEntity {
+  event: string; // Event ID
+  file: string; // File URL
+  file_url: string; // Alternative file URL field
+  file_name: string;
+  media_type: "IMAGE" | "VIDEO" | "DOCUMENT"; // Updated to match API
+  file_type: "image" | "video" | "document"; // Keep for backward compatibility
+  file_size: number;
+  is_featured: boolean;
+  is_public: boolean; // New field from API
+  order: number; // Updated field name from sort_order
+  sort_order: number; // Keep for backward compatibility
+  title?: string; // New field from API
+  description?: string;
+  alt_text?: string;
+}
+
+/**
+ * Media management request types
+ */
+export interface UploadMediaRequest {
+  files: File[];
+  title?: string;
+  description?: string;
+  alt_text?: string;
+  is_public?: boolean;
+  order?: number;
+  is_featured?: boolean;
+}
+
+export interface UploadGalleryMediaRequest {
+  files: File[];
+  title?: string;
+  description?: string;
+  is_public?: boolean;
+}
+
+export interface UploadCoverImageRequest {
+  cover_image: File;
+}
+
+export interface SetFeaturedMediaRequest {
+  media_id: string;
+}
+
+export interface ReorderMediaRequest {
+  order: number;
+}
+
+/**
+ * Event content types
+ * Represents structured content sections for events
+ */
+export interface EventContent extends BaseEventEntity {
+  event: string; // Event ID
+  section_type:
+    | "agenda"
+    | "speakers"
+    | "sponsors"
+    | "faq"
+    | "highlights"
+    | "custom";
+  title: string;
+  content: any; // JSON content specific to section type
+  sort_order: number;
+  is_visible: boolean;
 }
 
 export interface SimilarEvent {
@@ -229,11 +345,63 @@ export interface CreateEventRequest {
   linkedin_url?: string;
   instagram_url?: string;
   twitter_url?: string;
+
+  // Categorization
+  category?: string;
+  event_type?: string;
+  format?: string;
+  tags_input?: string[]; // Updated to match API - auto-creates tags if they don't exist
+  age_restriction?: string;
+  content_rating?: string;
+  minimum_age?: number;
+  maximum_age?: number;
+
+  // Event Characteristics
+  is_recurring?: boolean;
+  is_series?: boolean;
+  series_name?: string;
+  series_number?: number;
+
+  // Virtual/Hybrid Event Fields
+  virtual_meeting_url?: string;
+  virtual_platform?: string;
+  virtual_instructions?: string;
+  virtual_capacity?: number;
+
+  // Rich Content
+  agenda?: any[];
+  speakers?: any[];
+  sponsors?: any[];
+  faq?: any[];
+  highlights?: any[];
+
+  // Additional Social Media URLs
+  youtube_url?: string;
+  tiktok_url?: string;
+  snapchat_url?: string;
+  discord_url?: string;
+  telegram_url?: string;
+  spotify_url?: string;
+
+  // SEO & Meta
+  meta_title?: string;
+  meta_description?: string;
+  meta_keywords?: string;
+  canonical_url?: string;
+  language?: string;
+  subtitles_available?: boolean;
+  sign_language_available?: boolean;
 }
 
 export interface UpdateEventRequest extends Partial<CreateEventRequest> {
   cover_image?: File | string | null; // File for new upload, string to keep existing, null to remove
+  // Allow FormData for media updates
+  gallery_images?: File[];
+  image_descriptions?: string[];
+  featured_image?: string;
 }
+
+export type UpdateEventRequestOrFormData = UpdateEventRequest | FormData;
 
 export interface InviteTeamMemberRequest {
   user_email: string;
@@ -241,6 +409,10 @@ export interface InviteTeamMemberRequest {
 }
 
 export interface AcceptTeamInvitationRequest {
+  token: string;
+}
+
+export interface AcceptPublicInvitationRequest {
   token: string;
 }
 
@@ -285,6 +457,27 @@ export interface EventFormatsResponse
 export interface EventTagResponse extends SuccessResponse<EventTag> {}
 
 export interface EventTagsResponse
+  extends SuccessResponse<PaginatedResponse<EventTag>> {}
+
+export interface EventMediaResponse extends SuccessResponse<EventMedia> {}
+
+export interface EventMediaListResponse
+  extends SuccessResponse<PaginatedResponse<EventMedia>> {}
+
+export interface UploadMediaResponse
+  extends SuccessResponse<{
+    results: EventMedia[];
+  }> {}
+
+// Tag search query parameters
+export interface TagSearchQueryParams {
+  search?: string;
+  trending?: boolean;
+  limit?: number;
+}
+
+// Tag search response
+export interface TagSearchResponse
   extends SuccessResponse<PaginatedResponse<EventTag>> {}
 
 /**

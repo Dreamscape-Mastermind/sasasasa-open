@@ -1,4 +1,5 @@
 import {
+  AcceptPublicInvitationRequest,
   AcceptTeamInvitationRequest,
   CategoriesResponse,
   CategoryQueryParams,
@@ -6,6 +7,8 @@ import {
   CreateEventRequest,
   EventFormatQueryParams,
   EventFormatsResponse,
+  EventMediaListResponse,
+  EventMediaResponse,
   EventQueryParams,
   EventResponse,
   EventTagQueryParams,
@@ -21,10 +24,17 @@ import {
   PerformerQueryParams,
   PerformerResponse,
   PerformersResponse,
+  ReorderMediaRequest,
+  TagSearchQueryParams,
+  TagSearchResponse,
   TeamMemberQueryParams,
   TeamMemberResponse,
   TeamMembersResponse,
   UpdateEventRequest,
+  UploadMediaRequest,
+  UploadGalleryMediaRequest,
+  UploadCoverImageRequest,
+  UploadMediaResponse,
 } from "@/types/event";
 import type {
   EventAnalyticsExportRequest,
@@ -250,7 +260,7 @@ class EventService {
     params?: TeamMemberQueryParams
   ): Promise<TeamMembersResponse> {
     return apiClient.get<TeamMembersResponse>(
-      `${this.baseUrl}/${eventId}/teams`,
+      `${this.baseUrl}/${eventId}/team`,
       { params }
     );
   }
@@ -260,7 +270,7 @@ class EventService {
     memberId: string
   ): Promise<TeamMemberResponse> {
     return apiClient.get<TeamMemberResponse>(
-      `${this.baseUrl}/${eventId}/teams/${memberId}`
+      `${this.baseUrl}/${eventId}/team/${memberId}`
     );
   }
 
@@ -291,6 +301,12 @@ class EventService {
     );
   }
 
+  public async acceptPublicInvitation(
+    data: AcceptPublicInvitationRequest
+  ): Promise<any> {
+    return apiClient.post("/api/v1/events/accept-invite", data);
+  }
+
   public async declineTeamInvitation(
     eventId: string,
     data: AcceptTeamInvitationRequest
@@ -316,7 +332,7 @@ class EventService {
     data: { role: string }
   ): Promise<TeamMemberResponse> {
     return apiClient.patch<TeamMemberResponse>(
-      `${this.baseUrl}/${eventId}/teams/${memberId}`,
+      `${this.baseUrl}/${eventId}/team/${memberId}`,
       data
     );
   }
@@ -375,6 +391,135 @@ class EventService {
     return apiClient.get<EventTagsResponse>(`${this.baseUrl}/tags`, {
       params,
     });
+  }
+
+  public async searchTags(
+    params: TagSearchQueryParams
+  ): Promise<TagSearchResponse> {
+    return apiClient.get<TagSearchResponse>(`${this.baseUrl}/tags`, {
+      params,
+    });
+  }
+
+  /**
+   * Media and Content endpoints
+   */
+  public async getEventMedia(eventId: string): Promise<EventMediaListResponse> {
+    return apiClient.get<EventMediaListResponse>(
+      `${this.baseUrl}/${eventId}/media`
+    );
+  }
+
+  /**
+   * Upload cover image using PATCH /api/v1/events/{event_id}
+   */
+  public async uploadCoverImage(
+    eventId: string,
+    data: UploadCoverImageRequest
+  ): Promise<EventResponse> {
+    const formData = new FormData();
+    formData.append("cover_image", data.cover_image);
+
+    return apiClient.patchFormData<EventResponse>(
+      `${this.baseUrl}/${eventId}`,
+      formData
+    );
+  }
+
+  /**
+   * Upload gallery images using POST /api/v1/events/{event_id}/upload_media
+   */
+  public async uploadGalleryMedia(
+    eventId: string,
+    data: UploadGalleryMediaRequest
+  ): Promise<UploadMediaResponse> {
+    const formData = new FormData();
+
+    // Add files
+    data.files.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    // Add optional metadata
+    if (data.title) {
+      formData.append("title", data.title);
+    }
+    if (data.description) {
+      formData.append("description", data.description);
+    }
+    // Ensure boolean is sent as 1/0 for backend coercion
+    if (data.is_public !== undefined) {
+      formData.append("is_public", data.is_public ? "1" : "0");
+    }
+
+    return apiClient.postFormData<UploadMediaResponse>(
+      `${this.baseUrl}/${eventId}/upload_media`,
+      formData
+    );
+  }
+
+  /**
+   * Upload individual media file using POST /api/v1/events/{event_id}/media
+   */
+  public async uploadEventMedia(
+    eventId: string,
+    data: UploadMediaRequest
+  ): Promise<EventMediaResponse> {
+    const formData = new FormData();
+
+    // Add file (single file for individual upload)
+    if (data.files.length > 0) {
+      formData.append("file", data.files[0]);
+    }
+
+    // Add optional metadata
+    if (data.title) {
+      formData.append("title", data.title);
+    }
+    if (data.description) {
+      formData.append("description", data.description);
+    }
+    if (data.alt_text) {
+      formData.append("alt_text", data.alt_text);
+    }
+    if (data.order !== undefined) {
+      formData.append("order", data.order.toString());
+    }
+    if (data.is_featured !== undefined) {
+      formData.append("is_featured", data.is_featured.toString());
+    }
+    if (data.is_public !== undefined) {
+      formData.append("is_public", data.is_public.toString());
+    }
+
+    return apiClient.postFormData<EventMediaResponse>(
+      `${this.baseUrl}/${eventId}/media`,
+      formData
+    );
+  }
+
+  public async setFeaturedMedia(
+    eventId: string,
+    mediaId: string
+  ): Promise<EventMediaResponse> {
+    return apiClient.post<EventMediaResponse>(
+      `${this.baseUrl}/${eventId}/media/${mediaId}/set_featured`
+    );
+  }
+
+  public async reorderMedia(
+    eventId: string,
+    mediaId: string,
+    data: ReorderMediaRequest
+  ): Promise<EventMediaResponse> {
+    return apiClient.post<EventMediaResponse>(
+      `${this.baseUrl}/${eventId}/media/${mediaId}/reorder`,
+      data
+    );
+  }
+
+  public async getEventContent(eventId: string): Promise<any> {
+    return apiClient.get(`${this.baseUrl}/${eventId}/content`);
   }
 
   /**

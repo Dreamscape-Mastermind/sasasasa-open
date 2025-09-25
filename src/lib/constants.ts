@@ -8,7 +8,6 @@ import {
   MessageSquare,
   Percent,
   Settings,
-  Ticket,
   Users,
   Wallet,
 } from "lucide-react";
@@ -56,7 +55,7 @@ export const ROUTES = {
     `/dashboard/events/${id}/analytics`,
   DASHBOARD_EVENT_ATTENDEES: (id: string) =>
     `/dashboard/events/${id}/attendees`,
-  DASHBOARD_EVENT_DETAILS: (id: string) => `/dashboard/events/${id}/details`,
+  DASHBOARD_EVENT_DETAILS: (id: string) => `/dashboard/events/${id}/overview`,
   DASHBOARD_EVENT_EDIT: (id: string) => `/dashboard/events/${id}/edit`,
   DASHBOARD_EVENT_OVERVIEW: (id: string) => `/dashboard/events/${id}/overview`,
   DASHBOARD_EVENT_PAYMENTS: (id: string) => `/dashboard/events/${id}/payments`,
@@ -206,8 +205,8 @@ export const ROLES_CACHE_DURATION = 60 * 30; // 30 minutes in seconds
 export const MAX_RETRIES = 2;
 export const RETRY_DELAY = 1000; // 1 second
 
-export const CONSENT_STORAGE_KEY = 'user-consent-preferences';
-export const CONSENT_VERSION = '1.0';
+export const CONSENT_STORAGE_KEY = "user-consent-preferences";
+export const CONSENT_VERSION = "1.0";
 
 // Auth storage configuration
 export const AUTH_STORAGE = {
