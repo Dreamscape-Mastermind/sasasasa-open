@@ -1,4 +1,6 @@
 import {
+  BlogTagSearchQueryParams,
+  BlogTagSearchResponse,
   CommentListResponse,
   CommentQueryParams,
   CommentResponse,
@@ -9,8 +11,6 @@ import {
   PostQueryParams,
   PostResponse,
   ReactionResponse,
-  TagSearchQueryParams,
-  TagSearchResponse,
   UpdateCommentRequest,
   UpdatePostRequest,
   UpdateReactionRequest,
@@ -131,9 +131,9 @@ class BlogService {
   }
 
   public async searchTags(
-    params: TagSearchQueryParams
-  ): Promise<TagSearchResponse> {
-    return apiClient.get<TagSearchResponse>(
+    params: BlogTagSearchQueryParams
+  ): Promise<BlogTagSearchResponse> {
+    return apiClient.get<BlogTagSearchResponse>(
       `${this.baseUrl}/blog/posts/search_tags`,
       { params }
     );
