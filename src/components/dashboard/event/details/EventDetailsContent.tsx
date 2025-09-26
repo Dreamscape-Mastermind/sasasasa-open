@@ -1,6 +1,16 @@
 "use client";
 
-import { Calendar, Clock, MapPin, Share2, Ticket, Users } from "lucide-react";
+import {
+  Calendar,
+  CheckCircle,
+  Clock,
+  EyeOff,
+  MapPin,
+  Share2,
+  Ticket,
+  Users,
+  X,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,17 +20,79 @@ import {
 } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { EventStatus } from "@/types/event";
 import { ROUTES } from "@/lib/constants";
 import { TicketType } from "@/types/ticket";
 import moment from "moment-timezone";
+import toast from "react-hot-toast";
 import { useEvent } from "@/hooks/useEvent";
 import { useRouter } from "next/navigation";
 
 export function EventDetailsContent({ eventId }: { eventId: string }) {
-  const { useEvent: useEventQuery } = useEvent();
-  const { data: eventData, isLoading, error } = useEventQuery(eventId || "");
+  const {
+    useEvent: useEventQuery,
+    usePublishEvent,
+    useUnpublishEvent,
+    useCancelEvent,
+  } = useEvent();
+  const {
+    data: eventData,
+    isLoading,
+    error,
+    refetch,
+  } = useEventQuery(eventId || "");
   const router = useRouter();
   const currentEvent = eventData?.result;
+
+  const publishEvent = usePublishEvent();
+  const unpublishEvent = useUnpublishEvent();
+  const cancelEvent = useCancelEvent();
+
+  const handlePublish = async () => {
+    if (!eventId) {
+      toast.error("Event ID is required");
+      return;
+    }
+
+    try {
+      await publishEvent.mutateAsync(eventId);
+      toast.success("Event published successfully!");
+      await refetch();
+    } catch (err) {
+      toast.error("Failed to publish event");
+    }
+  };
+
+  const handleUnpublish = async () => {
+    if (!eventId) {
+      toast.error("Event ID is required");
+      return;
+    }
+
+    try {
+      await unpublishEvent.mutateAsync(eventId);
+      toast.success("Event unpublished successfully!");
+      await refetch();
+    } catch (err) {
+      toast.error("Failed to unpublish event");
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!eventId) {
+      toast.error("Event ID is required");
+      return;
+    }
+
+    try {
+      await cancelEvent.mutateAsync(eventId);
+      toast.success("Event cancelled successfully!");
+      await refetch();
+    } catch (err) {
+      toast.error("Failed to cancel event");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -89,11 +161,10 @@ export function EventDetailsContent({ eventId }: { eventId: string }) {
                 </div>
               </div>
             </div>
-            <div className="flex justify-between items-center gap-2">
+            <div className="flex flex-wrap gap-2 items-center">
               <Button
                 variant="default"
                 size="default"
-                className="ml-2"
                 onClick={() => {
                   if (currentEvent?.id) {
                     router.push(ROUTES.DASHBOARD_EVENT_EDIT(currentEvent.id));
@@ -102,6 +173,67 @@ export function EventDetailsContent({ eventId }: { eventId: string }) {
               >
                 Edit Event
               </Button>
+
+              {/* Event Management Actions */}
+              {currentEvent?.status === EventStatus.PUBLISHED ? (
+                <ConfirmationDialog
+                  trigger={
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <EyeOff className="w-4 h-4" />
+                      Unpublish
+                    </Button>
+                  }
+                  title="Unpublish Event"
+                  description="Are you sure you want to unpublish this event? It will no longer be visible to the public."
+                  confirmText="Unpublish"
+                  variant="default"
+                  onConfirm={handleUnpublish}
+                  isLoading={unpublishEvent.isPending}
+                />
+              ) : (
+                <ConfirmationDialog
+                  trigger={
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Publish Event
+                    </Button>
+                  }
+                  title="Publish Event"
+                  description="Are you sure you want to publish this event? It will become visible to the public."
+                  confirmText="Publish"
+                  variant="default"
+                  onConfirm={handlePublish}
+                  isLoading={publishEvent.isPending}
+                />
+              )}
+
+              <ConfirmationDialog
+                trigger={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 border-red-200 text-red-600 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel Event
+                  </Button>
+                }
+                title="Cancel Event"
+                description="Are you sure you want to cancel this event? This action cannot be undone and will notify all attendees."
+                confirmText="Cancel Event"
+                variant="destructive"
+                onConfirm={handleCancel}
+                isLoading={cancelEvent.isPending}
+              />
+
               <Button variant="outline" size="icon">
                 <Share2 className="h-4 w-4" />
               </Button>

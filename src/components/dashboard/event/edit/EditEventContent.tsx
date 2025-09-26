@@ -3,12 +3,15 @@
 import {
   Calendar,
   Check,
+  CheckCircle,
   Edit3,
+  EyeOff,
   FileText,
   Globe,
   Image,
   Ticket,
   Users,
+  X,
 } from "lucide-react";
 import {
   Tabs,
@@ -25,11 +28,13 @@ import {
 import { use, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import EventForm from "@/components/forms/event-form";
 import EventMediaForm from "@/components/forms/event-media-form";
 import EventReviewPublishForm from "@/components/forms/event-review-publish-form";
 import EventRichContentForm from "@/components/forms/event-rich-content-form";
 import EventSocialSEOForm from "@/components/forms/event-social-seo-form";
+import { EventStatus } from "@/types/event";
 import EventTeamMembersForm from "@/components/forms/event-team-members-form";
 import { ROUTES } from "@/lib/constants";
 import TicketForm from "@/components/forms/ticket-form";
@@ -68,8 +73,15 @@ export function EditEventContent({ params }: Props) {
 
   const isEditMode = Boolean(eventId);
   const [isPublishing, setIsPublishing] = useState(false);
-  const { useEvent: useEventQuery, usePublishEvent } = useEvent();
+  const {
+    useEvent: useEventQuery,
+    usePublishEvent,
+    useUnpublishEvent,
+    useCancelEvent,
+  } = useEvent();
   const publishEvent = usePublishEvent();
+  const unpublishEvent = useUnpublishEvent();
+  const cancelEvent = useCancelEvent();
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState("event-details");
@@ -207,6 +219,34 @@ export function EditEventContent({ params }: Props) {
     }
   };
 
+  const handleUnpublish = async () => {
+    if (!eventId) {
+      toast.error("Event ID is required");
+      return;
+    }
+
+    try {
+      await unpublishEvent.mutateAsync(eventId);
+      toast.success("Event unpublished successfully!");
+    } catch (err) {
+      toast.error("Failed to unpublish event");
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!eventId) {
+      toast.error("Event ID is required");
+      return;
+    }
+
+    try {
+      await cancelEvent.mutateAsync(eventId);
+      toast.success("Event cancelled successfully!");
+    } catch (err) {
+      toast.error("Failed to cancel event");
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto rounded-lg">
       <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -214,20 +254,79 @@ export function EditEventContent({ params }: Props) {
           <Edit3 className="w-6 h-6" />
           Edit Event
         </h1>
-        {activeTab === "review" && (
-          <Button
-            variant="default"
-            disabled={
-              eventData?.result?.status === "PUBLISHED" ||
-              isPublishing ||
-              publishEvent.isPending
-            }
-            onClick={handlePublish}
-          >
-            {isPublishing || publishEvent.isPending
-              ? "Publishing..."
-              : "Publish Event"}
-          </Button>
+
+        {/* Event Management Actions */}
+        {eventData?.result && (
+          <div className="flex flex-wrap gap-2">
+            {eventData.result.status === EventStatus.PUBLISHED ? (
+              <ConfirmationDialog
+                trigger={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <EyeOff className="w-4 h-4" />
+                    Unpublish
+                  </Button>
+                }
+                title="Unpublish Event"
+                description="Are you sure you want to unpublish this event? It will no longer be visible to the public."
+                confirmText="Unpublish"
+                variant="default"
+                onConfirm={handleUnpublish}
+                isLoading={unpublishEvent.isPending}
+              />
+            ) : (
+              <ConfirmationDialog
+                trigger={
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
+                    disabled={isPublishing}
+                  >
+                    {isPublishing ? (
+                      <>
+                        <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Publishing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-4 h-4" />
+                        Publish Event
+                      </>
+                    )}
+                  </Button>
+                }
+                title="Publish Event"
+                description="Are you sure you want to publish this event? It will become visible to the public."
+                confirmText="Publish"
+                variant="default"
+                onConfirm={handlePublish}
+                isLoading={isPublishing}
+              />
+            )}
+
+            <ConfirmationDialog
+              trigger={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2 border-red-200 text-red-600 hover:bg-red-50"
+                >
+                  <X className="w-4 h-4" />
+                  Cancel Event
+                </Button>
+              }
+              title="Cancel Event"
+              description="Are you sure you want to cancel this event? This action cannot be undone and will notify all attendees."
+              confirmText="Cancel Event"
+              variant="destructive"
+              onConfirm={handleCancel}
+              isLoading={cancelEvent.isPending}
+            />
+          </div>
         )}
       </div>
 

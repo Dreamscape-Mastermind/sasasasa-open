@@ -55,7 +55,7 @@ export const ROUTES = {
     `/dashboard/events/${id}/analytics`,
   DASHBOARD_EVENT_ATTENDEES: (id: string) =>
     `/dashboard/events/${id}/attendees`,
-  DASHBOARD_EVENT_DETAILS: (id: string) => `/dashboard/events/${id}/overview`,
+  DASHBOARD_EVENT_DETAILS: (id: string) => `/dashboard/events/${id}/details`,
   DASHBOARD_EVENT_EDIT: (id: string) => `/dashboard/events/${id}/edit`,
   DASHBOARD_EVENT_OVERVIEW: (id: string) => `/dashboard/events/${id}/overview`,
   DASHBOARD_EVENT_PAYMENTS: (id: string) => `/dashboard/events/${id}/payments`,
