@@ -6,13 +6,17 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import React, { useEffect, useState } from "react";
 
 import Error from "@/components/ui/error";
-import { Event, type EventQueryParams } from "@/types/event";
+import { Event } from "@/types/event";
 import Image from "next/image";
 import Link from "next/link";
+import { ROUTES } from "@/lib/constants";
 import ReactMarkdown from "react-markdown";
+import { SimilarEvent } from "@/types/event";
+import SimilarEvents from "./SimilarEvents";
 import { TicketType } from "@/types/ticket";
 import { TicketTypeWithFlashSale } from "@/types/flashsale";
 import { Tickets } from "@/components/events/tickets/Tickets";
@@ -20,8 +24,6 @@ import { formatDateCustom } from "@/lib/dataFormatters";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useEvent } from "@/hooks/useEvent";
 import { useLogger } from "@/hooks/useLogger";
-import { ROUTES } from "@/lib/constants";
-import image from "public/images/placeholdere.jpeg";
 
 type EventDetailsProps = {
   slug: string;
@@ -54,7 +56,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
         event_name: event.title,
       });
     }
-  }, [event, analytics, logger]);
+  }, [event]);
 
   if (error && !event) {
     const errorMessage =
@@ -73,44 +75,47 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
   // Handle loading state (only if no provided event and still loading)
   if (isLoading && !event) {
     return (
-      <div className="flex flex-col items-center min-h-[60vh] w-full px-4">
-        <div className="bg-zinc-900 rounded-xl shadow-lg flex flex-col sm:flex-row w-full max-w-5xl overflow-hidden">
+      <div className="flex flex-col items-center min-h-[60vh] w-full px-3 sm:px-4">
+        <div className="bg-zinc-900 rounded-lg sm:rounded-xl shadow-lg w-full max-w-6xl overflow-hidden">
           {/* Image skeleton */}
-          <div className="sm:w-1/2 w-full aspect-square bg-zinc-800 flex items-center justify-center">
+          <div
+            className="w-full bg-zinc-800 flex items-center justify-center"
+            style={{ minHeight: "300px", maxHeight: "60vh" }}
+          >
             <div className="w-4/5 h-4/5 bg-zinc-700 rounded-lg animate-pulse" />
           </div>
           {/* Text skeleton */}
-          <div className="sm:w-1/2 w-full flex flex-col gap-4 p-8 justify-center">
-            <div className="h-6 w-2/3 bg-zinc-800 rounded animate-pulse mb-2" />
-            <div className="h-4 w-1/3 bg-zinc-800 rounded animate-pulse mb-4" />
-            <div className="h-10 w-full bg-zinc-800 rounded animate-pulse mb-4" />
-            <div className="h-24 w-full bg-zinc-800 rounded animate-pulse mb-4" />
-            <div className="h-8 w-1/2 bg-zinc-800 rounded animate-pulse mb-2" />
-            <div className="h-6 w-1/3 bg-zinc-800 rounded animate-pulse" />
+          <div className="w-full flex flex-col gap-4 p-4 sm:p-6 lg:p-8">
+            <div className="h-4 sm:h-6 w-2/3 bg-zinc-800 rounded animate-pulse mb-2" />
+            <div className="h-3 sm:h-4 w-1/3 bg-zinc-800 rounded animate-pulse mb-4" />
+            <div className="h-8 sm:h-10 w-full bg-zinc-800 rounded animate-pulse mb-4" />
+            <div className="h-16 sm:h-24 w-full bg-zinc-800 rounded animate-pulse mb-4" />
+            <div className="h-6 sm:h-8 w-1/2 bg-zinc-800 rounded animate-pulse mb-2" />
+            <div className="h-4 sm:h-6 w-1/3 bg-zinc-800 rounded animate-pulse" />
           </div>
         </div>
         {/* Tickets skeleton */}
-        <div className="w-full max-w-3xl mt-10">
-          <div className="mb-3 h-6 w-32 bg-zinc-800 rounded animate-pulse" />
+        <div className="w-full max-w-3xl mt-6 sm:mt-10">
+          <div className="mb-3 h-5 sm:h-6 w-24 sm:w-32 bg-zinc-800 rounded animate-pulse" />
           {Array.from({ length: 3 }).map((_, index) => (
             <div
               key={index}
-              className="flex items-center justify-between bg-zinc-900 rounded-lg p-4 mb-4 shadow"
+              className="flex items-center justify-between bg-zinc-900 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4 shadow"
             >
               {/* Ticket name */}
-              <div className="h-6 w-24 bg-zinc-800 rounded animate-pulse" />
+              <div className="h-5 sm:h-6 w-20 sm:w-24 bg-zinc-800 rounded animate-pulse" />
               {/* Price */}
-              <div className="h-6 w-20 bg-amber-400/30 rounded animate-pulse" />
+              <div className="h-5 sm:h-6 w-16 sm:w-20 bg-amber-400/30 rounded animate-pulse" />
               {/* Quantity controls */}
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 bg-zinc-800 rounded-full animate-pulse" />
-                <div className="h-6 w-6 bg-zinc-800 rounded animate-pulse" />
-                <div className="h-8 w-8 bg-zinc-800 rounded-full animate-pulse" />
+                <div className="h-6 sm:h-8 w-6 sm:w-8 bg-zinc-800 rounded-full animate-pulse" />
+                <div className="h-5 sm:h-6 w-5 sm:w-6 bg-zinc-800 rounded animate-pulse" />
+                <div className="h-6 sm:h-8 w-6 sm:w-8 bg-zinc-800 rounded-full animate-pulse" />
               </div>
             </div>
           ))}
           {/* Checkout button skeleton */}
-          <div className="h-12 w-full bg-red-500/30 rounded-lg animate-pulse mt-2" />
+          <div className="h-10 sm:h-12 w-full bg-red-500/30 rounded-lg animate-pulse mt-2" />
         </div>
       </div>
     );
@@ -274,197 +279,319 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
     });
   };
 
-
-
-
   return (
-    <div className="mx-auto px-4 sm:px-14">
-      <div className="full-w overflow-hidden max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row gap-8 bg-zinc-900 text-white max-w-6xl sm:max-w-5xl items-left sm:items-start mx-auto sm:p-8 transition-all duration-300 ease-in-out hover:shadow-xl">
-          <div className="basis-1/2 relative aspect-square transition-transform duration-500 ease-in-out hover:scale-[1.02]">
-            {event.cover_image ? (
-              <div className="relative w-full h-full">
+    <div className="mx-auto px-3 sm:px-6 lg:px-14">
+      <div className="w-full overflow-hidden max-w-6xl mx-auto">
+        {/* Event Poster - Full Width at Top with Modal */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <div className="relative w-full mb-6 sm:mb-8 rounded-lg sm:rounded-xl overflow-hidden transition-transform duration-500 ease-in-out hover:scale-[1.02] cursor-pointer group flex justify-center">
+              {event.cover_image ? (
                 <Image
-                  src={hasError ? '/images/placeholdere.jpeg' : event.cover_image}
+                  src={
+                    hasError ? "/images/placeholdere.jpeg" : event.cover_image
+                  }
                   alt={`${event.title} event poster`}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  style={{ objectFit: "contain" }}
-                  className="transition-opacity duration-300 ease-in-out"
+                  width={1200}
+                  height={800}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
+                  style={{
+                    objectFit: "contain",
+                    width: "100%",
+                    height: "auto",
+                    maxHeight: "70vh",
+                    backgroundColor: "#18181b",
+                  }}
+                  className="transition-opacity duration-300 ease-in-out group-hover:opacity-90 rounded-lg sm:rounded-xl"
                   priority
                   onError={(e) => {
                     setHasError(true);
                   }}
                 />
-              </div>
-            ) : (
-              <div className="relative w-full h-full">
+              ) : (
                 <Image
-                  src='/images/placeholdere.jpeg'
+                  src="/images/placeholdere.jpeg"
                   alt="Default event image"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  style={{ objectFit: "contain" }}
-                  className="transition-opacity duration-300 ease-in-out"
+                  width={1200}
+                  height={800}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
+                  style={{
+                    objectFit: "contain",
+                    width: "100%",
+                    height: "auto",
+                    maxHeight: "70vh",
+                    backgroundColor: "#18181b",
+                  }}
+                  className="transition-opacity duration-300 ease-in-out group-hover:opacity-90 rounded-lg sm:rounded-xl"
                   priority
                 />
-              </div>
-            )}
-          </div>
-
-          <div className="basis-1/2 text-left px-5 pb-4 sm:px-0 sm:pb-0 sm:pt-4 transition-all duration-300 ease-in-out">
-            <div className="flex flex-col gap-1 text-gray-300">
-              {event.start_date && (
-                <>
-                  <span className="text-lg transform transition-all duration-300 ease-in-out hover:text-white">
-                    {formatEventDate(event.start_date)}
-                  </span>
-                  <div className="flex items-center gap-2 text-base">
-                    <span>{formatEventTime(event.start_date)}</span>
-                    {event.end_date && (
-                      <>
-                        <span>-</span>
-                        <span>{formatEventTime(event.end_date)}</span>
-                      </>
-                    )}
-                    <span className="text-sm">
-                      {event.timezone ? `(${event.timezone})` : "(EAT)"}
-                    </span>
-                  </div>
-                </>
               )}
-            </div>
-
-            <h1 className="text-3xl sm:text-5xl font-bold my-4 sm:my-6 transition-all duration-300 ease-in-out hover:text-blue-400">
-              {event.title || "Untitled Event"}
-            </h1>
-
-            <div className="my-4 sm:my-6 text-gray-200 text-lg leading-relaxed markdown-content transition-all duration-300 ease-in-out hover:text-white">
-              {event.description ? (
-                <ReactMarkdown>{event.description}</ReactMarkdown>
-              ) : (
-                <p className="italic text-gray-400">No description available</p>
-              )}
-            </div>
-
-            {/* Performers section */}
-            {event.performers && event.performers.length > 0 && (
-              <div className="mt-6 transform transition-all duration-300 ease-in-out">
-                <h4 className="text-xl font-semibold mb-4">
-                  Featured Artists:
-                </h4>
-                <div className="flex flex-wrap gap-4">
-                  {event.performers.map((performer) => (
-                    <Link
-                      key={performer.name}
-                      href={performer.spotify_url || "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => handlePerformerClick(performer)}
-                      className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-full transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-md"
+              {/* Overlay with zoom icon */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 ease-in-out flex items-center justify-center pointer-events-none">
+                <div className="opacity-60 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
+                  <div className="bg-black/50 rounded-full p-2 sm:p-3 backdrop-blur-sm">
+                    <svg
+                      className="w-6 h-6 sm:w-8 sm:h-8 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <span>{performer.name}</span>
-                      {performer.spotify_url && (
-                        <svg
-                          className="w-4 h-4"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.48.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
-                        </svg>
-                      )}
-                    </Link>
-                  ))}
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                      />
+                    </svg>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-
-        <div className="max-w-3xl mx-auto text-[14px] sm:text-base px-3 sm:px-0 sm:mt-12">
-          {/* Venue section */}
-          <div className="my-8 transform transition-all duration-300 ease-in-out hover:translate-x-1">
-            <h2 className="text-xl font-bold mb-3">VENUE</h2>
-            {!event.venue || event.venue === "Location TBA" ? (
-              <p className="font-helvetica text-lg">Location to be announced</p>
-            ) : (
-              <div className="space-y-3">
-                <Link
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                    event.venue
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={handleVenueClick}
-                  className="font-helvetica hover:underline text-blue-400 text-lg inline-flex items-center gap-2 transition-all duration-300 ease-in-out hover:text-blue-300"
-                >
-                  <svg
-                    className="w-5 h-5 transition-transform duration-300 ease-in-out group-hover:scale-110"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 0c-4.198 0-8 3.403-8 7.602 0 4.198 3.469 9.21 8 16.398 4.531-7.188 8-12.2 8-16.398 0-4.199-3.801-7.602-8-7.602zm0 11c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z" />
-                  </svg>
-                  {event.venue}
-                </Link>
-
-                <Accordion
-                  type="single"
-                  collapsible
-                  className="w-full border-none"
-                >
-                  <AccordionItem value="map" className="border-none">
-                    <AccordionTrigger className="py-2 text-blue-400 hover:text-blue-300 transition-all duration-300 ease-in-out">
-                      View on map
-                    </AccordionTrigger>
-                    <AccordionContent className="transition-all duration-500 ease-in-out">
-                      <div className="w-full h-40 rounded-lg overflow-hidden shadow-lg bg-zinc-800 transition-all duration-300 ease-in-out hover:shadow-xl">
-                        <iframe
-                          title="Event Location"
-                          width="100%"
-                          height="100%"
-                          frameBorder="0"
-                          style={{ border: 0 }}
-                          src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                            event.venue
-                          )}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
-                          allowFullScreen
-                        ></iframe>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </div>
-            )}
-          </div>
-
-          {/* Tickets section */}
-          <div className="my-8 sm:my-12 transform transition-all duration-300 ease-in-out hover:translate-x-1">
-            <h2 className="text-xl font-bold mb-3">TICKETS</h2>
-            {event.available_tickets && event.available_tickets.length > 0 ? (
-              <Tickets
-                tickets={event.available_tickets as TicketType[]}
-                formatDate={formatDateCustom}
-                slug={slug}
+            </div>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl w-[95vw] h-[90vh] p-0 bg-black border-none">
+            <div className="relative w-full h-full">
+              <Image
+                src={
+                  hasError
+                    ? "/images/placeholdere.jpeg"
+                    : event.cover_image || "/images/placeholdere.jpeg"
+                }
+                alt={`${event.title} event poster - Full View`}
+                fill
+                sizes="95vw"
+                style={{ objectFit: "contain" }}
+                className="transition-opacity duration-300 ease-in-out"
+                priority
               />
-            ) : (
-              <div>
-                <p className="text-gray-500 italic">Tickets TBA</p>
-              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Event Content - Single Column Below */}
+        <div className="bg-zinc-900 text-white p-4 sm:p-6 lg:p-8 rounded-lg sm:rounded-xl transition-all duration-300 ease-in-out hover:shadow-xl">
+          <div className="flex flex-col gap-1 text-gray-300">
+            {event.start_date && (
+              <>
+                <span className="text-base sm:text-lg transform transition-all duration-300 ease-in-out hover:text-white">
+                  {formatEventDate(event.start_date)}
+                </span>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm sm:text-base">
+                  <span>{formatEventTime(event.start_date)}</span>
+                  {event.end_date && (
+                    <>
+                      <span className="hidden sm:inline">-</span>
+                      <span className="sm:hidden">to</span>
+                      <span>{formatEventTime(event.end_date)}</span>
+                    </>
+                  )}
+                  <span className="text-xs sm:text-sm">
+                    {event.timezone ? `(${event.timezone})` : "(EAT)"}
+                  </span>
+                </div>
+              </>
             )}
           </div>
+
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold my-3 sm:my-4 lg:my-6 transition-all duration-300 ease-in-out hover:text-blue-400 leading-tight">
+            {event.title || "Untitled Event"}
+          </h1>
+
+          {/* Event metadata */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {event.category && (
+              <span className="px-2 sm:px-3 py-1 bg-blue-600/20 text-blue-300 rounded-full text-xs sm:text-sm border border-blue-600/30">
+                {event.category.name}
+              </span>
+            )}
+            {event.event_type && (
+              <span className="px-2 sm:px-3 py-1 bg-green-600/20 text-green-300 rounded-full text-xs sm:text-sm border border-green-600/30">
+                {event.event_type.name}
+              </span>
+            )}
+            {event.format && (
+              <span className="px-2 sm:px-3 py-1 bg-purple-600/20 text-purple-300 rounded-full text-xs sm:text-sm border border-purple-600/30">
+                {event.format.name}
+              </span>
+            )}
+            {event.is_recurring && (
+              <span className="px-2 sm:px-3 py-1 bg-orange-600/20 text-orange-300 rounded-full text-xs sm:text-sm border border-orange-600/30">
+                Recurring
+              </span>
+            )}
+            {event.is_series && (
+              <span className="px-2 sm:px-3 py-1 bg-pink-600/20 text-pink-300 rounded-full text-xs sm:text-sm border border-pink-600/30">
+                Series
+              </span>
+            )}
+            {event.featured && (
+              <span className="px-2 sm:px-3 py-1 bg-yellow-600/20 text-yellow-300 rounded-full text-xs sm:text-sm border border-yellow-600/30">
+                Featured
+              </span>
+            )}
+          </div>
+
+          {/* Age restrictions */}
+          {event.is_age_restricted && (
+            <div className="mb-4 p-3 bg-red-600/10 border border-red-600/20 rounded-lg">
+              <div className="flex items-center gap-2 text-red-300">
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                </svg>
+                <span className="text-sm font-medium">
+                  {event.age_restriction ||
+                    (event.minimum_age && event.maximum_age
+                      ? `Ages ${event.minimum_age}-${event.maximum_age}`
+                      : event.minimum_age
+                      ? `Ages ${event.minimum_age}+`
+                      : event.maximum_age
+                      ? `Ages up to ${event.maximum_age}`
+                      : "Age Restricted")}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="my-4 sm:my-6 text-gray-200 text-sm sm:text-base lg:text-lg leading-relaxed markdown-content transition-all duration-300 ease-in-out hover:text-white">
+            {event.description ? (
+              <ReactMarkdown>{event.description}</ReactMarkdown>
+            ) : (
+              <p className="italic text-gray-400">No description available</p>
+            )}
+          </div>
+
+          {/* Tags section */}
+          {event.tags_data && event.tags_data.length > 0 && (
+            <div className="mt-4 transform transition-all duration-300 ease-in-out">
+              <h4 className="text-base sm:text-lg font-semibold mb-3 text-gray-300">
+                Tags:
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {event.tags_data.map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="px-2 py-1 bg-gray-700/50 text-gray-300 rounded-md text-xs sm:text-sm border border-gray-600/30"
+                    style={tag.color ? { borderColor: tag.color } : {}}
+                  >
+                    #{tag.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Virtual event information */}
+          {event.virtual_meeting_url && (
+            <div className="mt-4 p-3 sm:p-4 bg-blue-600/10 border border-blue-600/20 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <svg
+                  className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM14 13h-3v3H9v-3H6v-2h3V8h2v3h3v2z" />
+                </svg>
+                <span className="text-blue-400 font-medium text-sm sm:text-base">
+                  Virtual Event
+                </span>
+              </div>
+              {event.virtual_platform && (
+                <p className="text-blue-300 text-xs sm:text-sm mb-2">
+                  Platform: {event.virtual_platform}
+                </p>
+              )}
+              {event.virtual_instructions && (
+                <p className="text-gray-300 text-xs sm:text-sm mb-2">
+                  {event.virtual_instructions}
+                </p>
+              )}
+              <Link
+                href={event.virtual_meeting_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 text-sm sm:text-base"
+              >
+                <svg
+                  className="w-3 h-3 sm:w-4 sm:h-4"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                Join Virtual Event
+              </Link>
+            </div>
+          )}
+
+          {/* Series information */}
+          {event.is_series && event.series_name && (
+            <div className="mt-4 p-3 bg-purple-600/10 border border-purple-600/20 rounded-lg">
+              <div className="flex items-center gap-2">
+                <svg
+                  className="w-4 h-4 text-purple-400"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                <span className="text-purple-400 font-medium">
+                  {event.series_name}
+                  {event.series_number && ` - Episode ${event.series_number}`}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Performers section */}
+          {event.performers && event.performers.length > 0 && (
+            <div className="mt-4 sm:mt-6 transform transition-all duration-300 ease-in-out">
+              <h4 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
+                Featured Artists:
+              </h4>
+              <div className="flex flex-wrap gap-2 sm:gap-4">
+                {event.performers.map((performer) => (
+                  <Link
+                    key={performer.name}
+                    href={performer.spotify_url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => handlePerformerClick(performer)}
+                    className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-2 sm:px-3 py-1 sm:py-2 rounded-full transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-md text-sm sm:text-base"
+                  >
+                    <span className="truncate max-w-[120px] sm:max-w-none">
+                      {performer.name}
+                    </span>
+                    {performer.spotify_url && (
+                      <svg
+                        className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.48.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+                      </svg>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Social sharing section */}
-          <div className="my-8 transform transition-all duration-300 ease-in-out hover:translate-x-1">
-            <h2 className="text-xl font-bold mb-3">SHARE THIS EVENT</h2>
-            <div className="flex gap-3">
+          <div className="my-6 sm:my-8 transform transition-all duration-300 ease-in-out hover:translate-x-1">
+            <h2 className="text-lg sm:text-xl font-bold mb-3">
+              SHARE THIS EVENT
+            </h2>
+            <div className="flex gap-2 sm:gap-3">
               <button
                 onClick={() => shareEvent("facebook")}
-                className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+                className="p-2 sm:p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
                 aria-label="Share on Facebook"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-5 h-5 sm:w-6 sm:h-6"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -473,11 +600,11 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
               </button>
               <button
                 onClick={() => shareEvent("twitter")}
-                className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+                className="p-2 sm:p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
                 aria-label="Share on Twitter"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-5 h-5 sm:w-6 sm:h-6"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -486,11 +613,11 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
               </button>
               <button
                 onClick={() => shareEvent("whatsapp")}
-                className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+                className="p-2 sm:p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
                 aria-label="Share on WhatsApp"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-5 h-5 sm:w-6 sm:h-6"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -499,11 +626,11 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
               </button>
               <button
                 onClick={() => shareEvent("copy")}
-                className="p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
+                className="p-2 sm:p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-md"
                 aria-label="Copy link"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-5 h-5 sm:w-6 sm:h-6"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -513,6 +640,90 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Additional Content Sections */}
+      <div className="max-w-3xl mx-auto text-sm sm:text-base px-3 sm:px-0 mt-6 sm:mt-8">
+        {/* Venue section */}
+        <div className="my-6 sm:my-8 transform transition-all duration-300 ease-in-out hover:translate-x-1">
+          <h2 className="text-lg sm:text-xl font-bold mb-3">VENUE</h2>
+          {!event.venue || event.venue === "Location TBA" ? (
+            <p className="font-helvetica text-base sm:text-lg">
+              Location to be announced
+            </p>
+          ) : (
+            <div className="space-y-3">
+              <Link
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  event.venue
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleVenueClick}
+                className="font-helvetica hover:underline text-blue-400 text-base sm:text-lg inline-flex items-center gap-2 transition-all duration-300 ease-in-out hover:text-blue-300"
+              >
+                <svg
+                  className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 ease-in-out group-hover:scale-110"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 0c-4.198 0-8 3.403-8 7.602 0 4.198 3.469 9.21 8 16.398 4.531-7.188 8-12.2 8-16.398 0-4.199-3.801-7.602-8-7.602zm0 11c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z" />
+                </svg>
+                {event.venue}
+              </Link>
+
+              <Accordion
+                type="single"
+                collapsible
+                className="w-full border-none"
+              >
+                <AccordionItem value="map" className="border-none">
+                  <AccordionTrigger className="py-2 text-blue-400 hover:text-blue-300 transition-all duration-300 ease-in-out">
+                    View on map
+                  </AccordionTrigger>
+                  <AccordionContent className="transition-all duration-500 ease-in-out">
+                    <div className="w-full h-40 rounded-lg overflow-hidden shadow-lg bg-zinc-800 transition-all duration-300 ease-in-out hover:shadow-xl">
+                      <iframe
+                        title="Event Location"
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        style={{ border: 0 }}
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                          event.venue
+                        )}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+          )}
+        </div>
+
+        {/* Tickets section */}
+        <div className="my-6 sm:my-8 lg:my-12 transform transition-all duration-300 ease-in-out hover:translate-x-1">
+          <h2 className="text-lg sm:text-xl font-bold mb-3">TICKETS</h2>
+          {event.available_tickets && event.available_tickets.length > 0 ? (
+            <Tickets
+              tickets={event.available_tickets as TicketType[]}
+              formatDate={async (dateString: string) =>
+                formatDateCustom(dateString)
+              }
+              slug={slug}
+            />
+          ) : (
+            <div>
+              <p className="text-gray-500 italic text-sm sm:text-base">
+                Tickets TBA
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Similar Events section */}
+        <SimilarEvents similarEvents={event.similar_events as SimilarEvent[]} />
       </div>
     </div>
   );

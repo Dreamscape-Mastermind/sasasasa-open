@@ -35,17 +35,16 @@ export interface SearchResultItem {
   id: string | number;
   /** The primary display name for the search result. */
   name: string;
-  
+
   // Optional rich fields from the backend
-  short_url?: string;     // For navigation
-  cover_image?: string;   // For display
+  short_url?: string; // For navigation
+  cover_image?: string; // For display
   location?: SearchResultLocation; // Nested location data
-  start_date?: string;    // For events
+  start_date?: string; // For events
 
   /** Allows for any other properties that might be returned by the serializer. */
   [key: string]: any;
 }
-
 
 /**
  * A dictionary of search results, keyed by category.
