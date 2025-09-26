@@ -46,21 +46,26 @@ export async function generateMetadata(
     ].filter(Boolean);
 
     return {
-      title: `Sasasasa | ${
-        event.title.length > MAX_TITLE_LENGTH
-          ? event.title.slice(0, MAX_TITLE_LENGTH) + "..."
-          : event.title
-      }`,
-      description: event.description,
-      keywords: keywords as string[],
+      title:
+        event.meta_title ||
+        `Sasasasa | ${
+          event.title.length > MAX_TITLE_LENGTH
+            ? event.title.slice(0, MAX_TITLE_LENGTH) + "..."
+            : event.title
+        }`,
+      description: event.meta_description || event.description,
+      keywords: event.meta_keywords
+        ? event.meta_keywords.split(",").map((k) => k.trim())
+        : (keywords as string[]),
       openGraph: {
-        title: `${event.title} | Sasasasa`,
-        description: event.description,
+        title: event.meta_title || `${event.title} | Sasasasa`,
+        description: event.meta_description || event.description,
         images: event.cover_image
           ? [{ url: event.cover_image }]
           : [{ url: defaultImage }],
         type: "website",
         siteName: "Sasasasa",
+        url: event.canonical_url || event.share_url || undefined,
         // Add structured data for better SEO
         ...(event.start_date && {
           publishedTime: event.start_date,
@@ -71,8 +76,8 @@ export async function generateMetadata(
       },
       twitter: {
         card: "summary_large_image",
-        title: `${event.title} | Sasasasa`,
-        description: event.description,
+        title: event.meta_title || `${event.title} | Sasasasa`,
+        description: event.meta_description || event.description,
         images: event.cover_image ? [event.cover_image] : [defaultImage],
         // Add event-specific metadata
         ...(event.category?.name && {
@@ -82,6 +87,10 @@ export async function generateMetadata(
         ...(event.event_type?.name && {
           label2: "Type",
           data2: event.event_type.name,
+        }),
+        ...(event.format?.name && {
+          label3: "Format",
+          data3: event.format.name,
         }),
       },
     };

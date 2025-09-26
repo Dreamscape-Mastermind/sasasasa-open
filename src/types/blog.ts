@@ -152,7 +152,7 @@ export interface CommentListResponse
 
 export interface ReactionResponse extends SuccessResponse<Reaction> {}
 
-export interface TagSearchResponse
+export interface BlogTagSearchResponse
   extends SuccessResponse<{ tags: string[] }> {}
 
 /**
@@ -177,6 +177,6 @@ export interface CommentQueryParams {
   page?: number;
 }
 
-export interface TagSearchQueryParams {
+export interface BlogTagSearchQueryParams {
   q: string;
 }
