@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const PHOTON_SEARCH_URL = "https://photon.komoot.io/api/?q=";
-const PHOTON_REVERSE_URL = "https://photon.komoot.io/reverse?lon={lon}&lat={lat}";
+const PHOTON_REVERSE_URL =
+  "https://photon.komoot.io/reverse?lon={lon}&lat={lat}";
 
 interface LocationSearchMapProps {
   onSelect: (result: { name: string; lat: number; lng: number }) => void;
@@ -210,7 +211,14 @@ export const LocationSearchMap: React.FC<LocationSearchMapProps> = ({
   }, [results, hasFocused]);
 
   return (
-    <div style={{ width: "100%", maxWidth: 500, margin: "0 auto", position: "relative" }}>
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 500,
+        margin: "0 auto",
+        position: "relative",
+      }}
+    >
       <input
         ref={inputRef}
         value={input}
@@ -222,7 +230,9 @@ export const LocationSearchMap: React.FC<LocationSearchMapProps> = ({
         className="bg-card rounded-lg w-full"
         aria-autocomplete="list"
         aria-controls="places-dropdown"
-        aria-activedescendant={highlighted >= 0 ? `place-${highlighted}` : undefined}
+        aria-activedescendant={
+          highlighted >= 0 ? `place-${highlighted}` : undefined
+        }
       />
       {/* Loading spinner */}
       {loading && (
@@ -258,7 +268,17 @@ export const LocationSearchMap: React.FC<LocationSearchMapProps> = ({
         </span>
       )}
       {error && (
-        <div style={{ position: "absolute", left: 8, top: 10, fontSize: 12, color: "#c00" }}>{error}</div>
+        <div
+          style={{
+            position: "absolute",
+            left: 8,
+            top: 10,
+            fontSize: 12,
+            color: "#c00",
+          }}
+        >
+          {error}
+        </div>
       )}
       {showDropdown && results.length > 0 && (
         <ul
@@ -274,7 +294,7 @@ export const LocationSearchMap: React.FC<LocationSearchMapProps> = ({
             maxHeight: 180,
             overflowY: "auto",
             position: "absolute",
-            zIndex: 10,
+            zIndex: 9999,
             width: "100%",
             top: 40,
             left: 0,
@@ -314,4 +334,4 @@ export const LocationSearchMap: React.FC<LocationSearchMapProps> = ({
   );
 };
 
-export default LocationSearchMap; 
+export default LocationSearchMap;
