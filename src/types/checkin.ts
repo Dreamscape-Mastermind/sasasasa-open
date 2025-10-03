@@ -119,6 +119,10 @@ export interface ScanTicketRequest {
   };
 }
 
+export interface CheckInByTicketNumberRequest {
+  ticket_number: string;
+}
+
 export interface RegisterDeviceRequest {
   name: string;
   device_id: string;
