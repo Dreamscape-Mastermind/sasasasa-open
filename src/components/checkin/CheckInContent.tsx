@@ -24,6 +24,8 @@ import {
 import { useState, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 
+import { CheckInByTicketNumber } from "@/components/checkin/CheckInByTicketNumber";
+
 interface QRScanResult {
   text: string;
   timestamp: Date;
@@ -50,7 +52,7 @@ export function CheckInContent({ eventId }: { eventId: string }) {
 
   useEffect(() => {
     refetch();
-  }, [queryParams]);
+  }, [queryParams, refetch]);
 
   const { data: stats, isLoading: isLoadingStats } = useCheckInStats(eventId);
   const scanTicketMutation = useScanTicket(eventId);
@@ -398,6 +400,7 @@ export function CheckInContent({ eventId }: { eventId: string }) {
             </div>
           )}
         </div>
+        <CheckInByTicketNumber eventId={eventId} />
       </div>
 
       {/* Check-in History */}
