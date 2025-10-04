@@ -17,6 +17,7 @@ import {
   type CheckIn,
   type CheckInByTicketNumberRequest,
 } from "@/types/checkin";
+import { formatDateTime } from "@/lib/utils";
 
 export function CheckInByTicketNumber({ eventId }: { eventId: string }) {
   const [ticketNumber, setTicketNumber] = useState("");
@@ -114,7 +115,7 @@ export function CheckInByTicketNumber({ eventId }: { eventId: string }) {
         <div className="space-y-2">
           <Label htmlFor="ticket-number">Ticket Number</Label>
           <div className="flex items-center">
-            <span className="inline-flex items-center px-3 py-2 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+            <span className="inline-flex items-center px-3 py-2 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm dark:bg-red-950/10 dark:border-red-900/20 dark:text-gray-400">
               TKT-
             </span>
             <Input
@@ -122,7 +123,7 @@ export function CheckInByTicketNumber({ eventId }: { eventId: string }) {
               type="text"
               value={ticketNumber}
               onChange={(e) => setTicketNumber(e.target.value)}
-              placeholder="AB12XXXX"
+              placeholder="AB12X..."
               className="rounded-l-none w-full"
             />
           </div>
@@ -208,7 +209,7 @@ export function CheckInByTicketNumber({ eventId }: { eventId: string }) {
                 Check-in Time
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
-                {checkInResult.check_in_time}
+                {formatDateTime(checkInResult.check_in_time)}
               </p>
             </div>
           </div>
