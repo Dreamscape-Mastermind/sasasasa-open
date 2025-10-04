@@ -23,7 +23,7 @@ import {
 } from "@/types/checkin";
 import { useState, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
-
+import { formatDateTime } from "@/lib/utils";
 import { CheckInByTicketNumber } from "@/components/checkin/CheckInByTicketNumber";
 
 interface QRScanResult {
@@ -346,7 +346,7 @@ export function CheckInContent({ eventId }: { eventId: string }) {
                     Check-in Time
                   </label>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {scannedTicket?.check_in_time}
+                    {formatDateTime(scannedTicket?.check_in_time)}
                   </p>
                 </div>
 
