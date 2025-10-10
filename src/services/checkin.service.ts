@@ -1,4 +1,5 @@
 import {
+  CheckInByTicketNumberRequest,
   CheckInQueryParams,
   CheckInResponse,
   CheckInStatsResponse,
@@ -46,6 +47,16 @@ class CheckinService {
   ): Promise<CheckInResponse> {
     return apiClient.post<CheckInResponse>(
       `${this.baseUrl}/events/${eventId}/checkin/scan_ticket`,
+      data
+    );
+  }
+
+  public async checkInByTicketNumber(
+    eventId: string,
+    data: CheckInByTicketNumberRequest
+  ): Promise<CheckInResponse> {
+    return apiClient.post<CheckInResponse>(
+      `${this.baseUrl}/events/${eventId}/checkin/checkin_by_ticket_number`,
       data
     );
   }

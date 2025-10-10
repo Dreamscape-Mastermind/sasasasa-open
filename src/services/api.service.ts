@@ -293,6 +293,7 @@ class ApiClient {
       const response = await this.api.post<T>(url, formData, {
         ...config,
         headers: {
+          // Ensure multipart content type for FormData uploads
           "Content-Type": "multipart/form-data",
           ...config?.headers,
         },
@@ -312,6 +313,7 @@ class ApiClient {
       const response = await this.api.patch<T>(url, formData, {
         ...config,
         headers: {
+          // Ensure multipart content type for FormData uploads
           "Content-Type": "multipart/form-data",
           ...config?.headers,
         },

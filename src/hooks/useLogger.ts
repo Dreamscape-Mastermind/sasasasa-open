@@ -16,7 +16,8 @@ interface LogEntry {
 }
 
 export function useLogger(options: LoggerOptions = {}) {
-  const { context = "app", enabled = process.env.NODE_ENV === "development" } = options;
+  const { context = "app", enabled = process.env.NODE_ENV === "development" } =
+    options;
 
   // Log function - sends immediately
   const log = useCallback(
@@ -35,7 +36,7 @@ export function useLogger(options: LoggerOptions = {}) {
       // Console logging in development
       if (process.env.NODE_ENV === "development") {
         const formatted = `[${level.toUpperCase()}] [${timestamp}] [${context}] ${message}`;
-        console[level](formatted, data ?? "");
+        console.log(formatted, data ?? "");
       }
 
       // Send to server in production
@@ -57,10 +58,22 @@ export function useLogger(options: LoggerOptions = {}) {
   );
 
   // Expose logging methods - memoized to prevent recreation
-  const info = useCallback((msg: string, data?: any) => log("info", msg, data), [log]);
-  const warn = useCallback((msg: string, data?: any) => log("warn", msg, data), [log]);
-  const error = useCallback((msg: string, data?: any) => log("error", msg, data), [log]);
-  const debug = useCallback((msg: string, data?: any) => log("debug", msg, data), [log]);
+  const info = useCallback(
+    (msg: string, data?: any) => log("info", msg, data),
+    [log]
+  );
+  const warn = useCallback(
+    (msg: string, data?: any) => log("warn", msg, data),
+    [log]
+  );
+  const error = useCallback(
+    (msg: string, data?: any) => log("error", msg, data),
+    [log]
+  );
+  const debug = useCallback(
+    (msg: string, data?: any) => log("debug", msg, data),
+    [log]
+  );
 
   return {
     info,

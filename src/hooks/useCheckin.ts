@@ -1,4 +1,8 @@
-import type { CheckInQueryParams, ScanTicketRequest } from "@/types/checkin";
+import type {
+  CheckInByTicketNumberRequest,
+  CheckInQueryParams,
+  ScanTicketRequest,
+} from "@/types/checkin";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { checkinService } from "@/services/checkin.service";
@@ -53,6 +57,18 @@ export const useCheckin = () => {
     });
   };
 
+  const useCheckInByTicketNumber = (eventId: string) => {
+    return useMutation({
+      mutationFn: (data: CheckInByTicketNumberRequest) =>
+        checkinService.checkInByTicketNumber(eventId, data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["checkins", eventId] });
+        queryClient.invalidateQueries({ queryKey: ["checkin-stats", eventId] });
+      },
+      retry: false,
+    });
+  };
+
   return {
     useCheckIns,
     useCheckIn,
@@ -60,5 +76,6 @@ export const useCheckin = () => {
     useCheckInStats,
     useDeviceCheckIns,
     useUserCheckIns,
+    useCheckInByTicketNumber,
   };
 };

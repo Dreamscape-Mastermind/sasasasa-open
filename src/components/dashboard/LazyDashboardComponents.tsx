@@ -67,22 +67,6 @@ export const TicketForm = dynamic(
   }
 );
 
-export const TeamMembersForm = dynamic(
-  () => import("@/components/forms/team-members-form"),
-  {
-    loading: () => (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4">
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-16 w-full" />
-        </div>
-      </div>
-    ),
-  }
-);
-
 // Create skeleton components for dashboard sections
 export function StatsSkeleton() {
   return (

@@ -74,7 +74,7 @@ const nextConfig: NextConfig = {
       "@tiptap/extension-text-align",
       "@tiptap/extension-typography",
       "@tiptap/extension-underline",
-    ]
+    ],
   },
   // async rewrites() {
   //   return [
