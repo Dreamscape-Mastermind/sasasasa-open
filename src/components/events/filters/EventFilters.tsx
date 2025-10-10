@@ -1,3 +1,5 @@
+import "react-datepicker/dist/react-datepicker.css";
+
 import {
   Select,
   SelectContent,
@@ -7,7 +9,7 @@ import {
 } from "@/components/ui/select";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { DatePicker } from "@/components/ui/date-picker";
+import DatePicker from "react-datepicker";
 import { EventQueryParams } from "@/types/event";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -223,9 +225,14 @@ export function EventFilters({
           </div>
           {filters.featured && (
             <DatePicker
-              label="Featured Until"
-              value={filters.featured_until}
-              onChange={(date) => handleDateChange("featured_until", date)}
+              selected={
+                filters.featured_until ? new Date(filters.featured_until) : null
+              }
+              onChange={(date) =>
+                handleDateChange("featured_until", date?.toISOString())
+              }
+              placeholderText="Select featured until date"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
           )}
           <div className="flex items-center space-x-2">
@@ -329,16 +336,30 @@ export function EventFilters({
       <div className="space-y-2">
         <Label>Date Range</Label>
         <div className="space-y-4">
-          <DatePicker
-            label="Start Date"
-            value={filters.start_date}
-            onChange={(date) => handleDateChange("start_date", date)}
-          />
-          <DatePicker
-            label="End Date"
-            value={filters.end_date}
-            onChange={(date) => handleDateChange("end_date", date)}
-          />
+          <div className="space-y-2">
+            <Label>Start Date</Label>
+            <DatePicker
+              selected={
+                filters.start_date ? new Date(filters.start_date) : null
+              }
+              onChange={(date) =>
+                handleDateChange("start_date", date?.toISOString())
+              }
+              placeholderText="Select start date"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>End Date</Label>
+            <DatePicker
+              selected={filters.end_date ? new Date(filters.end_date) : null}
+              onChange={(date) =>
+                handleDateChange("end_date", date?.toISOString())
+              }
+              placeholderText="Select end date"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </div>
         </div>
       </div>
 
