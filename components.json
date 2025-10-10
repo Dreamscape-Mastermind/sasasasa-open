@@ -9,8 +9,7 @@
     "styles": "@/styles",
     "types": "@/types",
     "ui": "@/components/ui",
-    "utils": "@/lib/utils",
-    "types": "@/types"
+    "utils": "@/lib/utils"
   },
   "rsc": true,
   "style": "default",
