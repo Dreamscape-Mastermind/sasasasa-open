@@ -6,11 +6,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import React, { useEffect, useState } from "react";
 
 import Error from "@/components/ui/error";
 import { Event } from "@/types/event";
+import EventGallery from "./EventGallery";
 import Image from "next/image";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants";
@@ -282,90 +282,36 @@ const EventDetails: React.FC<EventDetailsProps> = ({ slug }) => {
   return (
     <div className="mx-auto px-3 sm:px-6 lg:px-14">
       <div className="w-full overflow-hidden max-w-6xl mx-auto">
-        {/* Event Poster - Full Width at Top with Modal */}
-        <Dialog>
-          <DialogTrigger asChild>
-            <div className="relative w-full mb-6 sm:mb-8 rounded-lg sm:rounded-xl overflow-hidden transition-transform duration-500 ease-in-out hover:scale-[1.02] cursor-pointer group flex justify-center">
-              {event.cover_image ? (
-                <Image
-                  src={
-                    hasError ? "/images/placeholdere.jpeg" : event.cover_image
-                  }
-                  alt={`${event.title} event poster`}
-                  width={1200}
-                  height={800}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
-                  style={{
-                    objectFit: "contain",
-                    width: "100%",
-                    height: "auto",
-                    maxHeight: "70vh",
-                    backgroundColor: "#18181b",
-                  }}
-                  className="transition-opacity duration-300 ease-in-out group-hover:opacity-90 rounded-lg sm:rounded-xl"
-                  priority
-                  onError={(e) => {
-                    setHasError(true);
-                  }}
-                />
-              ) : (
-                <Image
-                  src="/images/placeholdere.jpeg"
-                  alt="Default event image"
-                  width={1200}
-                  height={800}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
-                  style={{
-                    objectFit: "contain",
-                    width: "100%",
-                    height: "auto",
-                    maxHeight: "70vh",
-                    backgroundColor: "#18181b",
-                  }}
-                  className="transition-opacity duration-300 ease-in-out group-hover:opacity-90 rounded-lg sm:rounded-xl"
-                  priority
-                />
-              )}
-              {/* Overlay with zoom icon */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 ease-in-out flex items-center justify-center pointer-events-none">
-                <div className="opacity-60 group-hover:opacity-100 transition-opacity duration-300 ease-in-out">
-                  <div className="bg-black/50 rounded-full p-2 sm:p-3 backdrop-blur-sm">
-                    <svg
-                      className="w-6 h-6 sm:w-8 sm:h-8 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl w-[95vw] h-[90vh] p-0 bg-black border-none">
-            <div className="relative w-full h-full">
-              <Image
-                src={
-                  hasError
-                    ? "/images/placeholdere.jpeg"
-                    : event.cover_image || "/images/placeholdere.jpeg"
-                }
-                alt={`${event.title} event poster - Full View`}
-                fill
-                sizes="95vw"
-                style={{ objectFit: "contain" }}
-                className="transition-opacity duration-300 ease-in-out"
-                priority
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
+        {/* Event Gallery - Show gallery if there are media images OR a cover image */}
+        {(event.media_gallery && event.media_gallery.length > 0) ||
+        event.cover_image ? (
+          <EventGallery
+            mediaGallery={event.media_gallery || []}
+            eventTitle={event.title}
+            eventId={event.id}
+            coverImage={event.cover_image}
+          />
+        ) : (
+          /* Fallback to placeholder if no images at all */
+          <div className="relative w-full mb-6 sm:mb-8 rounded-lg sm:rounded-xl overflow-hidden">
+            <Image
+              src="/images/placeholdere.jpeg"
+              alt="Default event image"
+              width={1200}
+              height={800}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
+              style={{
+                objectFit: "contain",
+                width: "100%",
+                height: "auto",
+                maxHeight: "70vh",
+                backgroundColor: "#18181b",
+              }}
+              className="rounded-lg sm:rounded-xl"
+              priority
+            />
+          </div>
+        )}
 
         {/* Event Content - Single Column Below */}
         <div className="bg-white dark:bg-zinc-900 text-gray-900 dark:text-white p-4 sm:p-6 lg:p-8 rounded-lg sm:rounded-xl transition-all duration-300 ease-in-out hover:shadow-xl border border-gray-200 dark:border-zinc-700">
