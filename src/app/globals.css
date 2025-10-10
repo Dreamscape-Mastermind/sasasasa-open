@@ -150,7 +150,8 @@ input:-webkit-autofill:focus {
 @layer utilities {
   /* Ultra-subtle and super slow shimmer animation for beta crown */
   @keyframes shimmer-crown {
-    0%, 100% {
+    0%,
+    100% {
       background-position: -150% 0;
       opacity: 0.2;
     }
@@ -159,7 +160,7 @@ input:-webkit-autofill:focus {
       opacity: 0.4;
     }
   }
-  
+
   .shimmer-crown {
     position: relative;
     background: linear-gradient(
@@ -176,7 +177,7 @@ input:-webkit-autofill:focus {
     backface-visibility: hidden;
     transform: translateZ(0);
   }
-  
+
   /* Slightly faster and more visible on hover/focus */
   .shimmer-crown:hover,
   .shimmer-crown:focus-visible {
@@ -190,12 +191,157 @@ input:-webkit-autofill:focus {
       transparent 75%
     );
   }
-  
+
   /* Respect reduced motion preferences */
   @media (prefers-reduced-motion: reduce) {
     .shimmer-crown {
       animation: none;
       background: rgba(251, 191, 36, 0.3);
     }
+  }
+}
+
+/* DatePicker z-index fix */
+.react-datepicker-popper {
+  z-index: 99999 !important;
+}
+
+.react-datepicker {
+  z-index: 99999 !important;
+}
+
+.datepicker-popper {
+  z-index: 99999 !important;
+}
+
+/* Ensure datepicker portal renders correctly */
+#datepicker-portal {
+  position: relative;
+  z-index: 99999;
+}
+
+#datepicker-portal .react-datepicker {
+  position: absolute !important;
+  z-index: 99999 !important;
+}
+
+/* Better positioning for datepicker popup */
+.react-datepicker-popper[data-placement^="bottom"] {
+  margin-top: 8px !important;
+}
+
+.react-datepicker-popper[data-placement^="top"] {
+  margin-bottom: 8px !important;
+}
+
+/* Mobile responsive datepicker styles - shrink calendar only on mobile */
+@media (max-width: 768px) {
+  .react-datepicker {
+    font-size: 12px !important;
+    width: 100% !important;
+    max-width: 320px !important;
+    margin: 0 auto !important;
+  }
+
+  .react-datepicker__month-container {
+    width: 200px !important;
+    padding: 4px !important;
+  }
+
+  .react-datepicker__header {
+    padding: 4px 0 !important;
+  }
+
+  .react-datepicker__current-month {
+    font-size: 14px !important;
+    margin-bottom: 4px !important;
+    font-weight: 600 !important;
+  }
+
+  .react-datepicker__day-names {
+    margin-bottom: 2px !important;
+  }
+
+  .react-datepicker__day-name {
+    width: 22px !important;
+    height: 18px !important;
+    line-height: 18px !important;
+    font-size: 9px !important;
+    margin: 1px !important;
+    font-weight: 500 !important;
+  }
+
+  .react-datepicker__day {
+    width: 22px !important;
+    height: 22px !important;
+    line-height: 22px !important;
+    font-size: 10px !important;
+    margin: 1px !important;
+  }
+
+  .react-datepicker__month {
+    margin: 0 !important;
+  }
+
+  .react-datepicker__week {
+    margin-bottom: 0 !important;
+  }
+
+  .react-datepicker__time-container {
+    width: 80px !important;
+    border-left: 1px solid #e9ecef !important;
+  }
+
+  .react-datepicker__time {
+    font-size: 12px !important;
+  }
+
+  .react-datepicker__time-list-item {
+    padding: 4px 6px !important;
+    font-size: 11px !important;
+  }
+
+  /* Ensure datepicker doesn't overflow on small screens */
+  .react-datepicker-popper {
+    max-width: calc(100vw - 32px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+}
+
+/* Extra small screens - even more compact */
+@media (max-width: 480px) {
+  .react-datepicker {
+    max-width: 280px !important;
+  }
+
+  .react-datepicker__month-container {
+    width: 208px !important;
+    padding: 0px !important;
+  }
+
+  .react-datepicker__day-name {
+    width: 20px !important;
+    height: 16px !important;
+    line-height: 16px !important;
+    font-size: 8px !important;
+    margin: 1px !important;
+  }
+
+  .react-datepicker__day {
+    width: 20px !important;
+    height: 20px !important;
+    line-height: 20px !important;
+    font-size: 9px !important;
+    margin: 1px !important;
+  }
+
+  .react-datepicker__time-container {
+    width: 70px !important;
+  }
+
+  .react-datepicker__time-list-item {
+    padding: 3px 4px !important;
+    font-size: 10px !important;
   }
 }

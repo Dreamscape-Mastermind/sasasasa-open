@@ -1,5 +1,7 @@
 "use client";
 
+import "react-datepicker/dist/react-datepicker.css";
+
 import * as z from "zod";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -44,7 +46,6 @@ import LocationSearchMap from "./event-form-parts/LocationSearchMap";
 import { ROUTES } from "@/lib/constants";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
-import styles from "@/components/Datepicker.module.css";
 import toast from "react-hot-toast";
 import { useEvent } from "@/hooks/useEvent";
 import { useQueryClient } from "@tanstack/react-query";
@@ -609,6 +610,8 @@ export default function EventForm({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95 text-foreground">
+      {/* Portal container for datepicker */}
+      <div id="datepicker-portal" className="relative z-50"></div>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {isLoading ? ( // Conditional rendering for loading state
           <div className="flex justify-center items-center h-64 sm:h-96">
@@ -916,7 +919,12 @@ export default function EventForm({
                             showTimeSelect
                             timeFormat="HH:mm"
                             timeIntervals={30}
-                            popperClassName={styles.customDatepicker}
+                            popperClassName="datepicker-popper"
+                            popperContainer={({ children }) => (
+                              <div className="relative z-50">{children}</div>
+                            )}
+                            portalId="datepicker-portal"
+                            withPortal
                           />
                           {form.formState.errors.start_date && (
                             <p className="text-xs sm:text-sm text-red-500 font-medium">
@@ -949,7 +957,12 @@ export default function EventForm({
                             showTimeSelect
                             timeFormat="HH:mm"
                             timeIntervals={30}
-                            popperClassName={styles.customDatepicker}
+                            popperClassName="datepicker-popper"
+                            popperContainer={({ children }) => (
+                              <div className="relative z-50">{children}</div>
+                            )}
+                            portalId="datepicker-portal"
+                            withPortal
                           />
                           {form.formState.errors.end_date && (
                             <p className="text-xs sm:text-sm text-red-500 font-medium">
