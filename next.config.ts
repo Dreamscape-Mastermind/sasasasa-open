@@ -76,14 +76,7 @@ const nextConfig: NextConfig = {
       "@tiptap/extension-underline",
     ],
   },
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: '/api/:path*',
-  //       destination: `${process.env.NEXT_PUBLIC_SASASASA_API_URL}/api/:path*`, // Proxy to Backend
-  //     },
-  //   ];
-  // },
+
 };
 
 module.exports = withBundleAnalyzer(nextConfig);
