@@ -1,11 +1,14 @@
 "use client";
 
 import { AnimatePresence, m } from "framer-motion";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Sun, LogOut, User } from "lucide-react";
 import Link from "@/components/Link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import React from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getAvatarUrl } from "@/lib/utils";
 
 interface NavItem {
   label: string;
@@ -65,6 +68,7 @@ const MenuPanel = ({
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { user, isAuthenticated, logout } = useAuth();
 
   return (
     <AnimatePresence>
@@ -195,7 +199,56 @@ const MenuPanel = ({
                   Account
                 </m.h3>
                 <m.div className="space-y-4" variants={itemVariants}>
-                  {authButtons}
+                  {isAuthenticated && user ? (
+                    <>
+                      {/* User Profile */}
+                      <m.div
+                        className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-gray-50/70 to-gray-100/40 dark:from-gray-800/40 dark:to-gray-800/60 border border-gray-200/30 dark:border-gray-700/30"
+                        variants={itemVariants}
+                      >
+                        <Avatar className="h-10 w-10">
+                          {user?.avatar ? (
+                            <AvatarImage src={user.avatar} alt={user.email} />
+                          ) : (
+                            <AvatarImage
+                              src={getAvatarUrl(user.email?.split("@")[0] || "User")}
+                              alt={user.email}
+                            />
+                          )}
+                          <AvatarFallback>
+                            {user?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                            {user?.first_name && user?.last_name
+                              ? `${user.first_name} ${user.last_name}`
+                              : user?.email?.split("@")[0] || "User"}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            {user?.email}
+                          </p>
+                        </div>
+                      </m.div>
+
+                      {/* Direct Logout Button */}
+                      <m.button
+                        className="w-full flex items-center gap-4 p-4 rounded-2xl text-red-600 dark:text-red-400 font-medium hover:bg-red-50 dark:hover:bg-red-950/20 transition-all duration-300 border border-transparent hover:border-red-200/30 dark:hover:border-red-800/30"
+                        onClick={() => {
+                          logout();
+                          handleMenuExit();
+                        }}
+                        variants={itemVariants}
+                        whileHover={{ x: 6, scale: 1.01 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <LogOut className="h-5 w-5" />
+                        <span>Sign out</span>
+                      </m.button>
+                    </>
+                  ) : (
+                    authButtons
+                  )}
                 </m.div>
               </div>
             </m.div>

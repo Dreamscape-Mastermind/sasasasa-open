@@ -47,7 +47,7 @@ export function Hero() {
           <p className="text-center justify-evenly mx-auto max-w-[90%] sm:max-w-3xl text-base sm:text-xl text-muted-foreground">
             Your brand, is universal. Lets build it together. From homegrown
             experiences to global e-commerce we're evolving the premier pipeline
-            to scale the reach of creativity. Karibuu.
+            to scale the reach of creativity. Karibu.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/dashboard" onClick={() => handleAction("get_started")}>
