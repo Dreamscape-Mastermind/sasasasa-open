@@ -16,6 +16,7 @@ export const useDiscount = () => {
     return useQuery({
       queryKey: ["discounts", eventId, params],
       queryFn: () => discountService.listDiscounts(eventId, params),
+      enabled: !!eventId,
     });
   };
 
@@ -70,6 +71,7 @@ export const useDiscount = () => {
       queryKey: ["discount-usage", eventId, discountId, params],
       queryFn: () =>
         discountService.getDiscountUsage(eventId, discountId, params),
+      enabled: !!eventId && !!discountId,
     });
   };
 
@@ -78,6 +80,7 @@ export const useDiscount = () => {
     return useQuery({
       queryKey: ["discount-analytics", eventId, discountId],
       queryFn: () => discountService.getDiscountAnalytics(eventId, discountId),
+      enabled: !!eventId && !!discountId,
     });
   };
 
@@ -85,6 +88,7 @@ export const useDiscount = () => {
     return useQuery({
       queryKey: ["discount-overall-stats", eventId],
       queryFn: () => discountService.getDiscountOverallStats(eventId),
+      enabled: !!eventId,
     });
   };
 

@@ -16,6 +16,7 @@ export const useFlashSale = () => {
     return useQuery({
       queryKey: ["flash-sales", eventId, params],
       queryFn: () => flashSaleService.listFlashSales(eventId, params),
+      enabled: !!eventId,
     });
   };
 
@@ -102,6 +103,7 @@ export const useFlashSale = () => {
     return useQuery({
       queryKey: ["flash-sale-stats", eventId, flashSaleId],
       queryFn: () => flashSaleService.getFlashSaleStats(eventId, flashSaleId),
+      enabled: !!eventId && !!flashSaleId,
     });
   };
 
@@ -109,6 +111,7 @@ export const useFlashSale = () => {
     return useQuery({
       queryKey: ["flash-sale-overall-stats", eventId],
       queryFn: () => flashSaleService.getFlashSaleOverallStats(eventId),
+      enabled: !!eventId,
     });
   };
 

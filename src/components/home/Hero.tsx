@@ -33,24 +33,13 @@ export function Hero() {
   return (
     <div className="relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 z-0" />
-      <div className="container mx-0 px-0 py-10 md:py-24 relative z-10">
-        <div className="text-center space-y-8 max-w-5xl mx-0">
-          <h1 className="text-center mx-0 sm:max-w-none md:text-6xl text-4xl  font-bold tracking-tight leading-tight whitespace-nowrap ">
-            <span className="block w-full text-center whitespace-pre-line">
-              <span className="font-bold  ">
-                <span className="hidden md:inline">
-                  The Best Platform For&nbsp;
-                </span>
-                <div className="md:hidden font-extrabold text-6xl w-full">
-                  For&nbsp;
-                </div>
-              </span>
-              <span
-                className="inline-block align-baseline text-left"
-                style={{
-                  marginLeft: "clamp(0.1em, 2vw, 1.5em)",
-                }}
-              >
+      <div className="container mx-auto px-4 md:px-6 py-10 md:py-24 relative z-10">
+        <div className="text-center space-y-8 max-w-5xl mx-auto">
+          <h1 className="text-center sm:max-w-none md:text-6xl text-4xl font-bold tracking-tight leading-tight">
+            <span className="inline-flex items-baseline justify-center gap-2 flex-wrap w-full">
+              <span className="hidden md:inline">The Best Platform For</span>
+              <div className="md:hidden font-extrabold text-6xl w-full">For</div>
+              <span className=" align-baseline text-center whitespace-nowrap md:min-w-[16ch]">
                 <CycleText words={words} />
               </span>
             </span>
