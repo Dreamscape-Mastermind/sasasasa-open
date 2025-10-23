@@ -208,11 +208,11 @@ const MenuPanel = ({
                       >
                         <Avatar className="h-10 w-10">
                           {user?.avatar ? (
-                            <AvatarImage src={user.avatar} alt={user.email} />
+                            <AvatarImage src={user.avatar ?? undefined} alt={user.email ?? undefined} />
                           ) : (
                             <AvatarImage
                               src={getAvatarUrl(user.email?.split("@")[0] || "User")}
-                              alt={user.email}
+                              alt={user.email ?? undefined}
                             />
                           )}
                           <AvatarFallback>
