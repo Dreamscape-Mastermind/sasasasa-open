@@ -66,6 +66,7 @@ export interface Post extends BaseContentEntity {
   slug: string;
   excerpt: string;
   featured_image: Nullable<string>;
+  audio_file: Nullable<string>;
   author: string;
   author_name: string;
   status: PostStatus;
@@ -90,6 +91,7 @@ export interface PostListItem
     | "slug"
     | "excerpt"
     | "featured_image"
+    | "audio_file"
     | "author_name"
     | "status"
     | "publish_date"
@@ -107,7 +109,8 @@ export interface CreatePostRequest {
   title: string;
   content: string;
   excerpt?: string;
-  featured_image?: string;
+  featured_image?: string | File;
+  audio_file?: string | File;
   status?: PostStatus;
   publish_date?: string;
   tags?: string[];
