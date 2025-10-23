@@ -1,51 +1,106 @@
-# PRIVACY POLICY
+# Sasasasa Privacy Policy
 
-Last updated: 28th October 2024
+## 1. Introduction
 
-## OVERVIEW
+**Overview:**  
+This Privacy Policy explains how Sasasasa ("we," "us," or "our") collects, uses, discloses, and protects personal information when you use our platform and related services.
 
-This Privacy Policy applies to the Dreamscape Mastermind-owned and operated website ("us," "we," or "our") at [www.sasasasa.co](https://www.sasasasa.co) (the "Site"). Dreamscape Mastermind understands the importance of privacy and the care users expect regarding how their information is used and shared. This Privacy Policy explains the collection, use, and disclosure of personal information, as well as how you can control the collection, correction, and/or deletion of information we receive from users of the Site. We will not use or share your information except as described in this Privacy Policy.
+**Consent:**  
+By using Sasasasa or creating an account, you agree to this Policy and the practices described herein.
 
-The use of information collected through the Site is limited to the purposes outlined in this Privacy Policy and our Terms of Service.
+***
 
-Merchants on sasasasa.co may access certain information you provide, such as your name, email address, and phone number. Dreamscape Mastermind does not control how merchants use your information beyond what is stipulated in our terms and conditions. Merchants are prohibited from redistributing your information to any third party not directly authorized by you.
+## 2. Information We Collect
 
-By using the Site, you agree to the collection and use of information in accordance with this policy.
+**Personal Information:**  
+We may collect identifying details such as your name, email address, telephone number, identification documents, and, where relevant, billing or payment information.
 
-## 1. INFORMATION COLLECTION AND USE
+**Technical and Usage Data:**  
+We automatically receive information about your interactions with Sasasasa, including your IP address, browser type, referral links, pages viewed, and login timestamps. Cookies and similar technologies help us improve performance and usability.
 
-While using the Site, we may ask you to provide certain personally identifiable information that can be used to contact or identify you. Personally identifiable information may include, but is not limited to, your name, phone number, and email address.
+**Optional Information:**  
+If you contact support or participate in promotional or feedback programs, we may collect additional information you voluntarily provide.
 
-If you choose to purchase a product, ticket, or digital content, we or our third-party payment processors will collect your payment information. We may send you service-related emails regarding your account or purchase; however, we do not send promotional emails. If you no longer wish to receive these emails, you may opt out.
+***
 
-## 2. LOG DATA
+## 3. How We Use Your Information
 
-Like many site operators, we collect information that your browser sends whenever you visit our Site ("Log Data"). This Log Data may include your computer's IP address, browser type, browser version, the pages you visit on our Site, and other statistics.
+**Service Delivery:**  
+Your data enables us to create and manage user accounts, verify identity, process secure payments, and provide customer assistance.
 
-## 3. COOKIES
+**Platform Optimization:**  
+We analyze aggregated user activity to enhance stability, security, and your experience using Sasasasa.
 
-Cookies are files with small amounts of data, often including an anonymous unique identifier, sent to your browser from a website and stored on your computer's hard drive. Like many sites, we use "cookies" to collect information. You can instruct your browser to refuse all cookies, though certain site functionalities may be impacted.
+**Legal and Regulatory Compliance:**  
+We maintain necessary records and may process data to comply with financial, anti-fraud, and data protection obligations under Kenyan law and any applicable international frameworks.
 
-## 4. SECURITY
+***
 
-The security of your Personal Information is important to us, but remember that no transmission method over the Internet, or electronic storage method, is 100% secure. While we use various security measures to protect your Personal Information, we cannot guarantee its absolute security.
+## 4. Sharing and Disclosure
 
-Dreamscape Mastermind is committed to protecting your privacy and data, but cannot ensure or warrant the security of any information you transmit to the platform. Should personal information be compromised, Dreamscape Mastermind will inform affected users and merchants in compliance with applicable laws.
+**Authorized Third Parties:**  
+To ensure smooth operations, Sasasasa may share data with select partners such as cloud hosting providers, analytics vendors, or regulatory reporting bodies. These parties are bound by confidentiality and are only permitted to use data as instructed.
 
-## Your Rights
+**Legal Requirements:**  
+We may disclose information to competent authorities when required by law, regulation, or court order, including enforcement of fraud prevention and anti-money-laundering measures.
 
-You have the right to request rectification or deletion of personal data, or to restrict its processing if it is outdated or incorrect. You may also object to the processing based on legitimate interests. Additionally, you have the right to data portability where applicable.
+**Business Restructuring:**  
+If Sasasasa undergoes a business transaction such as a merger, acquisition, or restructuring, user data may be transferred securely in accordance with this Policy.
 
-## Children's Privacy
+---
 
-Protecting the privacy of young children is especially important. Dreamscape Mastermind does not knowingly collect or solicit personal information from anyone under the age of 13. Should we discover we have collected such information, we will delete it promptly. If you believe we might have information about a child under 13, please contact us at [admin@sasasasa.co](mailto:admin@sasasasa.co).
+## 5. Data Security
 
-## 5. CHANGES TO THIS PRIVACY POLICY
+**Protection Measures:**  
+We use encryption, firewalls, and secure data centers to protect your personal information from unauthorized access or disclosure.
 
-Dreamscape Mastermind may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on the Site. You are advised to review this Privacy Policy periodically for updates.
+**Incident Response:**  
+In the unlikely event of a data breach, affected users and regulators will be informed promptly as required by law.
 
-All changes to this Privacy Policy are effective upon posting. If we make material changes, we will notify you via email and/or a prominent notice on our Site, prior to the change becoming effective, and update the "effective date" at the top of this page.
+---
 
-## Contact Us
+## 6. Your Rights
 
-If you have any questions about this Privacy Policy, please contact us at [support@sasasasa.co](mailto:support@sasasasa.co)
+**Access and Correction:**  
+You may request access to, rectification, or correction of your personal data through your account settings or by contacting Sasasasa Support.
+
+**Deletion:**  
+Where retention is not legally required, you may request deletion of personal data associated with your account.
+
+**Data Portability:**  
+You may request a copy of your data in a machine-readable format, where technically possible.
+
+**Opt-Out:**  
+You may decline non-essential cookies or withdraw consent for marketing communications at any time.
+
+***
+
+## 7. Data Retention
+
+Sasasasa retains information only as long as it is necessary to fulfill the purposes outlined in this Policy or as required by applicable laws and regulatory requirements.
+
+***
+
+## 8. International Transfers
+
+Where necessary, Sasasasa may transfer or process personal data outside Kenya. In such cases, adequate data protection safeguards consistent with global privacy standards will be applied.
+
+---
+
+## 9. Children's Privacy
+
+Sasasasa is intended for individuals aged 18 years and older. We do not knowingly collect personal information from minors. If a child's information is identified, it will be removed promptly.
+
+***
+
+## 10. Changes to This Policy
+
+Sasasasa may update this Privacy Policy periodically. Updates will be posted on this page, and material changes will be communicated via email notification. Continued use of Sasasasa after such notice means you accept the revised Policy.
+
+***
+
+## 11. Contact Us
+
+For privacy-related inquiries, contact:  
+**Email:** support@sasasasa.co 
+**Effective Date:** October 24, 2025
