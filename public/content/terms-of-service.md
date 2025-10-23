@@ -1,116 +1,140 @@
-# Terms of Service
+# Sasasasa Terms of Service
 
-*Last updated: 28th October 2024*
+## 1. Introduction
 
-## Overview
+**Acceptance of Terms:**  
+By accessing or using Sasasasa, you agree to be bound by these Terms of Service (the "Terms"). These Terms apply to all users of the platform. For users in Kenya, local Kenyan laws and regulations will govern.
 
-Welcome to [sasasasa.co](https://sasasasa.co). This website is operated by Dreamscape Mastermind ("we," "us," or "our"). By accessing or using our website, you agree to comply with and be bound by these Terms of Service ("Terms"). Please read them carefully.
-
-These Terms govern your access to and use of sasasasa.co, including any content, functionality, and services offered on or through sasasasa.co (the "Service").
-
-By visiting our site and/or purchasing something from us, you engage in our Service and agree to be bound by these Terms. These Terms apply to all users of the site, including without limitation users who are browsers, vendors, customers, merchants, and/or contributors of content.
-
-If you do not agree to all the terms and conditions of this agreement, you may not access the website or use any services. If these Terms are considered an offer, acceptance is expressly limited to these Terms.
-
-### Updates to Terms
-
-Any new features or tools added to the current Service shall also be subject to these Terms. You can review the most current version of the Terms at any time on this page. We reserve the right to update, change, or replace any part of these Terms by posting updates and/or changes to our website. It is your responsibility to check this page periodically for changes. Your continued use of or access to the website following the posting of any changes constitutes acceptance of those changes.
-
-## 1. Definition of Terms
-
-The following defined terms appear in this Terms of Service:
-
-- **You** or **Merchant** or **Seller**: An individual, organization, or company that applies to, registers to use, or uses the platform to sell and have payments processed for their customers.
-- **Customer** or **Buyer**: A person that makes purchases using this platform.
-- **Payment Transaction**: The processing of a payment that results in the debiting or charging of the purchase amount to a customer and the subsequent crediting of funds to a merchant, less transaction fees.
-- **Transaction Fees**: The levy charged to the merchant for any product transacted through the platform.
-- **Product**: Any merchandise, good, or service listed for sale by a merchant that a customer may pay for.
-- **Purchase Amount**: The amount of a Payment Transaction, including any related fees, taxes, or shipping charges, as applicable.
-
-## 2. Requirements for Registration
-
-To use the platform, you consent to provide and agree to complete all required information elements on the registration web pages. You must register a valid bank account and, if applicable, a mobile-enabled payment number to receive remittances. You agree to provide current, complete, and accurate information and to maintain it as such.
-
-## 3. Payment Processing
-
-The platform allows merchants to upload products, tickets, or digital content and facilitates Payment Transactions between Merchants and Customers. Transactions are processed based on the platform's established guidelines, with protections against fraud and unauthorized activity.
-
-## 4. Limitation on the Use of Service
-
-We reserve the right to change, suspend, or discontinue any aspect of the platform at any time, including hours of operation or availability, without notice and without liability.
-
-## 5. Delivery
-
-Merchants are required to adhere to the platform’s delivery verification system. Unfulfilled or unverified deliveries will be deemed incomplete and result in delayed payment remittance until verified.
-
-## 6. Account Information
-
-You are responsible for maintaining the confidentiality of your account and any transactions performed by persons with access to your account. You agree to notify us immediately of any unauthorized use or security breach regarding your account.
-
-## 7. Privacy and Data Protection
-
-Personal information provided in connection with the platform is subject to the Privacy Policy. By using the Service, you acknowledge and agree that data collection, usage, and disclosure are governed by the Privacy Policy.
-
-## 8. Optional Tools
-
-We may provide access to third-party tools over which we neither monitor nor have any control. Any use of optional tools is at your own risk and discretion, and you should ensure that you are familiar with the terms provided by the relevant third-party provider(s).
-
-## 9. Accuracy, Completeness, and Timeliness of Information
-
-We are not responsible for the accuracy, completeness, or timeliness of information on this site. Any reliance on material on this site is at your own risk.
-
-## 10. Service Fees
-
-We do not charge a fee to upload products or content to your page. A service fee is applicable only when products or content are purchased. There is a NO REFUND policy on our fees after transactions are completed.
-
-## 11. Refund Policy
-
-As a buyer, we are fully committed to ensuring that you are able to shop safely and confidently. You are entitled to a full refund if the following occurs:
-An event is canceled or postponed (except in the case of a force majeure).
-
-All other requests for refunds will be addressed as per situation and is upon the discretion of the seller. If you would like to request a refund for any other reason other than what is stated above, please send an email to support@sasasasa.co and we will forward your request to the respective seller for consideration.
-
-## 13. Not a Banking Institution
-
-The platform processes Payment Transactions on behalf of Merchants but is not a bank or depository institution.
-
-## 14. Termination of Service
-
-We may terminate your use of the platform for any reason, including inactivity or violation of the Terms of Service. Upon termination, you remain liable for all Payment Transactions and other obligations.
-
-## 15. No Endorsement of Products
-
-We do not endorse or represent any product's safety, quality, accuracy, or legality, nor are we responsible for the truth or accuracy of the description of products.
-
-## 16. Severability
-
-If any provision of these Terms of Service is found to be unlawful or unenforceable, it shall be enforceable to the fullest extent permitted by law, with the remainder unaffected.
-
-## 17. Governing Law
-
-These Terms of Service shall be governed by and construed in accordance with the laws of Kenya.
-
-## 18. Entire Agreement
-
-These Terms of Service constitute the entire agreement and understanding between you and us, replacing prior agreements.
-
-## 19. Limitations of Liability; Force Majeure
-
-We shall not be liable for disruptions of the platform or any part thereof resulting from Force Majeure, such as natural disasters, government actions, or security threats.
-
-## 20. Prohibited Uses
-
-You are prohibited from using the site for unlawful purposes, violating laws, infringing intellectual property, or other misuse as detailed in the Terms.
-
-## 21. Modifications to Terms of Service
-
-We reserve the right to modify these Terms of Service. Changes will become effective upon posting. If you disagree with any modifications, your sole remedy is to discontinue use of the platform.
-
-## 22. Contact Information
-
-Questions about the Terms of Service should be sent to us at [support@sasasasa.co](mailto:support@sasasasa.co).
+**Amendments:**  
+Sasasasa reserves the right to modify or update these Terms at any time. Any changes become effective upon posting on this page. Continued use of Sasasasa following the posting of revised Terms indicates your acceptance of those changes.
 
 ---
 
+## 2. User Registration and Account Management
 
+**Account Eligibility:**  
+You must be at least 18 years old or the age of majority in your jurisdiction to register for Sasasasa. By creating an account, you represent that you are legally capable of entering into binding contracts.
 
+**Account Security:**  
+You are responsible for maintaining the confidentiality of your login credentials and for all activities that occur under your account. You must notify Sasasasa immediately of any unauthorized access or security breach.
+
+**KYC Compliance:**  
+In accordance with Kenyan financial regulations and anti-money laundering requirements, Know-Your-Customer (KYC) documents may be required. You may need to complete identity verification before accessing certain features or conducting transactions.
+
+***
+
+## 3. Financial Transactions
+
+**Fees and Charges:**  
+Sasasasa may charge fees for certain transactions or services. A detailed fee schedule is available within the platform and complies with Kenyan regulations. Fees are subject to change with notice.
+
+**Refunds and Cancellations:**  
+Refund and cancellation policies are governed by Kenyan consumer protection laws. Refund requests will be evaluated on a case-by-case basis in accordance with our policies.
+
+**Transaction Limits:**  
+Transaction limits may be imposed to comply with Anti-Money Laundering (AML), Counter-Terrorism Financing (CTF), and other regulatory requirements in Kenya.
+
+***
+
+## 4. User Conduct
+
+**Compliance with Laws:**  
+You agree to comply with all applicable laws, including Kenyan laws related to financial services, data protection, AML, and CTF regulations.
+
+**Prohibited Use:**  
+Sasasasa must not be used for any unlawful, fraudulent, or unauthorized purpose, including but not limited to:
+- Money laundering or terrorist financing
+- Fraudulent transactions or identity theft
+- Unauthorized access to other users' accounts
+- Violation of intellectual property rights
+
+Any violation may result in immediate account suspension or termination, and we may report suspected illegal activity to appropriate authorities.
+
+***
+
+## 5. Privacy and Data Protection
+
+We collect, use, and store personal data in accordance with Kenyan Data Protection laws and regulations. Please refer to our **Privacy Policy** for detailed information on how we handle user data, including collection, processing, sharing, and security measures.
+
+***
+
+## 6. Intellectual Property
+
+**Ownership:**  
+All content, trademarks, logos, software, and materials available on Sasasasa are the property of Sasasasa or its licensors and are protected by Kenyan and international intellectual property laws.
+
+**License:**  
+Sasasasa grants you a limited, non-exclusive, non-transferable license to access and use the platform for personal or business purposes in accordance with these Terms.
+
+**Restrictions:**  
+You may not copy, modify, distribute, sell, or reverse engineer any part of Sasasasa without prior written consent.
+
+***
+
+## 7. Termination and Suspension
+
+**Rights of Sasasasa:**  
+We reserve the right to suspend or terminate any account for non-compliance with these Terms, suspected fraud, illegal activities, or for other lawful reasons. We may also suspend services for maintenance or security purposes.
+
+**User's Right to Terminate:**  
+You may close your account at any time by contacting Sasasasa Support, provided all pending transactions or obligations are settled. Upon termination, your access to the platform will be revoked.
+
+***
+
+## 8. Limitation of Liability
+
+**Disclaimer:**  
+Sasasasa is provided "as is" and "as available" without warranties of any kind, either express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, or non-infringement.
+
+**Limitation:**  
+To the fullest extent permitted by Kenyan law, Sasasasa shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, revenue, data, or business opportunities, arising out of or related to your use of the platform.
+
+**Maximum Liability:**  
+In no event shall Sasasasa's total liability to you exceed the amount of fees you have paid to Sasasasa in the twelve (12) months preceding the claim.
+
+***
+
+## 9. Indemnification
+
+You agree to indemnify, defend, and hold harmless Sasasasa, its officers, directors, employees, and agents from any claims, liabilities, damages, losses, or expenses (including reasonable legal fees) arising out of or related to:
+- Your use of Sasasasa
+- Your violation of these Terms
+- Your violation of any applicable laws or third-party rights
+
+***
+
+## 10. Dispute Resolution
+
+**Governing Law:**  
+These Terms are governed by and construed in accordance with the laws of Kenya.
+
+**Dispute Resolution:**  
+Any disputes arising out of or related to these Terms or your use of Sasasasa shall be resolved through binding arbitration in Nairobi, Kenya, under the Arbitration Act of Kenya. Both parties agree to submit to the jurisdiction of arbitration and waive the right to a jury trial.
+
+**Exceptions:**  
+Either party may seek injunctive or other equitable relief in a court of competent jurisdiction to prevent actual or threatened infringement or misappropriation of intellectual property rights.
+
+***
+
+## 11. General Provisions
+
+**Severability:**  
+If any provision of these Terms is found to be invalid or unenforceable by a court of competent jurisdiction, the remaining provisions shall remain in full force and effect.
+
+**Entire Agreement:**  
+These Terms, together with our Privacy Policy and any other legal notices published on Sasasasa, constitute the entire agreement between you and Sasasasa, superseding any prior agreements or communications.
+
+**Waiver:**  
+No waiver of any term of these Terms shall be deemed a further or continuing waiver of such term or any other term. Sasasasa's failure to enforce any right or provision of these Terms shall not constitute a waiver of that right or provision.
+
+**Assignment:**  
+You may not assign or transfer these Terms or your account without Sasasasa's prior written consent. Sasasasa may assign or transfer these Terms or any rights hereunder without restriction.
+
+***
+
+## 12. Contact Us
+
+For questions or concerns regarding these Terms, contact:  
+**Email:** support@sasasasa.co  
+**Mailing Address:** Sasasasa Ltd., Nairobi, Kenya  
+**Effective Date:** October 24, 2025

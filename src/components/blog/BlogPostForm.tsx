@@ -37,6 +37,7 @@ import { Input } from "@/components/ui/input";
 import { Save } from "lucide-react";
 import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
 import { Textarea } from "@/components/ui/textarea";
+import { AudioUploadZone } from "@/components/ui/audio-upload-zone";
 import { toast } from "react-hot-toast";
 import { useBlog } from "@/hooks/useBlog";
 import { useForm } from "react-hook-form";
@@ -53,6 +54,7 @@ const formSchema = z.object({
   meta_description: z.string().optional(),
   tags: z.string(),
   featured_image: z.union([z.string(), z.instanceof(File)]).optional(),
+  audio_file: z.union([z.string(), z.instanceof(File)]).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -134,6 +136,7 @@ export default function BlogPostForm({
       meta_description: post?.meta_description || "",
       tags: post?.tags?.join(", ") || "",
       featured_image: post?.featured_image || "",
+      audio_file: post?.audio_file || "",
     },
   });
 
@@ -149,6 +152,7 @@ export default function BlogPostForm({
         meta_description: post.meta_description || "",
         tags: post.tags?.join(", ") || "",
         featured_image: post.featured_image || "",
+        audio_file: post.audio_file || "",
       });
     }
   }, [post, form]);
@@ -205,10 +209,15 @@ export default function BlogPostForm({
         values.featured_image instanceof File ||
         values.featured_image !== post.featured_image
       ) {
-        changedFields.featured_image =
-          values.featured_image instanceof File
-            ? values.featured_image.name
-            : values.featured_image;
+        changedFields.featured_image = values.featured_image;
+      }
+
+      // Check if audio_file is a File (new upload) or different from original
+      if (
+        values.audio_file instanceof File ||
+        values.audio_file !== post.audio_file
+      ) {
+        changedFields.audio_file = values.audio_file;
       }
 
       // Only proceed if there are changes
@@ -394,6 +403,24 @@ export default function BlogPostForm({
                 <Textarea
                   placeholder="Enter meta description"
                   className="min-h-[100px]"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="audio_file"
+          render={({ field: { value, onChange, ...field } }) => (
+            <FormItem>
+              <FormLabel>Audio File</FormLabel>
+              <FormControl>
+                <AudioUploadZone
+                  value={value}
+                  onChange={(file) => onChange(file)}
                   {...field}
                 />
               </FormControl>

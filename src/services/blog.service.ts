@@ -50,14 +50,18 @@ class BlogService {
   public async createPost(data: CreatePostRequest): Promise<PostResponse> {
     const formData = new FormData();
 
-    // Handle file upload
+    // Handle file uploads
     if (data.featured_image && typeof data.featured_image !== "string") {
       formData.append("featured_image", data.featured_image);
     }
 
+    if (data.audio_file && typeof data.audio_file !== "string") {
+      formData.append("audio_file", data.audio_file);
+    }
+
     // Add other fields
     Object.entries(data).forEach(([key, value]) => {
-      if (key !== "featured_image") {
+      if (key !== "featured_image" && key !== "audio_file") {
         formData.append(
           key,
           typeof value === "string" ? value : JSON.stringify(value)
@@ -82,14 +86,18 @@ class BlogService {
   ): Promise<PostResponse> {
     const formData = new FormData();
 
-    // Handle file upload
+    // Handle file uploads
     if (data.featured_image && typeof data.featured_image !== "string") {
       formData.append("featured_image", data.featured_image);
     }
 
+    if (data.audio_file && typeof data.audio_file !== "string") {
+      formData.append("audio_file", data.audio_file);
+    }
+
     // Add other fields
     Object.entries(data).forEach(([key, value]) => {
-      if (key !== "featured_image") {
+      if (key !== "featured_image" && key !== "audio_file") {
         formData.append(
           key,
           typeof value === "string" ? value : JSON.stringify(value)

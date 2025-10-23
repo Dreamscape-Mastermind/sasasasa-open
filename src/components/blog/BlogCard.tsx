@@ -7,6 +7,7 @@ import {
 import { PostListItem, PostStatus } from "@/types/blog";
 
 import { Badge } from "@/components/ui/badge";
+import { AudioIndicator } from "@/components/ui/audio-indicator";
 import Image from "next/image";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants";
@@ -45,6 +46,15 @@ export function BlogCard({ post }: BlogCardProps) {
         </CardHeader>
         <CardContent>
           <p className="line-clamp-3 text-muted-foreground">{post.excerpt}</p>
+          {post.audio_file && (
+            <div className="mt-3">
+              <AudioIndicator
+                audioUrl={post.audio_file}
+                variant="both"
+                size="sm"
+              />
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex items-center justify-between border-t px-6 py-4">
           <div className="flex items-center gap-2">

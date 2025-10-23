@@ -159,7 +159,7 @@ export default function WalletSettings() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <WalletAddress
                     address={address || ""}
                     isVerified={isWalletVerified}
@@ -167,7 +167,7 @@ export default function WalletSettings() {
                     size="md"
                   />
                   {isWalletVerified && (
-                    <Badge variant="destructive" className="animate-in fade-in">
+                    <Badge variant="destructive" className="animate-in fade-in self-start sm:self-center">
                       <XCircle className="w-4 h-4 mr-1" />
                       Already Verified
                     </Badge>

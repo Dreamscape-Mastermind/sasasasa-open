@@ -8,7 +8,7 @@ import { cookieService } from "./cookie.service";
 // Constants
 const API_URL =
   process.env.NEXT_PUBLIC_SASASASA_API_URL || "http://localhost:8000";
-const TOKEN_REFRESH_ENDPOINT = "/api/v1/accounts/refresh";
+const TOKEN_REFRESH_ENDPOINT = "/api/v1/auth/refresh";
 const MAX_RETRIES = 1;
 
 // Types
