@@ -9,16 +9,7 @@ export default function Footer() {
         <div className="text-center md:text-left text-sm text-gray-400">
           <div>
             &copy; {new Date().getFullYear()} {siteMetadata.title} All rights
-            reserved. Sasasasa Lab Company Ltd  is a information technology company registered in Kenya.
-          </div>
-          <div>
-            Made by{" "}
-            <a
-              href="https://dreamscapemastermind.com"
-              className="text-gray-400 hover:text-gray-300"
-            >
-              Dreamscape Mastermind
-            </a>
+            reserved. Sasasasa Lab Company Ltd  is a technology company registered in Kenya.
           </div>
         </div>
 
