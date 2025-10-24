@@ -44,7 +44,7 @@ export function Hero() {
               </span>
             </span>
           </h1>
-          <p className="text-center justify-evenly mx-auto max-w-[90%] sm:max-w-3xl text-base sm:text-xl text-muted-foreground">
+          <p className="text-center justify-evenly mx-auto max-w-[70%] sm:max-w-xl text-base sm:text-lg text-muted-foreground">
             Your brand, is universal. Lets build it together. From homegrown
             experiences to global e-commerce we're evolving the premier pipeline
             to scale the reach of creativity. Karibu.
