@@ -38,10 +38,11 @@ export default function CycleText({ words: propWords }: { words?: string[] } = {
   }, [words.length]);
 
   return (
-    <span className="relative inline-block whitespace-nowrap align-baseline">
+    <span className="relative whitespace-nowrap align-baseline">
       <span className="invisible block whitespace-nowrap leading-none" aria-hidden="true">
         {longestWord}
       </span>
+      <div className="flex justify-center items-center">
       <AnimatePresence mode="wait">
         <motion.span
           key={words[index]}
@@ -49,15 +50,17 @@ export default function CycleText({ words: propWords }: { words?: string[] } = {
           animate={prefersReducedMotion ? false : { opacity: 1, y: 0 }}
           exit={prefersReducedMotion ? undefined : { opacity: 0, y: -12 }}
           transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25 }}
-          className={`absolute top-0 text-[#CC322D] leading-none${
+          className={`align-center text-center absolute top-0 text-[#CC322D] leading-none${
             specialWords[words[index]]
-              ? " left-9 sm:left-0"
-              : " left-0"
+              ? " "
+              : " "
           }`}
         >
           {words[index]}
         </motion.span>
       </AnimatePresence>
+      </div>
+
     </span>
   );
 }

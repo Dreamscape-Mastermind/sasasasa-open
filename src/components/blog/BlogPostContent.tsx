@@ -2,6 +2,7 @@
 
 import { CommentSection } from "@/components/blog/CommentSection";
 import { ReactionButtons } from "@/components/blog/ReactionButtons";
+import { FloatingAudioPlayer } from "@/components/ui/floating-audio-player";
 import { notFound } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBlog } from "@/hooks/useBlog";
@@ -98,6 +99,13 @@ export function BlogPostContent({ slug }: BlogPostContentProps) {
       <div className="mt-12 border-t border-gray-200 dark:border-gray-800 pt-8">
         <CommentSection postId={postData.id.toString()} />
       </div>
+
+      {postData.audio_file && (
+        <FloatingAudioPlayer
+          src={postData.audio_file}
+          title={`Audio for: ${postData.title}`}
+        />
+      )}
     </article>
   );
 }

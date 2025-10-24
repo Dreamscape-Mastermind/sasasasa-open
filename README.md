@@ -13,6 +13,22 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### Environment Setup
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+# API Configuration
+NEXT_PUBLIC_SASASASA_API_URL=https://api.sasasasa.co
+
+USE_SIWE_PROXY=false
+
+# Web3 Configuration
+NEXT_PUBLIC_REOWN_PROJECT_ID=your_reown_project_id_here
+```
+
+### Development Server
+
 First, run the development server:
 
 ```bash

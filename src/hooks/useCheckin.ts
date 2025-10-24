@@ -14,6 +14,7 @@ export const useCheckin = () => {
     return useQuery({
       queryKey: ["checkins", eventId, params],
       queryFn: () => checkinService.listCheckIns(eventId, params),
+      enabled: !!eventId,
     });
   };
 
@@ -21,6 +22,7 @@ export const useCheckin = () => {
     return useQuery({
       queryKey: ["checkin", eventId, checkInId],
       queryFn: () => checkinService.getCheckIn(eventId, checkInId),
+      enabled: !!eventId && !!checkInId,
     });
   };
 
@@ -40,6 +42,7 @@ export const useCheckin = () => {
     return useQuery({
       queryKey: ["checkin-stats", eventId],
       queryFn: () => checkinService.getCheckInStats(eventId),
+      enabled: !!eventId,
     });
   };
 
@@ -47,6 +50,7 @@ export const useCheckin = () => {
     return useQuery({
       queryKey: ["device-checkins", eventId, deviceId],
       queryFn: () => checkinService.getDeviceCheckIns(eventId, deviceId),
+      enabled: !!eventId && !!deviceId,
     });
   };
 
@@ -54,6 +58,7 @@ export const useCheckin = () => {
     return useQuery({
       queryKey: ["user-checkins", eventId],
       queryFn: () => checkinService.getUserCheckIns(eventId),
+      enabled: !!eventId,
     });
   };
 

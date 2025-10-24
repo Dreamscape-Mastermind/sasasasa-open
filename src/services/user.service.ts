@@ -197,11 +197,11 @@ class UserService {
     const useProxy = process.env.USE_SIWE_PROXY === 'true';
     
     if (useProxy) {
-      return apiClient.post<Web3RecapNonceResponse>('/api/web3/recap-nonce', data);
+      return apiClient.post<Web3RecapNonceResponse>('/api/web3/recap_nonce', data);
     }
     
     return apiClient.post<Web3RecapNonceResponse>(
-      `${this.web3BaseUrl}/recap-nonce`,
+      `${this.web3BaseUrl}/recap_nonce`,
       data,
       {
         baseURL: process.env.NEXT_PUBLIC_SASASASA_API_URL,
@@ -215,11 +215,11 @@ class UserService {
     const useProxy = process.env.USE_SIWE_PROXY === 'true';
     
     if (useProxy) {
-      return apiClient.post<Web3RecapVerifyResponse>('/api/web3/verify-recap', data);
+      return apiClient.post<Web3RecapVerifyResponse>('/api/web3/verify_recap', data);
     }
     
     return apiClient.post<Web3RecapVerifyResponse>(
-      `${this.web3BaseUrl}/verify-recap`,
+      `${this.web3BaseUrl}/verify_recap`,
       data,
       {
         baseURL: process.env.NEXT_PUBLIC_SASASASA_API_URL,
@@ -236,11 +236,11 @@ class UserService {
     const useProxy = process.env.USE_SIWE_PROXY === 'true';
     
     if (useProxy) {
-      return apiClient.post<LinkWalletResponse>('/api/web3/link-wallet', data);
+      return apiClient.post<LinkWalletResponse>('/api/web3/link_wallet', data);
     }
     
     return apiClient.post<LinkWalletResponse>(
-      `${this.web3BaseUrl}/link-wallet`,
+      `${this.web3BaseUrl}/link_wallet`,
       data
     );
   }
@@ -255,7 +255,7 @@ class UserService {
     }
     
     return apiClient.post<AuthResponse>(
-      `${this.web3BaseUrl}/verify-link-wallet`,
+      `${this.web3BaseUrl}/verify_link_wallet`,
       data
     );
   }
@@ -280,14 +280,14 @@ class UserService {
       return apiClient.post<AuthResponse>('/api/web3/add-email', data);
     }
     
-    return apiClient.post<AuthResponse>(`${this.web3BaseUrl}/add-email`, data);
+    return apiClient.post<AuthResponse>(`${this.web3BaseUrl}/add_email`, data);
   }
 
   public async verifyEmail(data: VerifyEmailRequest): Promise<AuthResponse> {
     const useProxy = process.env.USE_SIWE_PROXY === 'true';
     
     if (useProxy) {
-      return apiClient.post<AuthResponse>('/api/web3/verify-email', data);
+      return apiClient.post<AuthResponse>('/api/web3/verify_email', data);
     }
     
     return apiClient.post<AuthResponse>(

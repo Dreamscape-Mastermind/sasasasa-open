@@ -25,6 +25,7 @@ export const usePayment = () => {
     return useQuery({
       queryKey: ["payment", id],
       queryFn: () => paymentService.getPayment(id),
+      enabled: !!id,
     });
   };
 
@@ -77,6 +78,7 @@ export const usePayment = () => {
     return useQuery({
       queryKey: ["payment-provider", id],
       queryFn: () => paymentService.getPaymentProvider(id),
+      enabled: !!id,
     });
   };
 

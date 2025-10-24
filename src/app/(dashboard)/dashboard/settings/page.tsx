@@ -219,7 +219,7 @@ function SettingsContent() {
             <User className="w-4 h-4" />
             General
           </button>
-          <button onClick={() => setTab('billing')} className={`flex flex-col items-start justify-start gap-1 rounded-xl border bg-card px-3 py-3 text-left text-sm transition-all ${tab === 'billing' ? 'ring-2 ring-primary bg-accent/40' : ''}`}>
+          {/* <button onClick={() => setTab('billing')} className={`flex flex-col items-start justify-start gap-1 rounded-xl border bg-card px-3 py-3 text-left text-sm transition-all ${tab === 'billing' ? 'ring-2 ring-primary bg-accent/40' : ''}`}>
             <CreditCard className="w-4 h-4" />
             Billing
           </button>
@@ -230,7 +230,7 @@ function SettingsContent() {
           <button onClick={() => setTab('security')} className={`flex flex-col items-start justify-start gap-1 rounded-xl border bg-card px-3 py-3 text-left text-sm transition-all ${tab === 'security' ? 'ring-2 ring-primary bg-accent/40' : ''}`}>
             <Shield className="w-4 h-4" />
             Security
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -251,7 +251,7 @@ function SettingsContent() {
             <Bell className="w-4 h-4" />
             Notifications
           </TabsTrigger> */}
-          <TabsTrigger value="billing" className="flex items-center gap-2 md:rounded-sm md:px-3 md:py-1.5 md:hover:bg-accent/50 transition-colors data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+          {/* <TabsTrigger value="billing" className="flex items-center gap-2 md:rounded-sm md:px-3 md:py-1.5 md:hover:bg-accent/50 transition-colors data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
             <CreditCard className="w-4 h-4" />
             Billing
           </TabsTrigger>
@@ -262,7 +262,7 @@ function SettingsContent() {
           <TabsTrigger value="security" className="flex items-center gap-2 md:rounded-sm md:px-3 md:py-1.5 md:hover:bg-accent/50 transition-colors data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
             <Shield className="w-4 h-4" />
             Security
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="account" className="space-y-6">
@@ -489,7 +489,7 @@ function SettingsContent() {
           </motion.div>
         </TabsContent> */}
 
-        <TabsContent value="billing" className="space-y-6">
+        {/* <TabsContent value="billing" className="space-y-6">
           <motion.div
             variants={listVariants}
             initial="hidden"
@@ -539,9 +539,9 @@ function SettingsContent() {
               </CardContent>
             </Card>
           </motion.div>
-        </TabsContent>
+        </TabsContent> */}
 
-        <TabsContent value="bank" className="space-y-6">
+        {/* <TabsContent value="bank" className="space-y-6">
           <motion.div
             variants={listVariants}
             initial="hidden"
@@ -592,9 +592,9 @@ function SettingsContent() {
               </CardContent>
             </Card>
           </motion.div>
-        </TabsContent>
+        </TabsContent> */}
 
-        <TabsContent value="security" className="space-y-6">
+        {/* <TabsContent value="security" className="space-y-6">
           <motion.div
             variants={listVariants}
             initial="hidden"
@@ -635,7 +635,7 @@ function SettingsContent() {
               </CardContent>
             </Card>
           </motion.div>
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </motion.div>
   );

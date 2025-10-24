@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const response = await fetch(`${backendUrl}/api/v1/web3/link-wallet`, {
+    const response = await fetch(`${backendUrl}/api/v1/web3/link_wallet`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
