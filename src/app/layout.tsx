@@ -13,7 +13,7 @@ import siteMetadata from "@/config/siteMetadata";
 import { CookieBanner } from "@/components/ui/cookie-banner";
 import GlobalShortcutWrapper from "@/components/GlobalShortcutWrapper";
 import TopLoadingBarClient from "@/components/TopLoadingBarClient";
-import { Sidebar } from "@/components/Sidebar";
+
 
 const sen = Sen({
   subsets: ["latin"],
@@ -90,7 +90,7 @@ export default function RootLayout({
               <Header />
               <main className="mb-auto">{children}</main>
               <Footer />
-              <Sidebar />
+              
               <Toaster />
             </SectionContainer>
           ) : (

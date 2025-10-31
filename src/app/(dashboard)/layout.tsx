@@ -6,6 +6,11 @@ import { MobileEventSelector } from "@/components/dashboard/MobileEventSelector"
 import { useEvent } from "@/hooks/useEvent";
 import { Event } from "@/types/event";
 
+import { useSidebar } from "@/contexts/SidebarContext";
+import { cn } from "@/lib/utils";
+
+import { useMobile } from "@/hooks/use-mobile";
+
 export default function DashboardLayout({
   children,
 }: {
@@ -14,6 +19,8 @@ export default function DashboardLayout({
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const { useMyEvents } = useEvent();
   const { data: eventsData, isLoading: eventsLoading } = useMyEvents();
+  const { isSidebarOpen } = useSidebar();
+  const isMobile = useMobile();
 
   const events = eventsData?.result?.results || [];
 
@@ -31,8 +38,13 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex-1 flex">
-        <Sidebar />
-        <div className="flex-1 w-full">
+        {!isMobile && <Sidebar />}
+        <div
+          className={cn(
+            "flex-1 w-full transition-all duration-300 ease-in-out",
+            !isMobile && (isSidebarOpen ? "ml-64" : "ml-20")
+          )}
+        >
           <MobileEventSelector
             events={events}
             selectedEventId={selectedEventId}
